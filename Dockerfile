@@ -7,8 +7,7 @@ FROM python:3.13.5-alpine3.21 AS base
 RUN python -m pip install --upgrade pip
 
 # Upgrade system packages to install security updates
-RUN apk update && \
-  apk upgrade
+RUN apk update && apk upgrade && apk add --no-cache git
 
 # ---- Back-end builder image ----
 FROM base AS back-builder

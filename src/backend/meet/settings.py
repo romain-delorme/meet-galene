@@ -379,9 +379,9 @@ class Base(Configuration):
         "support": values.DictValue(
             {}, environ_name="FRONTEND_SUPPORT", environ_prefix=None
         ),
-        "silence_livekit_debug_logs": values.BooleanValue(
-            False, environ_name="FRONTEND_SILENCE_LIVEKIT_DEBUG", environ_prefix=None
-        ),
+        #"silence_livekit_debug_logs": values.BooleanValue(
+        #    False, environ_name="FRONTEND_SILENCE_LIVEKIT_DEBUG", environ_prefix=None
+        #),
         "is_silent_login_enabled": values.BooleanValue(
             True, environ_name="FRONTEND_IS_SILENT_LOGIN_ENABLED", environ_prefix=None
         ),
@@ -616,6 +616,7 @@ class Base(Configuration):
     )
 
     # Video conference configuration
+    """
     LIVEKIT_CONFIGURATION = {
         "api_key": SecretFileValue(environ_name="LIVEKIT_API_KEY", environ_prefix=None),
         "api_secret": SecretFileValue(
@@ -648,6 +649,7 @@ class Base(Configuration):
     LIVEKIT_WEBHOOK_EVENTS_FILTER_REGEX = values.Value(
         None, environ_name="LIVEKIT_WEBHOOK_EVENTS_FILTER_REGEX", environ_prefix=None
     )
+    """
     RESOURCE_DEFAULT_ACCESS_LEVEL = values.Value(
         "public", environ_name="RESOURCE_DEFAULT_ACCESS_LEVEL", environ_prefix=None
     )
@@ -990,12 +992,14 @@ class Test(Base):
     ]
     USE_SWAGGER = True
     EXTERNAL_API_ENABLED = True
-
+    """
     LIVEKIT_CONFIGURATION = {
         "api_key": "devkey-padded-for-minimum-len!-livekit",
         "api_secret": "secret-key-padded-for-minimum-len!-livekit",
-        "url": "http://127.0.0.1.nip.io:7880",
+        "url": "http://[IP_ADDRESS]",
     }
+    """
+
 
     APPLICATION_JWT_SECRET_KEY = "secret-key-padded-for-minimum-len!-application"  # noqa:S105
     APPLICATION_JWT_AUDIENCE = "Test inc."

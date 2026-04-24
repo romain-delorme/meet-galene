@@ -19,6 +19,7 @@ router.register(
     "resource-accesses", viewsets.ResourceAccessViewSet, basename="resource_accesses"
 )
 
+
 # - External API
 external_router = DefaultRouter()
 external_router.register(
