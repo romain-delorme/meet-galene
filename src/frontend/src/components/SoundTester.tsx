@@ -2,6 +2,7 @@ import { Button } from '@/primitives'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMediaDeviceSelect } from '@livekit/components-react'
+// https://docs.livekit.io/reference/components/react/hook/usemediadeviceselect/ probably need to rewrite this component
 
 export const SoundTester = () => {
   const { t } = useTranslation('settings')
