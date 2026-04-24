@@ -18,7 +18,7 @@ export interface ApiConfig {
     url: string
   }
   external_home_url?: string
-  silence_livekit_debug_logs?: boolean
+  // silence_livekit_debug_logs?: boolean
   is_silent_login_enabled?: boolean
   custom_css_url?: string
   use_french_gov_footer?: boolean
@@ -46,12 +46,12 @@ export interface ApiConfig {
     default_country?: string
   }
   manifest_link?: string
-  livekit: {
-    url: string
-    force_wss_protocol: boolean
-    enable_firefox_proxy_workaround: boolean
-    default_sources: string[]
-  }
+  // livekit: {
+  //   url: string
+  //   force_wss_protocol: boolean
+  //   enable_firefox_proxy_workaround: boolean
+  //   default_sources: string[]
+  // }
   transcription_destination?: string
 }
 
