@@ -23,7 +23,14 @@ import boto3
 import botocore
 import magic
 from asgiref.sync import async_to_sync
-from livekit.api import (  # pylint: disable=E0611
+from galene.api import (
+    AccessToken,
+    VideoGrants,
+    GaleneAPI,
+    GaleneError,
+)
+
+"""from livekit.api import (  # pylint: disable=E0611
     AccessToken,
     ListRoomsRequest,
     LiveKitAPI,
@@ -31,7 +38,7 @@ from livekit.api import (  # pylint: disable=E0611
     TwirpError,
     UpdateRoomMetadataRequest,
     VideoGrants,
-)
+)"""
 
 logger = logging.getLogger(__name__)
 
@@ -58,16 +65,13 @@ def generate_color(identity: str) -> str:
     return f"hsl({hue}, {saturation}%, {lightness}%)"
 
 
+
 def generate_token(
     room: str,
-    user,
+    permissions: List[str],
     username: Optional[str] = None,
-    color: Optional[str] = None,
-    sources: Optional[List[str]] = None,
-    is_admin_or_owner: bool = False,
-    participant_id: Optional[str] = None,
 ) -> str:
-    """Generate a LiveKit access token for a user in a specific room.
+    '''Generate a LiveKit access token for a user in a specific room.
 
     Args:
         room (str): The name of the room.
@@ -84,7 +88,81 @@ def generate_token(
 
     Returns:
         str: The LiveKit JWT access token.
+    '''
+
+
+    video_grants = VideoGrants(
+        room=room,
+        permissions = permissions
+    )
+
+    identity = username
+    key = "key" # Later we will need to make a real key
+    server = settings.GALENE_CONFIGURATION["url"]
+
+    token = AccessToken(key, server).with_identity(identity).add_grant(video_grants) 
+    return token.to_jwt()
+
+def generate_galene_config(
+    room: str,
+    username: str,
+    permissions: List[str]
+) -> dict:
+    """Generate LiveKit configuration for room access.
+
+    Args:
+        room_id: Room identifier
+        user: User instance requesting access
+        username: Display name in room
+        is_admin_or_owner (bool): Whether the user has admin/owner privileges for this room.
+        color (Optional[str]): Optional color to associate with the participant.
+        configuration (Optional[dict]): Room configuration dict that can override default settings.
+        participant_id (Optional[str]): Stable identifier for anonymous users;
+                         used as identity when user.is_anonymous.
+
+    Returns:
+        dict: LiveKit configuration with URL, room and access token
     """
+
+    return {
+        "url": settings.LIVEKIT_CONFIGURATION["url"],
+        "room": room,
+        "token": generate_token(
+            room=room,
+            permissions= permissions,
+            username=username,
+        ),
+    }
+
+
+"""  
+def generate_token(
+    room: str,
+    user,
+    username: Optional[str] = None,
+    color: Optional[str] = None,
+    sources: Optional[List[str]] = None,
+    is_admin_or_owner: bool = False,
+    participant_id: Optional[str] = None,
+) -> str:
+    '''Generate a LiveKit access token for a user in a specific room.
+
+    Args:
+        room (str): The name of the room.
+        user (User): The user which request the access token.
+        username (Optional[str]): The username to be displayed in the room.
+                         If none, a default value will be used.
+        color (Optional[str]): The color to be displayed in the room.
+                         If none, a value will be generated
+        sources: (Optional[List[str]]): List of media sources the user can publish
+                         If none, defaults to LIVEKIT_DEFAULT_SOURCES.
+        is_admin_or_owner (bool): Whether user has admin privileges
+        participant_id (Optional[str]): Stable identifier for anonymous users;
+                         used as identity when user.is_anonymous.
+
+    Returns:
+        str: The LiveKit JWT access token.
+    '''
 
     if is_admin_or_owner:
         sources = settings.LIVEKIT_DEFAULT_SOURCES
@@ -128,6 +206,7 @@ def generate_token(
     return token.to_jwt()
 
 
+
 def generate_livekit_config(
     room_id: str,
     user,
@@ -137,7 +216,7 @@ def generate_livekit_config(
     configuration: Optional[dict] = None,
     participant_id: Optional[str] = None,
 ) -> dict:
-    """Generate LiveKit configuration for room access.
+    '''Generate LiveKit configuration for room access.
 
     Args:
         room_id: Room identifier
@@ -151,7 +230,7 @@ def generate_livekit_config(
 
     Returns:
         dict: LiveKit configuration with URL, room and access token
-    """
+    '''
 
     sources = None
     if configuration is not None:
@@ -171,6 +250,7 @@ def generate_livekit_config(
         ),
     }
 
+"""
 
 def generate_s3_authorization_headers(key):
     """
@@ -201,9 +281,14 @@ def generate_s3_authorization_headers(key):
 
     return request
 
+def create_galene_client():
+    '''Create and return a configured Galene API client.'''
+    server_url = GALENE_SERVER_URL
+    return GaleneAPI(server_url, username=API_ADMIN_LOGIN, password=API_ADMIN_PASSWORD)
 
+"""
 def create_livekit_client(custom_configuration=None):
-    """Create and return a configured LiveKit API client."""
+    '''Create and return a configured LiveKit API client.'''
 
     custom_session = None
 
@@ -215,15 +300,19 @@ def create_livekit_client(custom_configuration=None):
     configuration = custom_configuration or settings.LIVEKIT_CONFIGURATION
 
     return LiveKitAPI(session=custom_session, **configuration)
+"""
 
 
 class NotificationError(Exception):
     """Notification delivery to room participants fails."""
 
 
+
+
+"""
 @async_to_sync
 async def notify_participants(room_name: str, notification_data: dict):
-    """Send notification data to all participants in a LiveKit room."""
+    '''Send notification data to all participants in a LiveKit room.'''
 
     lkapi = create_livekit_client()
 
@@ -250,22 +339,66 @@ async def notify_participants(room_name: str, notification_data: dict):
     finally:
         await lkapi.aclose()
 
+"""
 
 class MetadataUpdateException(Exception):
     """Room's metadata update fails."""
 
+@async_to_sync
+async def update_room_metadata(
+    room_name: str, metadata: dict = None
+):
+    '''Update LiveKit room metadata by merging new values with existing metadata.
 
+    Args:
+        room_name: Name of the room to update
+        metadata: Dictionary of metadata key-values to add/update
+    '''
+
+    galene_api = create_galene_client()
+
+    try:
+        groups = await galene_api.groups.list_groups()
+        if room_name not in groups.names:
+            raise MetadataUpdateException(
+                f"Room {room_name} not found"
+            )
+
+        group = await galene_api.groups.get_group(groupname=room_name)
+
+        existing_metadata = json.loads(group.metadata) if group.metadata else {}
+
+        if remove_keys:
+            for key in remove_keys:
+                existing_metadata.pop(key, None)
+
+        updated_metadata = {**existing_metadata, **metadata}
+
+        await lkapi.room.update_room_metadata(
+            UpdateRoomMetadataRequest(
+                room=room_name, metadata=json.dumps(updated_metadata).encode("utf-8")
+            )
+        )
+    except GaleneError as e:
+        raise MetadataUpdateException(
+            f"Failed to update metadata for room {room_name}: {e}"
+        ) from e
+    finally:
+        await galene_api.aclose()
+
+
+"""
 @async_to_sync
 async def update_room_metadata(
     room_name: str, metadata: dict, remove_keys: Optional[list[str]] = None
 ):
-    """Update LiveKit room metadata by merging new values with existing metadata.
+    '''Update LiveKit room metadata by merging new values with existing metadata.
 
     Args:
         room_name: Name of the room to update
         metadata: Dictionary of metadata key-values to add/update
         remove_keys: Optional list of keys to remove from existing metadata.
-    """
+    '''
 
     lkapi = create_livekit_client()
 
@@ -300,7 +433,7 @@ async def update_room_metadata(
         ) from e
     finally:
         await lkapi.aclose()
-
+"""
 
 ALPHANUMERIC_CHARSET = string.ascii_letters + string.digits
 
