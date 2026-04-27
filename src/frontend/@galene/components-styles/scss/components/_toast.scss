@@ -7,17 +7,17 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.25rem;
-  background-color: var(--lk-bg);
+  background-color: var(--galene-bg);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
 }
 
 .spinner {
-  animation: lk-rotate 2s infinite linear;
+  animation: galene-rotate 2s infinite linear;
 }
 
-@keyframes lk-rotate {
+@keyframes galene-rotate {
   from {
     transform: rotate(0deg);
   }

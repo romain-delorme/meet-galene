@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { mergeProps as mergePropsReactAria } from './mergeProps';
-import { log } from '@livekit/components-core';
+import { log } from '@galene/components-core';
 import clsx from 'clsx';
 
 /** @internal */
@@ -52,10 +52,10 @@ export function warnAboutMissingStyles(el?: HTMLElement) {
       // eslint-disable-next-line turbo/no-undeclared-env-vars
       process?.env?.NODE_ENV === 'development')
   ) {
-    const target = el ?? document.querySelector('.lk-room-container');
-    if (target && !getComputedStyle(target).getPropertyValue('--lk-has-imported-styles')) {
+    const target = el ?? document.querySelector('.galene-room-container');
+    if (target && !getComputedStyle(target).getPropertyValue('--galene-has-imported-styles')) {
       log.warn(
-        "It looks like you're not using the `@livekit/components-styles package`. To render the UI with the default styling, please import it in your layout or page.",
+        "It looks like you're not using the `@galene/components-styles package`. To render the UI with the default styling, please import it in your layout or page.",
       );
     }
   }

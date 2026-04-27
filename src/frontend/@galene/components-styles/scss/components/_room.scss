@@ -7,8 +7,8 @@
   height: 100%;
   --has-imported-styles: 'true'; // helper var used to warn users if they haven't imported the styles package
 
-  *[class^='lk-'],
-  *[class*=' lk-'] {
+  *[class^='galene-'],
+  *[class*=' galene-'] {
     box-sizing: border-box;
   }
 }
