@@ -1074,6 +1074,14 @@ class Test(Base):
     ]
     USE_SWAGGER = True
     EXTERNAL_API_ENABLED = True
+
+    GALENE_CONFIGURATION = {
+        "url": "https://dty-s26-p2-galene.k8s-cloud.centralesupelec.fr",
+        "api_key": "api-key-padded-for-minimum-len",
+        "api_secret": "secret-key-padded-for-minimum-len",
+        "token key for jwt": "token-key-for-jwt-padded-for-minimum-len"
+    }
+    
     """
     LIVEKIT_CONFIGURATION = {
         "api_key": "devkey-padded-for-minimum-len!-livekit",

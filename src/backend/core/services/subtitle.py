@@ -15,13 +15,17 @@ logger = getLogger(__name__)
 class SubtitleException(Exception):
     """Exception raised when subtitle operations fail."""
 
-
 class SubtitleService:
-    """Service for managing subtitle agents in LiveKit rooms."""
+    '''Service for managing subtitle agents in LiveKit rooms.'''
+    pass
+
+"""
+class SubtitleService:
+    '''Service for managing subtitle agents in LiveKit rooms.'''
 
     @async_to_sync
     async def start_subtitle(self, room):
-        """Start subtitle agent for the specified room."""
+        '''Start subtitle agent for the specified room.'''
 
         lkapi = utils.create_livekit_client()
 
@@ -42,6 +46,7 @@ class SubtitleService:
 
     @async_to_sync
     async def stop_subtitle(self, room) -> None:
-        """Stop subtitle agent for the specified room."""
+        '''Stop subtitle agent for the specified room.'''
 
         raise NotImplementedError("Subtitle agent stopping not yet implemented")
+"""

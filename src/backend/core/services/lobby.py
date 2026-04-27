@@ -126,6 +126,7 @@ class LobbyService:
         room,
         request,
         username: str,
+        permissions: List[str]
     ) -> Tuple[LobbyParticipant, Optional[Dict]]:
         """Request entry to a room for a participant.
 
@@ -155,7 +156,13 @@ class LobbyService:
                 )
             else:
                 participant.status = LobbyParticipantStatus.ACCEPTED
-
+            
+            galene_config = utils.generate_galene_config(
+                room=room_id,
+                username=username,
+                permissions= permissions
+            )
+            '''
             livekit_config = utils.generate_livekit_config(
                 room_id=room_id,
                 user=request.user,
@@ -166,8 +173,8 @@ class LobbyService:
                 participant_id=participant_id,
             )
             return participant, livekit_config
+            '''
 
-        livekit_config = None
 
         if participant is None:
             participant = self.enter(room.id, participant_id, username)
@@ -177,6 +184,12 @@ class LobbyService:
 
         elif participant.status == LobbyParticipantStatus.ACCEPTED:
             # wrongly named, contains access token to join a room
+            galene_config = utils.generate_galene_config(
+                room=room_id,
+                username=username,
+                permissions= permissions
+            )
+            '''
             livekit_config = utils.generate_livekit_config(
                 room_id=room_id,
                 user=request.user,
@@ -186,8 +199,11 @@ class LobbyService:
                 is_admin_or_owner=False,
                 participant_id=participant_id,
             )
+            '''
+            pass
 
-        return participant, livekit_config
+
+        return participant, galene_config
 
     def refresh_waiting_status(self, room_id: UUID, participant_id: str):
         """Refresh timeout for waiting participant.

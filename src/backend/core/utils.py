@@ -28,6 +28,7 @@ from galene.api import (
     VideoGrants,
     GaleneAPI,
     GaleneError,
+    GroupDefinition
 )
 
 """from livekit.api import (  # pylint: disable=E0611
@@ -97,7 +98,8 @@ def generate_token(
     )
 
     identity = username
-    key = "key" # Later we will need to make a real key
+    key = settings.GALENE_CONFIGURATION["token key for jwt"]
+    # Later we will need to make a real key
     server = settings.GALENE_CONFIGURATION["url"]
 
     token = AccessToken(key, server).with_identity(identity).add_grant(video_grants) 
@@ -125,7 +127,7 @@ def generate_galene_config(
     """
 
     return {
-        "url": settings.LIVEKIT_CONFIGURATION["url"],
+        "url": settings.GALENE_CONFIGURATION["url"],
         "room": room,
         "token": generate_token(
             room=room,
@@ -346,7 +348,7 @@ class MetadataUpdateException(Exception):
 
 @async_to_sync
 async def update_room_metadata(
-    room_name: str, metadata: dict = None
+    group_name: str, changes: dict = None
 ):
     '''Update LiveKit room metadata by merging new values with existing metadata.
 
@@ -359,29 +361,19 @@ async def update_room_metadata(
 
     try:
         groups = await galene_api.groups.list_groups()
-        if room_name not in groups.names:
+        if group_name not in groups:
             raise MetadataUpdateException(
-                f"Room {room_name} not found"
+                f"Room {group_name} not found"
             )
 
-        group = await galene_api.groups.get_group(groupname=room_name)
-
-        existing_metadata = json.loads(group.metadata) if group.metadata else {}
-
-        if remove_keys:
-            for key in remove_keys:
-                existing_metadata.pop(key, None)
-
-        updated_metadata = {**existing_metadata, **metadata}
-
-        await lkapi.room.update_room_metadata(
-            UpdateRoomMetadataRequest(
-                room=room_name, metadata=json.dumps(updated_metadata).encode("utf-8")
-            )
-        )
+        group, etag = await galene_api.groups.get_group(groupname=group_name)
+        existing_config = group.model_dump(exclude_unset=True)
+        updated_config = {**existing_config, **changes}
+        
+        await galene_api.groups.update_group(groupname=group_name, definition= GroupDefinition.model_validate(updated_config),etag=etag)
     except GaleneError as e:
         raise MetadataUpdateException(
-            f"Failed to update metadata for room {room_name}: {e}"
+            f"Failed to update metadata for room {group_name}: {e}"
         ) from e
     finally:
         await galene_api.aclose()

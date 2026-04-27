@@ -16,25 +16,29 @@ from core import utils
 
 logger = getLogger(__name__)
 
+class TelephonyService:
+    '''Service for managing SIP dispatch rules for room access.'''
+    pass
 
+"""
 class TelephonyException(Exception):
-    """Exception raised when telephony operations fail."""
+    '''Exception raised when telephony operations fail.'''
 
 
 class TelephonyService:
-    """Service for managing participant access through the telephony system (SIP)."""
+    '''Service for managing participant access through the telephony system (SIP).'''
 
     def _rule_name(self, room_id):
-        """Generate the rule name for a room based on its ID."""
+        '''Generate the rule name for a room based on its ID.'''
         return f"SIP_{str(room_id)}"
 
     @async_to_sync
     async def create_dispatch_rule(self, room):
-        """Create a SIP inbound dispatch rule for direct room routing.
+        '''Create a SIP inbound dispatch rule for direct room routing.
 
         Configures telephony to route incoming SIP calls directly to the specified room
         using the room's ID and PIN code for authentication.
-        """
+        '''
 
         direct_rule = SIPDispatchRule(
             dispatch_rule_direct=SIPDispatchRuleDirect(
@@ -60,7 +64,7 @@ class TelephonyService:
             await lkapi.aclose()
 
     async def _list_dispatch_rules_ids(self, room_id):
-        """List SIP dispatch rule IDs for a specific room.
+        '''List SIP dispatch rule IDs for a specific room.
 
         Fetches all existing SIP dispatch rules and filters them by room name
         since LiveKit API doesn't support server-side filtering by 'room_name'.
@@ -69,7 +73,7 @@ class TelephonyService:
 
         Note:
             Feature request for server-side filtering: livekit/sip#405
-        """
+        '''
 
         lkapi = utils.create_livekit_client()
 
@@ -96,7 +100,7 @@ class TelephonyService:
 
     @async_to_sync
     async def delete_dispatch_rule(self, room_id):
-        """Delete all SIP inbound dispatch rules associated with a specific room."""
+        '''Delete all SIP inbound dispatch rules associated with a specific room.
 
         rules_ids = await self._list_dispatch_rules_ids(room_id)
 
@@ -122,3 +126,4 @@ class TelephonyService:
 
         finally:
             await lkapi.aclose()
+"""
