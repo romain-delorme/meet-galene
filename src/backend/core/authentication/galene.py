@@ -4,14 +4,14 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
 
-from livekit.api import TokenVerifier
+from galene.api import TokenVerifier
 from rest_framework import authentication, exceptions
 
 UserModel = get_user_model()
 
 
-class LiveKitTokenAuthentication(authentication.BaseAuthentication):
-    """Authenticate using LiveKit token and load the associated Django user."""
+class GaleneTokenAuthentication(authentication.BaseAuthentication):
+    """Authenticate using Galene token and load the associated Django user."""
 
     def authenticate(self, request):
         auth_header = request.headers.get("Authorization")
@@ -29,8 +29,8 @@ class LiveKitTokenAuthentication(authentication.BaseAuthentication):
 
         try:
             verifier = TokenVerifier(
-                api_key=settings.LIVEKIT_CONFIGURATION["api_key"],
-                api_secret=settings.LIVEKIT_CONFIGURATION["api_secret"],
+                api_key=settings.GALENE_CONFIGURATION["api_key"],
+                api_secret=settings.GALENE_CONFIGURATION["api_secret"],
             )
             claims = verifier.verify(token)
 

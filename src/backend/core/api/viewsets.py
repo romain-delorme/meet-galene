@@ -77,7 +77,7 @@ from core.services.room_creation import RoomCreation
 from core.services.subtitle import SubtitleException, SubtitleService
 from core.tasks.file import process_file_deletion
 
-from ..authentication.livekit import LiveKitTokenAuthentication
+from ..authentication.galene import GaleneTokenAuthentication
 from . import permissions, serializers, throttling
 from .feature_flag import FeatureFlag
 
@@ -253,8 +253,8 @@ class RoomViewSet(
             username = request.query_params.get("username", None)
             data = {
                 "id": None,
-                "livekit": {
-                    "url": settings.LIVEKIT_CONFIGURATION["url"],
+                "galene": {
+                    "url": settings.GALENE_CONFIGURATION["url"],
                     "room": slug,
                     "token": utils.generate_token(
                         room=slug, user=request.user, username=username
@@ -412,12 +412,12 @@ class RoomViewSet(
         room = self.get_object()
         lobby_service = LobbyService()
 
-        participant, livekit = lobby_service.request_entry(
+        participant, galene = lobby_service.request_entry(
             room=room,
             request=request,
             **serializer.validated_data,
         )
-        response = drf_response.Response({**participant.to_dict(), "livekit": livekit})
+        response = drf_response.Response({**participant.to_dict(), "galene": galene})
         lobby_service.prepare_response(response, participant.id)
 
         return response
@@ -480,29 +480,29 @@ class RoomViewSet(
         participants = lobby_service.list_waiting_participants(room.id)
         return drf_response.Response({"participants": participants})
 
-    @decorators.action(
-        detail=False,
-        methods=["post"],
-        url_path="webhooks-livekit",
-        permission_classes=[],
-    )
-    def webhooks_livekit(self, request):
-        """Process webhooks from LiveKit."""
+    # @decorators.action(
+    #     detail=False,
+    #     methods=["post"],
+    #     url_path="webhooks-livekit",
+    #     permission_classes=[],
+    # )
+    # def webhooks_livekit(self, request):
+    #     """Process webhooks from LiveKit."""
 
-        livekit_events_service = LiveKitEventsService()
+    #     livekit_events_service = LiveKitEventsService()
 
-        try:
-            livekit_events_service.receive(request)
-            return drf_response.Response(
-                {"status": "success"}, status=drf_status.HTTP_200_OK
-            )
-        except LiveKitWebhookError as e:
-            status_code = getattr(e, "status_code", drf_status.HTTP_400_BAD_REQUEST)
+    #     try:
+    #         livekit_events_service.receive(request)
+    #         return drf_response.Response(
+    #             {"status": "success"}, status=drf_status.HTTP_200_OK
+    #         )
+    #     except LiveKitWebhookError as e:
+    #         status_code = getattr(e, "status_code", drf_status.HTTP_400_BAD_REQUEST)
 
-            if status_code == drf_status.HTTP_500_INTERNAL_SERVER_ERROR:
-                raise e
+    #         if status_code == drf_status.HTTP_500_INTERNAL_SERVER_ERROR:
+    #             raise e
 
-            return drf_response.Response({"status": "error"}, status=status_code)
+    #         return drf_response.Response({"status": "error"}, status=status_code)
 
     @decorators.action(
         detail=False,
@@ -568,7 +568,7 @@ class RoomViewSet(
         permission_classes=[
             permissions.HasLiveKitRoomAccess,
         ],
-        authentication_classes=[LiveKitTokenAuthentication],
+        authentication_classes=[GaleneTokenAuthentication],
     )
     @FeatureFlag.require("subtitle")
     def start_subtitle(self, request, pk=None):  # pylint: disable=unused-argument
@@ -713,7 +713,7 @@ class RoomViewSet(
         url_path="toggle-hand",
         url_name="toggle-hand",
         permission_classes=[permissions.HasLiveKitRoomAccess],
-        authentication_classes=[LiveKitTokenAuthentication],
+        authentication_classes=[GaleneTokenAuthentication],
     )
     def toggle_hand(self, request, pk=None):  # pylint: disable=unused-argument
         """Raise or lower the current participant's hand in the room."""
@@ -760,7 +760,7 @@ class RoomViewSet(
         url_path="rename",
         url_name="rename",
         permission_classes=[permissions.HasLiveKitRoomAccess],
-        authentication_classes=[LiveKitTokenAuthentication],
+        authentication_classes=[GaleneTokenAuthentication],
     )
     def rename(self, request, pk=None):  # pylint: disable=unused-argument
         """Rename the current participant in the room."""

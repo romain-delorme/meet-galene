@@ -102,9 +102,9 @@ class HasPrivilegesOnRoom(IsAuthenticated):
         return obj.is_administrator_or_owner(request.user)
 
 
-class HasLiveKitRoomAccess(permissions.BasePermission):
-    """Check if authenticated user's LiveKit token is for the specific room."""
-
+class HasGaleneRoomAccess(permissions.BasePermission):
+    """Check if authenticated user's Galene token is for the specific room."""
+    # Note: might require changes
     def has_object_permission(self, request, view, obj):
         if not request.auth or not hasattr(request.auth, "video"):
             return False

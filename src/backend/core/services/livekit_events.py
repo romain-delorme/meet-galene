@@ -1,4 +1,6 @@
-"""LiveKit Events Service"""
+"""LiveKit Events Service
+Not necessary to modify yet: unused by Galène
+"""
 
 # pylint: disable=no-member
 
@@ -87,6 +89,7 @@ class LiveKitEventsService:
 
     def __init__(self):
         """Initialize with required services."""
+        return
 
         token_verifier = api.TokenVerifier(
             settings.LIVEKIT_CONFIGURATION["api_key"],

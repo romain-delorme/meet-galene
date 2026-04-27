@@ -124,7 +124,9 @@ class ListRoomSerializer(serializers.ModelSerializer):
 
 
 class RoomSerializer(serializers.ModelSerializer):
-    """Serialize Room model for the API."""
+    """Serialize Room model for the API.
+       TODO: à modifier dans son intégralité pour fonctionner avec l'api Galène
+    """
 
     class Meta:
         model = models.Room
@@ -172,12 +174,11 @@ class RoomSerializer(serializers.ModelSerializer):
         if should_access_room:
             room_id = f"{instance.id!s}"
             username = request.query_params.get("username", None)
-            output["livekit"] = utils.generate_livekit_config(
+            output["galene"] = utils.generate_galene_config(
                 room_id=room_id,
                 user=request.user,
                 username=username,
                 configuration=configuration,
-                is_admin_or_owner=is_admin_or_owner,
             )
         else:
             del output["pin_code"]
