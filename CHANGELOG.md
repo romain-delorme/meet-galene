@@ -11,11 +11,13 @@ and this project adheres to
 ### Added
 
 - ✨(backend) add metadata collection of VAD, connection and chat events
+- ✨(backend) introduce add-ons authentication backend
 
 ### Fixed
 
 - 🐛(summary) support webm #1290
 - ⬆️(backend) bump django-lasuite to v0.0.26
+- 🩹(frontend) use a more standard (quality) rating scale
 
 ## [1.14.0] - 2026-04-16
 
