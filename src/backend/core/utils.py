@@ -285,8 +285,9 @@ def generate_s3_authorization_headers(key):
 
 def create_galene_client():
     '''Create and return a configured Galene API client.'''
-    server_url = GALENE_SERVER_URL
-    return GaleneAPI(server_url, username=API_ADMIN_LOGIN, password=API_ADMIN_PASSWORD)
+    server_url = settings.GALENE_CONFIGURATION["url"]
+    print(server_url, settings.GALENE_CONFIGURATION["api_admin_login"], settings.GALENE_CONFIGURATION["api_admin_password"])
+    return GaleneAPI(server_url, username=settings.GALENE_CONFIGURATION["api_admin_login"], password=settings.GALENE_CONFIGURATION["api_admin_password"])
 
 """
 def create_livekit_client(custom_configuration=None):

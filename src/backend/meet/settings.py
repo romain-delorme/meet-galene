@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 # pylint: disable=too-many-lines
 
 import json
-from os import path
+from os import path, environ
 from socket import gethostbyname, gethostname
 
 from django.utils.translation import gettext_lazy as _
@@ -1077,9 +1077,8 @@ class Test(Base):
 
     GALENE_CONFIGURATION = {
         "url": "https://dty-s26-p2-galene.k8s-cloud.centralesupelec.fr",
-        "api_key": "api-key-padded-for-minimum-len",
-        "api_secret": "secret-key-padded-for-minimum-len",
-        "token key for jwt": "token-key-for-jwt-padded-for-minimum-len"
+        "api_admin_login": environ.get("GALENE_ADMIN_LOGIN"),
+        "api_admin_password": environ.get("GALENE_ADMIN_PASSWORD"),
     }
     
     """

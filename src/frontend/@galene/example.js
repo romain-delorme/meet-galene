@@ -8,22 +8,23 @@
 async function start(url) {
     // fetch the group information
     let r = await fetch(url + ".status");
-    console.log('coucou');
     if (!r.ok) {
         throw new Error(`${r.status} ${r.statusText}`);
     }
     let status = await r.json();
-
+    console.log('status : ', status);
     // parse a token in the URL.
     let token = null;
     let parms = new URLSearchParams(window.location.search);
-    if (parms.has('token'))
+    if (parms.has('token')) {
         token = parms.get('token');
+    }
 
     // connect to the server
     if (token) {
         serverConnect(status, token);
     } else if (status.authPortal) {
+        console.log('entre elif');
         window.location.href = groupStatus.authPortal
         return;
     } else {
@@ -47,16 +48,16 @@ function displayStatus(status) {
  * @parm {Object} status
  * @parm {string} token
  */
-function serverConnect(status, token) {
+function serverConnect(status, token, group) {
     // create the connection to the server
     let conn = new ServerConnection();
     conn.onconnected = async function () {
         displayStatus('Connected');
         let creds = token ?
             { type: 'token', token: token } :
-            { type: 'password', password: '' };
+            { type: 'password', password: 'password' };
         // join the group and wait for the onjoined callback
-        await this.join("public", "example-user", creds);
+        await this.join(group, "test", creds);
     };
     conn.onchat = onChat;
     conn.onusermessage = onUserMessage;
