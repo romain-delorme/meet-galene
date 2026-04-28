@@ -20,6 +20,11 @@ export default defineConfig(({ mode }) => {
           target: 'http://localhost:8083',
           changeOrigin: true,
           secure: false
+        },
+        '/group': {
+          target: 'https://dty-s26-p2-galene.k8s-cloud.centralesupelec.fr',
+          changeOrigin: true,
+          secure: false
         }
       }
     },
