@@ -1,4 +1,4 @@
-import { silenceLiveKitLogs } from '@/utils/livekit'
+// import { silenceLiveKitLogs } from '@/utils/livekit'
 import { useConfig } from '@/api/useConfig'
 import { useAnalytics } from '@/features/analytics/hooks/useAnalytics'
 import { useSupport } from '@/features/support/hooks/useSupport'
@@ -12,7 +12,7 @@ export const AppInitialization = () => {
   const {
     analytics = {},
     support = {},
-    silence_livekit_debug_logs = false,
+    // silence_livekit_debug_logs = false,
     custom_css_url = '',
   } = data ?? {}
 
@@ -29,7 +29,7 @@ export const AppInitialization = () => {
     }
   }, [custom_css_url])
 
-  silenceLiveKitLogs(silence_livekit_debug_logs)
+  // silenceLiveKitLogs(silence_livekit_debug_logs)
 
   return null
 }

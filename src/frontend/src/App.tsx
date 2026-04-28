@@ -1,4 +1,5 @@
-import '@livekit/components-styles'
+import('../@galene/components-styles')
+//import '@livekit/components-styles'
 import '@/styles/index.css'
 import { Suspense } from 'react'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
