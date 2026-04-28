@@ -1,8 +1,8 @@
 [data-theme='huddle'] {
   --button-size: 3.125rem;
-  --galene-primary-color: #e23067;
-  --galene-primary-bg: whitesmoke;
-  --galene-secondary-color: lightgrey;
+  --lk-primary-color: #e23067;
+  --lk-primary-bg: whitesmoke;
+  --lk-secondary-color: lightgrey;
 
   .button {
     border: 0px;
@@ -10,11 +10,11 @@
     background-position: center;
     background-repeat: no-repeat;
     background-size: 60%;
-    background-color: var(--galene-primary-bg);
+    background-color: var(--lk-primary-bg);
     cursor: pointer;
 
     &[aria-pressed='false'] {
-      background-color: var(--galene-primary-bg);
+      background-color: var(--lk-primary-bg);
     }
   }
 
@@ -45,6 +45,6 @@
   }
 
   .join-button {
-    background-color: var(--galene-primary-color);
+    background-color: var(--lk-primary-color);
   }
 }
