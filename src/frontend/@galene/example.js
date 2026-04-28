@@ -7,7 +7,14 @@
  */
 async function start(url) {
     // fetch the group information
-    let r = await fetch(url + ".status");
+    let r = await fetch(url + ".status",
+        {
+            method: "GET",
+            headers: {
+                'Access-Control-Allow-Origin': true
+            }
+        }
+    );
     if(!r.ok) {
         throw new Error(`${r.status} ${r.statusText}`);
     }
@@ -308,6 +315,22 @@ document.getElementById('start').onclick = async function(e) {
     button.hidden = true;
     try {
         await start("/group/public/");
+    } catch(e) {
+        displayError(e);
+    };
+}
+
+document.getElementById('connect-button').onclick = async function(e) {
+    let groupName = document.getElementById('group-select').value;
+    let url = 'https://dty-s26-p2-galene.k8s-cloud.centralesupelec.fr/group/' + groupName + '/';
+    
+    console.log(url);
+
+    let button = /** @type{HTMLButtonElement} */(this);
+    button.hidden = true;
+   
+    try {
+        await start(url);
     } catch(e) {
         displayError(e);
     };
