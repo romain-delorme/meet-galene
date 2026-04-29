@@ -30,7 +30,7 @@ function toHex(array) {
     let a = new Uint8Array(array);
     function hex(x) {
         let h = x.toString(16);
-        if(h.length < 2)
+        if (h.length < 2)
             h = '0' + h;
         return h;
     }
@@ -277,7 +277,7 @@ function ServerConnection() {
  * close forcibly closes a server connection.  The onclose callback will
  * be called when the connection is effectively closed.
  */
-ServerConnection.prototype.close = function() {
+ServerConnection.prototype.close = function () {
     this.socket && this.socket.close(1000, 'Close requested by client');
     this.socket = null;
 };
@@ -289,8 +289,8 @@ ServerConnection.prototype.close = function() {
  *
  * @param {any} e
  */
-ServerConnection.prototype.error = function(e) {
-    if(this.onerror)
+ServerConnection.prototype.error = function (e) {
+    if (this.onerror)
         this.onerror.call(this, e);
     this.close();
 };
@@ -299,10 +299,11 @@ ServerConnection.prototype.error = function(e) {
   * send sends a message to the server.
   * @param {message} m - the message to send.
   */
-ServerConnection.prototype.send = function(m) {
-    if(!this.socket || this.socket.readyState !== this.socket.OPEN) {
+ServerConnection.prototype.send = function (m) {
+    console.log('send', m);
+    if (!this.socket || this.socket.readyState !== this.socket.OPEN) {
         // send on a closed socket doesn't throw
-        throw(new Error('Connection is not open'));
+        throw (new Error('Connection is not open'));
     }
     return this.socket.send(JSON.stringify(m));
 };
@@ -313,215 +314,213 @@ ServerConnection.prototype.send = function(m) {
  * @param {string} url - The URL to connect to.
  * @function
  */
-ServerConnection.prototype.connect = function(url) {
+ServerConnection.prototype.connect = function (url) {
     let sc = this;
-    if(sc.socket)
+    if (sc.socket)
         throw new Error("Attempting to connect stale connection");
-
     sc.socket = new WebSocket(url);
-
     this.pingHandler = setInterval(e => {
-        if(!sc.lastServerMessage) {
+        if (!sc.lastServerMessage) {
             sc.error(new Error('Timeout'));
             return;
         }
         let d = new Date().valueOf() - sc.lastServerMessage;
-        if(d > 65000) {
+        if (d > 65000) {
             sc.error(new Error('Timeout'));
             return;
         }
-        if(sc.version && d >= 15000)
-            sc.send({type: 'ping'});
+        if (sc.version && d >= 15000)
+            sc.send({ type: 'ping' });
     }, 10000);
 
-    this.socket.onerror = function(e) {
-        if(sc.onerror)
+    this.socket.onerror = function (e) {
+        if (sc.onerror)
             sc.onerror.call(sc, new Error('Socket error: ' + e));
     };
-    this.socket.onopen = function(e) {
+    this.socket.onopen = function (e) {
         try {
             sc.send({
                 type: 'handshake',
                 version: ['2'],
                 id: sc.id,
             });
-        } catch(e) {
+        } catch (e) {
             sc.error(e);
             return;
         }
     };
-    this.socket.onclose = function(e) {
+    this.socket.onclose = function (e) {
         sc.permissions = [];
-        for(let id in sc.up) {
+        for (let id in sc.up) {
             let c = sc.up[id];
             c.close();
         }
-        for(let id in sc.down) {
+        for (let id in sc.down) {
             let c = sc.down[id];
             c.close();
         }
-        for(let id in sc.users) {
-            delete(sc.users[id]);
-            if(sc.onuser)
+        for (let id in sc.users) {
+            delete (sc.users[id]);
+            if (sc.onuser)
                 sc.onuser.call(sc, id, 'delete');
         }
-        if(sc.group && sc.onjoined)
+        if (sc.group && sc.onjoined)
             sc.onjoined.call(sc, 'leave', sc.group, [], {}, {}, '', '');
         sc.group = null;
         sc.username = null;
-        if(sc.pingHandler) {
+        if (sc.pingHandler) {
             clearInterval(sc.pingHandler);
             sc.pingHandler = null;
         }
-        if(sc.onclose)
+        if (sc.onclose)
             sc.onclose.call(sc, e.code, e.reason);
     };
-    this.socket.onmessage = function(e) {
+    this.socket.onmessage = function (e) {
         let m;
         try {
             m = JSON.parse(e.data);
-        } catch(e) {
+        } catch (e) {
             sc.error(e);
             return;
         }
-        if(m.type !== 'handshake' && !sc.version) {
+        if (m.type !== 'handshake' && !sc.version) {
             sc.error(new Error("Server didn't send handshake"));
             return;
         }
         sc.lastServerMessage = new Date().valueOf();
-        switch(m.type) {
-        case 'handshake': {
-            if((m.version instanceof Array) && m.version.includes('2')) {
-                sc.version = '2';
-            } else {
-                sc.version = null;
-                sc.error(new Error(`Unknown protocol version ${m.version}`));
-                return;
-            }
-            if(sc.onconnected)
-                sc.onconnected.call(sc);
-            break;
-        }
-        case 'offer':
-            sc.gotOffer(m.id, m.label, m.source, m.username,
-                        m.sdp, m.replace);
-            break;
-        case 'answer':
-            sc.gotAnswer(m.id, m.sdp);
-            break;
-        case 'renegotiate':
-            sc.gotRenegotiate(m.id);
-            break;
-        case 'close':
-            sc.gotClose(m.id);
-            break;
-        case 'abort':
-            sc.gotAbort(m.id);
-            break;
-        case 'ice':
-            sc.gotRemoteIce(m.id, m.candidate);
-            break;
-        case 'joined':
-            if(m.kind === 'leave' || m.kind === 'fail') {
-                for(let id in sc.users) {
-                    delete(sc.users[id]);
-                    if(sc.onuser)
-                        sc.onuser.call(sc, id, 'delete');
-                }
-                sc.username = null;
-                sc.permissions = [];
-                sc.rtcConfiguration = null;
-            } else if(m.kind === 'join' || m.kind == 'change') {
-                if(m.kind === 'join' && sc.group) {
-                    throw new Error('Joined multiple groups');
-                } else if(m.kind === 'change' && m.group != sc.group) {
-                    console.warn('join(change) for inconsistent group');
-                    break;
-                }
-                sc.group = m.group;
-                sc.username = m.username;
-                sc.permissions = m.permissions || [];
-                sc.rtcConfiguration = m.rtcConfiguration || null;
-            }
-            if(sc.onjoined)
-                sc.onjoined.call(sc, m.kind, m.group,
-                                 m.permissions || [],
-                                 m.status, m.data,
-                                 m.error || null, m.value || null);
-            break;
-        case 'user':
-            switch(m.kind) {
-            case 'add':
-                if(m.id in sc.users)
-                    console.warn(`Duplicate user ${m.id} ${m.username}`);
-                sc.users[m.id] = {
-                    username: m.username,
-                    permissions: m.permissions || [],
-                    data: m.data || {},
-                    streams: {},
-                };
-                break;
-            case 'change':
-                if(!(m.id in sc.users)) {
-                    console.warn(`Unknown user ${m.id} ${m.username}`);
-                    sc.users[m.id] = {
-                        username: m.username,
-                        permissions: m.permissions || [],
-                        data: m.data || {},
-                        streams: {},
-                    };
+        switch (m.type) {
+            case 'handshake': {
+                if ((m.version instanceof Array) && m.version.includes('2')) {
+                    sc.version = '2';
                 } else {
-                    sc.users[m.id].username = m.username;
-                    sc.users[m.id].permissions = m.permissions || [];
-                    sc.users[m.id].data = m.data || {};
+                    sc.version = null;
+                    sc.error(new Error(`Unknown protocol version ${m.version}`));
+                    return;
                 }
+                if (sc.onconnected)
+                    sc.onconnected.call(sc);
                 break;
-            case 'delete':
-                if(!(m.id in sc.users))
-                    console.warn(`Unknown user ${m.id} ${m.username}`);
-                for(let t in sc.transferredFiles) {
-                    let f = sc.transferredFiles[t];
-                    if(f.userid === m.id)
-                        f.fail('user has gone away');
+            }
+            case 'offer':
+                sc.gotOffer(m.id, m.label, m.source, m.username,
+                    m.sdp, m.replace);
+                break;
+            case 'answer':
+                sc.gotAnswer(m.id, m.sdp);
+                break;
+            case 'renegotiate':
+                sc.gotRenegotiate(m.id);
+                break;
+            case 'close':
+                sc.gotClose(m.id);
+                break;
+            case 'abort':
+                sc.gotAbort(m.id);
+                break;
+            case 'ice':
+                sc.gotRemoteIce(m.id, m.candidate);
+                break;
+            case 'joined':
+                if (m.kind === 'leave' || m.kind === 'fail') {
+                    for (let id in sc.users) {
+                        delete (sc.users[id]);
+                        if (sc.onuser)
+                            sc.onuser.call(sc, id, 'delete');
+                    }
+                    sc.username = null;
+                    sc.permissions = [];
+                    sc.rtcConfiguration = null;
+                } else if (m.kind === 'join' || m.kind == 'change') {
+                    if (m.kind === 'join' && sc.group) {
+                        throw new Error('Joined multiple groups');
+                    } else if (m.kind === 'change' && m.group != sc.group) {
+                        console.warn('join(change) for inconsistent group');
+                        break;
+                    }
+                    sc.group = m.group;
+                    sc.username = m.username;
+                    sc.permissions = m.permissions || [];
+                    sc.rtcConfiguration = m.rtcConfiguration || null;
                 }
-                delete(sc.users[m.id]);
+                if (sc.onjoined)
+                    sc.onjoined.call(sc, m.kind, m.group,
+                        m.permissions || [],
+                        m.status, m.data,
+                        m.error || null, m.value || null);
+                break;
+            case 'user':
+                switch (m.kind) {
+                    case 'add':
+                        if (m.id in sc.users)
+                            console.warn(`Duplicate user ${m.id} ${m.username}`);
+                        sc.users[m.id] = {
+                            username: m.username,
+                            permissions: m.permissions || [],
+                            data: m.data || {},
+                            streams: {},
+                        };
+                        break;
+                    case 'change':
+                        if (!(m.id in sc.users)) {
+                            console.warn(`Unknown user ${m.id} ${m.username}`);
+                            sc.users[m.id] = {
+                                username: m.username,
+                                permissions: m.permissions || [],
+                                data: m.data || {},
+                                streams: {},
+                            };
+                        } else {
+                            sc.users[m.id].username = m.username;
+                            sc.users[m.id].permissions = m.permissions || [];
+                            sc.users[m.id].data = m.data || {};
+                        }
+                        break;
+                    case 'delete':
+                        if (!(m.id in sc.users))
+                            console.warn(`Unknown user ${m.id} ${m.username}`);
+                        for (let t in sc.transferredFiles) {
+                            let f = sc.transferredFiles[t];
+                            if (f.userid === m.id)
+                                f.fail('user has gone away');
+                        }
+                        delete (sc.users[m.id]);
+                        break;
+                    default:
+                        console.warn(`Unknown user action ${m.kind}`);
+                        return;
+                }
+                if (sc.onuser)
+                    sc.onuser.call(sc, m.id, m.kind);
+                break;
+            case 'chat':
+            case 'chathistory':
+                if (sc.onchat)
+                    sc.onchat.call(
+                        sc, m.id, m.source, m.dest, m.username, parseTime(m.time),
+                        m.privileged, m.type === 'chathistory', m.kind,
+                        '' + m.value,
+                    );
+                break;
+            case 'usermessage':
+                if (m.kind === 'filetransfer')
+                    sc.fileTransfer(m.source, m.username, m.value);
+                else if (sc.onusermessage)
+                    sc.onusermessage.call(
+                        sc, m.source, m.dest, m.username, parseTime(m.time),
+                        m.privileged, m.kind, m.error, m.value,
+                    );
+                break;
+            case 'ping':
+                sc.send({
+                    type: 'pong',
+                });
+                break;
+            case 'pong':
+                /* nothing */
                 break;
             default:
-                console.warn(`Unknown user action ${m.kind}`);
+                console.warn('Unexpected server message', m.type);
                 return;
-            }
-            if(sc.onuser)
-                sc.onuser.call(sc, m.id, m.kind);
-            break;
-        case 'chat':
-        case 'chathistory':
-            if(sc.onchat)
-                sc.onchat.call(
-                    sc, m.id, m.source, m.dest, m.username, parseTime(m.time),
-                    m.privileged, m.type === 'chathistory', m.kind,
-                    '' + m.value,
-                );
-            break;
-        case 'usermessage':
-            if(m.kind === 'filetransfer')
-                sc.fileTransfer(m.source, m.username, m.value);
-            else if(sc.onusermessage)
-                sc.onusermessage.call(
-                    sc, m.source, m.dest, m.username, parseTime(m.time),
-                    m.privileged, m.kind, m.error, m.value,
-                );
-            break;
-        case 'ping':
-            sc.send({
-                type: 'pong',
-            });
-            break;
-        case 'pong':
-            /* nothing */
-            break;
-        default:
-            console.warn('Unexpected server message', m.type);
-            return;
         }
     };
 };
@@ -535,11 +534,11 @@ ServerConnection.prototype.connect = function(url) {
  * @returns {Date}
  */
 function parseTime(value) {
-    if(!value)
+    if (!value)
         return null;
     try {
         return new Date(value);
-    } catch(e) {
+    } catch (e) {
         console.warn(`Couldn't parse ${value}:`, e);
         return null;
     }
@@ -554,77 +553,75 @@ function parseTime(value) {
  * @param {string|Object} credentials - password or authServer.
  * @param {Object<string,any>} [data] - the initial associated data.
  */
-ServerConnection.prototype.join = async function(group, username, credentials, data) {
+ServerConnection.prototype.join = async function (group, username, credentials, data) {
     let m = {
         type: 'join',
         kind: 'join',
         group: group,
     };
-    if(typeof username !== 'undefined' && username !== null)
+    if (typeof username !== 'undefined' && username !== null)
         m.username = username;
-
-    if((typeof credentials) === 'string') {
+    if ((typeof credentials) === 'string') {
         m.password = credentials;
     } else {
-        switch(credentials.type) {
-        case 'password':
-            m.password = credentials.password;
-            break;
-        case 'token':
-            m.token = credentials.token;
-            break;
-        case 'authServer':
-            let r = await fetch(credentials.authServer, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    location: credentials.location,
-                    username: username,
-                    password: credentials.password,
-                }),
-            });
-            if(!r.ok)
-                throw new Error(
-                    `The authorisation server said ${r.status} ${r.statusText}`,
-                );
-            if(r.status === 204) {
-                // no data, fallback to password auth
+        switch (credentials.type) {
+            case 'password':
                 m.password = credentials.password;
                 break;
-            }
-            let ctype = r.headers.get("Content-Type");
-            if(!ctype)
-                throw new Error(
-                    "The authorisation server didn't return a content type",
-                );
-            let semi = ctype.indexOf(";");
-            if(semi >= 0)
-                ctype = ctype.slice(0, semi);
-            ctype = ctype.trim();
-            switch(ctype.toLowerCase()) {
-            case 'application/jwt':
-                let data = await r.text();
-                if(!data)
+            case 'token':
+                m.token = credentials.token;
+                break;
+            case 'authServer':
+                let r = await fetch(credentials.authServer, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        location: credentials.location,
+                        username: username,
+                        password: credentials.password,
+                    }),
+                });
+                if (!r.ok)
                     throw new Error(
-                        "The authorisation server returned empty token",
+                        `The authorisation server said ${r.status} ${r.statusText}`,
                     );
-                m.token = data;
+                if (r.status === 204) {
+                    // no data, fallback to password auth
+                    m.password = credentials.password;
+                    break;
+                }
+                let ctype = r.headers.get("Content-Type");
+                if (!ctype)
+                    throw new Error(
+                        "The authorisation server didn't return a content type",
+                    );
+                let semi = ctype.indexOf(";");
+                if (semi >= 0)
+                    ctype = ctype.slice(0, semi);
+                ctype = ctype.trim();
+                switch (ctype.toLowerCase()) {
+                    case 'application/jwt':
+                        let data = await r.text();
+                        if (!data)
+                            throw new Error(
+                                "The authorisation server returned empty token",
+                            );
+                        m.token = data;
+                        break;
+                    default:
+                        throw new Error(`The authorisation server returned ${ctype}`);
+                        break;
+                }
                 break;
             default:
-                throw new Error(`The authorisation server returned ${ctype}`);
-                break;
-            }
-            break;
-        default:
-            throw new Error(`Unknown credentials type ${credentials.type}`);
+                throw new Error(`Unknown credentials type ${credentials.type}`);
         }
     }
 
-    if(data)
+    if (data)
         m.data = data;
-
     this.send(m);
 };
 
@@ -634,7 +631,7 @@ ServerConnection.prototype.join = async function(group, username, credentials, d
  *
  * @param {string} group - The name of the group to join.
  */
-ServerConnection.prototype.leave = function(group) {
+ServerConnection.prototype.leave = function (group) {
     this.send({
         type: 'join',
         kind: 'leave',
@@ -649,7 +646,7 @@ ServerConnection.prototype.leave = function(group) {
  *     - A dictionary that maps labels to a sequence of 'audio', 'video'
  *       or 'video-low.  An entry with an empty label '' provides the default.
  */
-ServerConnection.prototype.request = function(what) {
+ServerConnection.prototype.request = function (what) {
     this.send({
         type: 'request',
         request: what,
@@ -663,15 +660,15 @@ ServerConnection.prototype.request = function(what) {
  * @param {string} localId
  * @returns {Stream}
  */
-ServerConnection.prototype.findByLocalId = function(localId) {
-    if(!localId)
+ServerConnection.prototype.findByLocalId = function (localId) {
+    if (!localId)
         return null;
 
     let sc = this;
 
-    for(let id in sc.up) {
+    for (let id in sc.up) {
         let s = sc.up[id];
-        if(s.localId === localId)
+        if (s.localId === localId)
             return s;
     }
     return null;
@@ -684,10 +681,10 @@ ServerConnection.prototype.findByLocalId = function(localId) {
  *
  * @returns {RTCConfiguration}
  */
-ServerConnection.prototype.getRTCConfiguration = function() {
-    if(this.onpeerconnection) {
+ServerConnection.prototype.getRTCConfiguration = function () {
+    if (this.onpeerconnection) {
         let conf = this.onpeerconnection.call(this);
-        if(conf !== null)
+        if (conf !== null)
             return conf;
     }
     return this.rtcConfiguration;
@@ -701,47 +698,47 @@ ServerConnection.prototype.getRTCConfiguration = function() {
  *     the same local id, it is replaced with the new stream.
  * @returns {Stream}
  */
-ServerConnection.prototype.newUpStream = function(localId) {
+ServerConnection.prototype.newUpStream = function (localId) {
     let sc = this;
     let id = newRandomId();
-    if(sc.up[id])
+    if (sc.up[id])
         throw new Error('Eek!');
 
-    if(typeof RTCPeerConnection === 'undefined')
+    if (typeof RTCPeerConnection === 'undefined')
         throw new Error("This browser doesn't support WebRTC");
 
 
     let pc = new RTCPeerConnection(sc.getRTCConfiguration());
-    if(!pc)
+    if (!pc)
         throw new Error("Couldn't create peer connection");
 
     let oldId = null;
-    if(localId) {
+    if (localId) {
         let old = sc.findByLocalId(localId);
         oldId = old && old.id;
-        if(old)
+        if (old)
             old.close(true);
     }
 
     let c = new Stream(this, id, localId || newLocalId(), pc, true);
-    if(oldId)
+    if (oldId)
         c.replace = oldId;
     sc.up[id] = c;
 
     pc.onnegotiationneeded = async e => {
-            await c.negotiate();
+        await c.negotiate();
     };
 
     pc.onicecandidate = e => {
-        if(!e.candidate)
+        if (!e.candidate)
             return;
         c.gotLocalIce(e.candidate);
     };
 
     pc.oniceconnectionstatechange = e => {
-        if(c.onstatus)
+        if (c.onstatus)
             c.onstatus.call(c, pc.iceConnectionState);
-        if(pc.iceConnectionState === 'failed')
+        if (pc.iceConnectionState === 'failed')
             c.restartIce();
     };
 
@@ -758,7 +755,7 @@ ServerConnection.prototype.newUpStream = function(localId) {
  * @param {string} dest - The id to send the message to, empty for broadcast.
  * @param {string} value - The text of the message.
  */
-ServerConnection.prototype.chat = function(kind, dest, value) {
+ServerConnection.prototype.chat = function (kind, dest, value) {
     this.send({
         type: 'chat',
         source: this.id,
@@ -776,7 +773,7 @@ ServerConnection.prototype.chat = function(kind, dest, value) {
  * @param {string} dest - The id of the user to act upon.
  * @param {any} [value] - An action-dependent parameter.
  */
-ServerConnection.prototype.userAction = function(kind, dest, value) {
+ServerConnection.prototype.userAction = function (kind, dest, value) {
     this.send({
         type: 'useraction',
         source: this.id,
@@ -796,7 +793,7 @@ ServerConnection.prototype.userAction = function(kind, dest, value) {
  * @param {unknown} [value] - An optional parameter.
  * @param {boolean} [noecho] - If set, don't echo back the message to the sender.
  */
-ServerConnection.prototype.userMessage = function(kind, dest, value, noecho) {
+ServerConnection.prototype.userMessage = function (kind, dest, value, noecho) {
     this.send({
         type: 'usermessage',
         source: this.id,
@@ -814,7 +811,7 @@ ServerConnection.prototype.userMessage = function(kind, dest, value, noecho) {
  * @param {string} kind
  * @param {any} [data]
  */
-ServerConnection.prototype.groupAction = function(kind, data) {
+ServerConnection.prototype.groupAction = function (kind, data) {
     this.send({
         type: 'groupaction',
         source: this.id,
@@ -835,10 +832,10 @@ ServerConnection.prototype.groupAction = function(kind, data) {
  * @param {string} replace
  * @function
  */
-ServerConnection.prototype.gotOffer = async function(id, label, source, username, sdp, replace) {
+ServerConnection.prototype.gotOffer = async function (id, label, source, username, sdp, replace) {
     let sc = this;
 
-    if(sc.up[id]) {
+    if (sc.up[id]) {
         console.error("Duplicate connection id");
         sc.send({
             type: 'abort',
@@ -849,9 +846,9 @@ ServerConnection.prototype.gotOffer = async function(id, label, source, username
 
     let oldLocalId = null;
 
-    if(replace) {
+    if (replace) {
         let old = sc.down[replace];
-        if(old) {
+        if (old) {
             oldLocalId = old.localId;
             old.close(true);
         } else
@@ -859,14 +856,14 @@ ServerConnection.prototype.gotOffer = async function(id, label, source, username
     }
 
     let c = sc.down[id];
-    if(c && oldLocalId)
+    if (c && oldLocalId)
         console.error("Replacing duplicate stream");
 
-    if(!c) {
+    if (!c) {
         let pc;
         try {
             pc = new RTCPeerConnection(sc.getRTCConfiguration());
-        } catch(e) {
+        } catch (e) {
             console.error(e);
             sc.send({
                 type: 'abort',
@@ -878,16 +875,16 @@ ServerConnection.prototype.gotOffer = async function(id, label, source, username
         c.label = label;
         sc.down[id] = c;
 
-        c.pc.onicecandidate = function(e) {
-            if(!e.candidate)
+        c.pc.onicecandidate = function (e) {
+            if (!e.candidate)
                 return;
             c.gotLocalIce(e.candidate);
         };
 
         pc.oniceconnectionstatechange = e => {
-            if(c.onstatus)
+            if (c.onstatus)
                 c.onstatus.call(c, pc.iceConnectionState);
-            if(pc.iceConnectionState === 'failed') {
+            if (pc.iceConnectionState === 'failed') {
                 sc.send({
                     type: 'renegotiate',
                     id: id,
@@ -895,19 +892,19 @@ ServerConnection.prototype.gotOffer = async function(id, label, source, username
             }
         };
 
-        c.pc.ontrack = function(e) {
-            if(e.streams.length < 1) {
+        c.pc.ontrack = function (e) {
+            if (e.streams.length < 1) {
                 console.error("Got track with no stream");
                 return;
             }
             c.stream = e.streams[0];
             let changed = recomputeUserStreams(sc, source);
-            if(c.ondowntrack) {
+            if (c.ondowntrack) {
                 c.ondowntrack.call(
                     c, e.track, e.transceiver, e.streams[0],
                 );
             }
-            if(changed && sc.onuser)
+            if (changed && sc.onuser)
                 sc.onuser.call(sc, source, "change");
         };
     }
@@ -915,7 +912,7 @@ ServerConnection.prototype.gotOffer = async function(id, label, source, username
     c.source = source;
     c.username = username;
 
-    if(sc.ondownstream)
+    if (sc.ondownstream)
         sc.ondownstream.call(sc, c);
 
     try {
@@ -927,7 +924,7 @@ ServerConnection.prototype.gotOffer = async function(id, label, source, username
         await c.flushRemoteIceCandidates();
 
         let answer = await c.pc.createAnswer();
-        if(!answer)
+        if (!answer)
             throw new Error("Didn't create answer");
         await c.pc.setLocalDescription(answer);
         this.send({
@@ -935,9 +932,9 @@ ServerConnection.prototype.gotOffer = async function(id, label, source, username
             id: id,
             sdp: c.pc.localDescription.sdp,
         });
-    } catch(e) {
+    } catch (e) {
         try {
-            if(c.onerror)
+            if (c.onerror)
                 c.onerror.call(c, e);
         } finally {
             c.abort();
@@ -947,7 +944,7 @@ ServerConnection.prototype.gotOffer = async function(id, label, source, username
 
     c.localDescriptionSent = true;
     c.flushLocalIceCandidates();
-    if(c.onnegotiationcompleted)
+    if (c.onnegotiationcompleted)
         c.onnegotiationcompleted.call(c);
 };
 
@@ -959,18 +956,18 @@ ServerConnection.prototype.gotOffer = async function(id, label, source, username
  * @param {string} sdp
  * @function
  */
-ServerConnection.prototype.gotAnswer = async function(id, sdp) {
+ServerConnection.prototype.gotAnswer = async function (id, sdp) {
     let c = this.up[id];
-    if(!c)
+    if (!c)
         throw new Error('unknown up stream');
     try {
         await c.pc.setRemoteDescription({
             type: 'answer',
             sdp: sdp,
         });
-    } catch(e) {
+    } catch (e) {
         try {
-            if(c.onerror)
+            if (c.onerror)
                 c.onerror.call(c, e);
         } finally {
             c.close();
@@ -978,7 +975,7 @@ ServerConnection.prototype.gotAnswer = async function(id, sdp) {
         return;
     }
     await c.flushRemoteIceCandidates();
-    if(c.onnegotiationcompleted)
+    if (c.onnegotiationcompleted)
         c.onnegotiationcompleted.call(c);
 };
 
@@ -989,9 +986,9 @@ ServerConnection.prototype.gotAnswer = async function(id, sdp) {
  * @param {string} id
  * @function
  */
-ServerConnection.prototype.gotRenegotiate = function(id) {
+ServerConnection.prototype.gotRenegotiate = function (id) {
     let c = this.up[id];
-    if(!c)
+    if (!c)
         throw new Error('unknown up stream');
     c.restartIce();
 };
@@ -1002,9 +999,9 @@ ServerConnection.prototype.gotRenegotiate = function(id) {
  *
  * @param {string} id
  */
-ServerConnection.prototype.gotClose = function(id) {
+ServerConnection.prototype.gotClose = function (id) {
     let c = this.down[id];
-    if(!c) {
+    if (!c) {
         console.warn('unknown down stream', id);
         return;
     }
@@ -1017,9 +1014,9 @@ ServerConnection.prototype.gotClose = function(id) {
  *
  * @param {string} id
  */
-ServerConnection.prototype.gotAbort = function(id) {
+ServerConnection.prototype.gotAbort = function (id) {
     let c = this.up[id];
-    if(!c)
+    if (!c)
         throw new Error('unknown up stream');
     c.close();
 };
@@ -1032,13 +1029,13 @@ ServerConnection.prototype.gotAbort = function(id) {
  * @param {RTCIceCandidate} candidate
  * @function
  */
-ServerConnection.prototype.gotRemoteIce = async function(id, candidate) {
+ServerConnection.prototype.gotRemoteIce = async function (id, candidate) {
     let c = this.up[id];
-    if(!c)
+    if (!c)
         c = this.down[id];
-    if(!c)
+    if (!c)
         throw new Error('unknown stream');
-    if(c.pc.remoteDescription)
+    if (c.pc.remoteDescription)
         await c.pc.addIceCandidate(candidate).catch(console.warn);
     else
         c.remoteIceCandidates.push(candidate);
@@ -1217,11 +1214,11 @@ function Stream(sc, id, localId, pc, up) {
  *
  * @param {MediaStream} stream
  */
-Stream.prototype.setStream = function(stream) {
+Stream.prototype.setStream = function (stream) {
     let c = this;
     c.stream = stream;
     let changed = recomputeUserStreams(c.sc, c.sc.id);
-    if(changed && c.sc.onuser)
+    if (changed && c.sc.onuser)
         c.sc.onuser.call(c.sc, c.sc.id, "change");
 }
 
@@ -1235,50 +1232,50 @@ Stream.prototype.setStream = function(stream) {
  * @param {boolean} [replace]
  *    - true if the stream is being replaced by another one with the same id
  */
-Stream.prototype.close = function(replace) {
+Stream.prototype.close = function (replace) {
     let c = this;
 
-    if(!c.sc) {
+    if (!c.sc) {
         console.warn('Closing closed stream');
         return;
     }
 
-    if(c.statsHandler) {
+    if (c.statsHandler) {
         clearInterval(c.statsHandler);
         c.statsHandler = null;
     }
 
     c.pc.close();
 
-    if(c.up && !replace && c.localDescriptionSent) {
+    if (c.up && !replace && c.localDescriptionSent) {
         try {
             c.sc.send({
                 type: 'close',
                 id: c.id,
             });
-        } catch(e) {
+        } catch (e) {
         }
     }
 
     let userid;
-    if(c.up) {
+    if (c.up) {
         userid = c.sc.id;
-        if(c.sc.up[c.id] === c)
-            delete(c.sc.up[c.id]);
+        if (c.sc.up[c.id] === c)
+            delete (c.sc.up[c.id]);
         else
             console.warn('Closing unknown stream');
     } else {
         userid = c.source;
-        if(c.sc.down[c.id] === c)
-            delete(c.sc.down[c.id]);
+        if (c.sc.down[c.id] === c)
+            delete (c.sc.down[c.id]);
         else
             console.warn('Closing unknown stream');
     }
     let changed = recomputeUserStreams(c.sc, userid);
-    if(changed && c.sc.onuser)
+    if (changed && c.sc.onuser)
         c.sc.onuser.call(c.sc, userid, "change");
 
-    if(c.onclose)
+    if (c.onclose)
         c.onclose.call(c, replace);
 
     c.sc = null;
@@ -1294,7 +1291,7 @@ Stream.prototype.close = function(replace) {
  */
 function recomputeUserStreams(sc, id) {
     let user = sc.users[id];
-    if(!user) {
+    if (!user) {
         console.warn("recomputing streams for unknown user");
         return false;
     }
@@ -1302,11 +1299,11 @@ function recomputeUserStreams(sc, id) {
     let streams = id === sc.id ? sc.up : sc.down;
     let old = user.streams;
     user.streams = {};
-    for(id in streams) {
+    for (id in streams) {
         let c = streams[id];
-        if(!c.stream)
+        if (!c.stream)
             continue;
-        if(!user.streams[c.label])
+        if (!user.streams[c.label])
             user.streams[c.label] = {};
         c.stream.getTracks().forEach(t => {
             user.streams[c.label][t.kind] = true;
@@ -1319,9 +1316,9 @@ function recomputeUserStreams(sc, id) {
 /**
  * abort requests that the server close a down stream.
  */
-Stream.prototype.abort = function() {
+Stream.prototype.abort = function () {
     let c = this;
-    if(c.up)
+    if (c.up)
         throw new Error("Abort called on an up stream");
     c.sc.send({
         type: 'abort',
@@ -1335,13 +1332,14 @@ Stream.prototype.abort = function() {
  * @param {RTCIceCandidate} candidate
  * @function
  */
-Stream.prototype.gotLocalIce = function(candidate) {
+Stream.prototype.gotLocalIce = function (candidate) {
     let c = this;
-    if(c.localDescriptionSent)
-        c.sc.send({type: 'ice',
-                   id: c.id,
-                   candidate: candidate,
-                  });
+    if (c.localDescriptionSent)
+        c.sc.send({
+            type: 'ice',
+            id: c.id,
+            candidate: candidate,
+        });
     else
         c.localIceCandidates.push(candidate);
 };
@@ -1358,11 +1356,12 @@ Stream.prototype.flushLocalIceCandidates = function () {
     c.localIceCandidates = [];
     candidates.forEach(candidate => {
         try {
-            c.sc.send({type: 'ice',
-                       id: c.id,
-                       candidate: candidate,
-                      });
-        } catch(e) {
+            c.sc.send({
+                type: 'ice',
+                id: c.id,
+                candidate: candidate,
+            });
+        } catch (e) {
             console.warn(e);
         }
     });
@@ -1398,15 +1397,15 @@ Stream.prototype.flushRemoteIceCandidates = async function () {
  */
 Stream.prototype.negotiate = async function (restartIce) {
     let c = this;
-    if(!c.up)
+    if (!c.up)
         throw new Error('not an up stream');
 
     let options = {};
-    if(restartIce)
-        options = {iceRestart: true};
+    if (restartIce)
+        options = { iceRestart: true };
     let offer = await c.pc.createOffer(options);
-    if(!offer)
-        throw(new Error("Didn't create offer"));
+    if (!offer)
+        throw (new Error("Didn't create offer"));
     await c.pc.setLocalDescription(offer);
 
     c.sc.send({
@@ -1434,7 +1433,7 @@ Stream.prototype.negotiate = async function (restartIce) {
 
 Stream.prototype.restartIce = function () {
     let c = this;
-    if(!c.up) {
+    if (!c.up) {
         c.sc.send({
             type: 'renegotiate',
             id: c.id,
@@ -1442,11 +1441,11 @@ Stream.prototype.restartIce = function () {
         return;
     }
 
-    if('restartIce' in c.pc) {
+    if ('restartIce' in c.pc) {
         try {
             c.pc.restartIce();
             return;
-        } catch(e) {
+        } catch (e) {
             console.warn(e);
         }
     }
@@ -1461,7 +1460,7 @@ Stream.prototype.restartIce = function () {
  *
  * @param {Array<string>} what - a sequence of 'audio', 'video' or 'video-low'.
  */
-Stream.prototype.request = function(what) {
+Stream.prototype.request = function (what) {
     let c = this;
     c.sc.send({
         type: 'requestStream',
@@ -1476,71 +1475,71 @@ Stream.prototype.request = function(what) {
  *
  * @function
  */
-Stream.prototype.updateStats = async function() {
+Stream.prototype.updateStats = async function () {
     let c = this;
     let old = c.stats;
     /** @type{Object<string,unknown>} */
     let stats = {};
 
     let transceivers = c.pc.getTransceivers();
-    for(let i = 0; i < transceivers.length; i++) {
+    for (let i = 0; i < transceivers.length; i++) {
         let t = transceivers[i];
         let stid = t.sender.track && t.sender.track.id;
         let rtid = t.receiver.track && t.receiver.track.id;
 
         let report = null;
-        if(stid) {
+        if (stid) {
             try {
                 report = await t.sender.getStats();
-            } catch(e) {
+            } catch (e) {
             }
         }
 
-        if(report) {
-            for(let r of report.values()) {
-                if(stid && r.type === 'outbound-rtp') {
+        if (report) {
+            for (let r of report.values()) {
+                if (stid && r.type === 'outbound-rtp') {
                     let id = stid;
                     // Firefox doesn't implement rid, use ssrc
                     // to discriminate simulcast tracks.
                     id = id + '-' + r.ssrc;
-                    if(!('bytesSent' in r))
+                    if (!('bytesSent' in r))
                         continue;
-                    if(!stats[id])
+                    if (!stats[id])
                         stats[id] = {};
                     stats[id][r.type] = {};
                     stats[id][r.type].timestamp = r.timestamp;
                     stats[id][r.type].bytesSent = r.bytesSent;
-                    if(old[id] && old[id][r.type])
+                    if (old[id] && old[id][r.type])
                         stats[id][r.type].rate =
-                        ((r.bytesSent - old[id][r.type].bytesSent) * 1000 /
-                         (r.timestamp - old[id][r.type].timestamp)) * 8;
+                            ((r.bytesSent - old[id][r.type].bytesSent) * 1000 /
+                                (r.timestamp - old[id][r.type].timestamp)) * 8;
                 }
             }
         }
 
         report = null;
-        if(rtid) {
+        if (rtid) {
             try {
                 report = await t.receiver.getStats();
-            } catch(e) {
+            } catch (e) {
                 console.error(e);
             }
         }
 
-        if(report) {
-            for(let r of report.values()) {
-                if(rtid && r.type === 'inbound-rtp') {
-                    if(!('totalAudioEnergy' in r))
+        if (report) {
+            for (let r of report.values()) {
+                if (rtid && r.type === 'inbound-rtp') {
+                    if (!('totalAudioEnergy' in r))
                         continue;
-                    if(!stats[rtid])
+                    if (!stats[rtid])
                         stats[rtid] = {};
                     stats[rtid][r.type] = {};
                     stats[rtid][r.type].timestamp = r.timestamp;
                     stats[rtid][r.type].totalAudioEnergy = r.totalAudioEnergy;
-                    if(old[rtid] && old[rtid][r.type])
+                    if (old[rtid] && old[rtid][r.type])
                         stats[rtid][r.type].audioEnergy =
-                        (r.totalAudioEnergy - old[rtid][r.type].totalAudioEnergy) * 1000 /
-                        (r.timestamp - old[rtid][r.type].timestamp);
+                            (r.totalAudioEnergy - old[rtid][r.type].totalAudioEnergy) * 1000 /
+                            (r.timestamp - old[rtid][r.type].timestamp);
                 }
             }
         }
@@ -1548,7 +1547,7 @@ Stream.prototype.updateStats = async function() {
 
     c.stats = stats;
 
-    if(c.onstats)
+    if (c.onstats)
         c.onstats.call(c, c.stats);
 };
 
@@ -1558,14 +1557,14 @@ Stream.prototype.updateStats = async function() {
  *
  * @param {number} ms - The interval in milliseconds.
  */
-Stream.prototype.setStatsInterval = function(ms) {
+Stream.prototype.setStatsInterval = function (ms) {
     let c = this;
-    if(c.statsHandler) {
+    if (c.statsHandler) {
         clearInterval(c.statsHandler);
         c.statsHandler = null;
     }
 
-    if(ms <= 0)
+    if (ms <= 0)
         return;
 
     c.statsHandler = setInterval(() => {
@@ -1716,7 +1715,7 @@ function TransferredFile(sc, userid, id, up, username, name, mimetype, size) {
  * The full id of this file transfer, used as a key in the transferredFiles
  * dictionary.
  */
-TransferredFile.prototype.fullid = function() {
+TransferredFile.prototype.fullid = function () {
     return this.userid + '-' + this.id;
 };
 
@@ -1727,7 +1726,7 @@ TransferredFile.prototype.fullid = function() {
  * @param {string} fileid
  * @returns {TransferredFile}
  */
-ServerConnection.prototype.getTransferredFile = function(userid, fileid) {
+ServerConnection.prototype.getTransferredFile = function (userid, fileid) {
     return this.transferredFiles[userid + '-' + fileid];
 };
 
@@ -1735,20 +1734,20 @@ ServerConnection.prototype.getTransferredFile = function(userid, fileid) {
  * Close a file transfer and remove it from the transferredFiles dictionary.
  * Do not call this, call 'cancel' instead.
  */
-TransferredFile.prototype.close = function() {
+TransferredFile.prototype.close = function () {
     let f = this;
-    if(f.state === 'closed')
+    if (f.state === 'closed')
         return;
-    if(f.state !== 'done' && f.state !== 'cancelled')
+    if (f.state !== 'done' && f.state !== 'cancelled')
         console.warn(
             `TransferredFile.close called in unexpected state ${f.state}`,
         );
-    if(f.dc) {
+    if (f.dc) {
         f.dc.onclose = null;
         f.dc.onerror = null;
         f.dc.onmessage = null;
     }
-    if(f.pc) {
+    if (f.pc) {
         f.pc.onicecandidate = null;
         f.pc.close();
     }
@@ -1756,7 +1755,7 @@ TransferredFile.prototype.close = function() {
     f.pc = null;
     f.data = [];
     f.datalen = 0;
-    delete(f.sc.transferredFiles[f.fullid()]);
+    delete (f.sc.transferredFiles[f.fullid()]);
     f.event('closed');
 }
 
@@ -1766,13 +1765,13 @@ TransferredFile.prototype.close = function() {
  *
  * @param {Blob|ArrayBuffer} data
  */
-TransferredFile.prototype.bufferData = function(data) {
+TransferredFile.prototype.bufferData = function (data) {
     let f = this;
-    if(f.up)
+    if (f.up)
         throw new Error('buffering data in the wrong direction');
-    if(data instanceof Blob) {
+    if (data instanceof Blob) {
         f.datalen += data.size;
-    } else if(data instanceof ArrayBuffer) {
+    } else if (data instanceof ArrayBuffer) {
         f.datalen += data.byteLength;
     } else {
         throw new Error('unexpected type for received data');
@@ -1785,12 +1784,12 @@ TransferredFile.prototype.bufferData = function(data) {
  *
  * @returns {Blob}
  */
-TransferredFile.prototype.getBufferedData = function() {
+TransferredFile.prototype.getBufferedData = function () {
     let f = this;
-    if(f.up)
+    if (f.up)
         throw new Error('buffering data in wrong direction');
-    let blob = new Blob(f.data, {type: f.mimetype});
-    if(blob.size != f.datalen)
+    let blob = new Blob(f.data, { type: f.mimetype });
+    if (blob.size != f.datalen)
         throw new Error('Inconsistent data size');
     f.data = [];
     f.datalen = 0;
@@ -1806,10 +1805,10 @@ TransferredFile.prototype.getBufferedData = function() {
  * @param {TransferredFileState} state
  * @param {any} [data]
  */
-TransferredFile.prototype.event = function(state, data) {
+TransferredFile.prototype.event = function (state, data) {
     let f = this;
     f.state = state;
-    if(f.onevent)
+    if (f.onevent)
         f.onevent.call(f, state, data);
 }
 
@@ -1828,7 +1827,7 @@ function sendFileCancel(sc, userid, id, message) {
         type: 'cancel',
         id: id,
     };
-    if(message)
+    if (message)
         m.message = message.toString();
     sc.userMessage('filetransfer', userid, m);
 }
@@ -1842,13 +1841,13 @@ function sendFileCancel(sc, userid, id, message) {
  *
  * @param {string|Error} [message]
  */
-TransferredFile.prototype.cancel = function(message) {
+TransferredFile.prototype.cancel = function (message) {
     let f = this;
-    if(f.state === 'closed')
+    if (f.state === 'closed')
         return;
-    if(f.state !== '' && f.state !== 'done' && f.state !== 'cancelled')
+    if (f.state !== '' && f.state !== 'done' && f.state !== 'cancelled')
         sendFileCancel(f.sc, f.userid, f.id, message);
-    if(f.state !== 'done' && f.state !== 'cancelled')
+    if (f.state !== 'done' && f.state !== 'cancelled')
         f.event('cancelled', message);
     f.close();
 }
@@ -1861,9 +1860,9 @@ TransferredFile.prototype.cancel = function(message) {
  *
  * @param {string|Error} [data]
  */
-TransferredFile.prototype.fail = function(data) {
+TransferredFile.prototype.fail = function (data) {
     let f = this;
-    if(f.state === 'done' || f.state === 'cancelled' || f.state === 'closed')
+    if (f.state === 'done' || f.state === 'cancelled' || f.state === 'closed')
         return;
     f.event('cancelled', data);
     f.close();
@@ -1878,11 +1877,11 @@ TransferredFile.prototype.fail = function(data) {
  * @param {string} id
  * @param {File} file
  */
-ServerConnection.prototype.sendFile = function(id, file) {
+ServerConnection.prototype.sendFile = function (id, file) {
     let sc = this;
     let fileid = newRandomId();
     let user = sc.users[id];
-    if(!user)
+    if (!user)
         throw new Error('offering upload to unknown user');
     let f = new TransferredFile(
         sc, id, fileid, true, user.username, file.name, file.type, file.size,
@@ -1890,16 +1889,16 @@ ServerConnection.prototype.sendFile = function(id, file) {
     f.file = file;
 
     try {
-        if(sc.onfiletransfer)
+        if (sc.onfiletransfer)
             sc.onfiletransfer.call(sc, f);
         else
             throw new Error('this client does not implement file transfer');
-    } catch(e) {
+    } catch (e) {
         f.cancel(e);
         return;
     }
 
-    if(f.state === 'closed') {
+    if (f.state === 'closed') {
         // the client cancelled the transfer
         return;
     }
@@ -1923,14 +1922,14 @@ ServerConnection.prototype.sendFile = function(id, file) {
  * file (up field set to false).  If you wish to reject the file transfer,
  * call cancel instead.
  */
-TransferredFile.prototype.receive = async function() {
+TransferredFile.prototype.receive = async function () {
     let f = this;
-    if(f.up)
+    if (f.up)
         throw new Error('Receiving in wrong direction');
-    if(f.pc)
+    if (f.pc)
         throw new Error('Download already in progress');
     let pc = new RTCPeerConnection(f.sc.getRTCConfiguration());
-    if(!pc) {
+    if (!pc) {
         let err = new Error("Couldn't create peer connection");
         f.fail(err);
         return;
@@ -1939,13 +1938,13 @@ TransferredFile.prototype.receive = async function() {
     f.event('connecting');
 
     f.candidates = [];
-    pc.onsignalingstatechange = function(e) {
-        if(pc.signalingState === 'stable') {
+    pc.onsignalingstatechange = function (e) {
+        if (pc.signalingState === 'stable') {
             f.candidates.forEach(c => pc.addIceCandidate(c).catch(console.warn));
             f.candidates = [];
         }
     };
-    pc.onicecandidate = function(e) {
+    pc.onicecandidate = function (e) {
         f.sc.userMessage('filetransfer', f.userid, {
             type: 'ice',
             id: f.id,
@@ -1955,24 +1954,24 @@ TransferredFile.prototype.receive = async function() {
     f.dc = pc.createDataChannel('file');
     f.data = [];
     f.datalen = 0;
-    f.dc.onclose = function(e) {
+    f.dc.onclose = function (e) {
         f.cancel('remote peer closed connection');
     };
     try {
         f.dc.binaryType = 'blob';
-    } catch(e) {
+    } catch (e) {
         console.warn(`binaryType blob: ${e}`);
     }
-    f.dc.onmessage = function(e) {
+    f.dc.onmessage = function (e) {
         f.receiveData(e.data).catch(e => f.cancel(e));
     };
-    f.dc.onerror = function(e) {
+    f.dc.onerror = function (e) {
         /** @ts-ignore */
         let err = e.error;
         f.cancel(err)
     };
     let offer = await pc.createOffer();
-    if(!offer) {
+    if (!offer) {
         f.cancel(new Error("Couldn't create offer"));
         return;
     }
@@ -1991,14 +1990,14 @@ TransferredFile.prototype.receive = async function() {
  *
  * @param {string} sdp
  */
-TransferredFile.prototype.answer = async function(sdp) {
+TransferredFile.prototype.answer = async function (sdp) {
     let f = this;
-    if(!f.up)
+    if (!f.up)
         throw new Error('Sending file in wrong direction');
-    if(f.pc)
+    if (f.pc)
         throw new Error('Transfer already in progress');
     let pc = new RTCPeerConnection(f.sc.getRTCConfiguration());
-    if(!pc) {
+    if (!pc) {
         let err = new Error("Couldn't create peer connection");
         f.fail(err);
         return;
@@ -2007,35 +2006,35 @@ TransferredFile.prototype.answer = async function(sdp) {
     f.event('connecting');
 
     f.candidates = [];
-    pc.onicecandidate = function(e) {
+    pc.onicecandidate = function (e) {
         f.sc.userMessage('filetransfer', f.userid, {
             type: 'ice',
             id: f.id,
             candidate: e.candidate,
         });
     };
-    pc.onsignalingstatechange = function(e) {
-        if(pc.signalingState === 'stable') {
+    pc.onsignalingstatechange = function (e) {
+        if (pc.signalingState === 'stable') {
             f.candidates.forEach(c => pc.addIceCandidate(c).catch(console.warn));
             f.candidates = [];
         }
     };
-    pc.ondatachannel = function(e) {
-        if(f.dc) {
+    pc.ondatachannel = function (e) {
+        if (f.dc) {
             f.cancel(new Error('Duplicate datachannel'));
             return;
         }
         f.dc = /** @type{RTCDataChannel} */(e.channel);
-        f.dc.onclose = function(e) {
+        f.dc.onclose = function (e) {
             f.cancel('remote peer closed connection');
         };
-        f.dc.onerror = function(e) {
+        f.dc.onerror = function (e) {
             /** @ts-ignore */
             let err = e.error;
             f.cancel(err);
         }
-        f.dc.onmessage = function(e) {
-            if(e.data === 'done' && f.datalen === f.size) {
+        f.dc.onmessage = function (e) {
+            if (e.data === 'done' && f.datalen === f.size) {
                 f.event('done');
                 f.dc.onclose = null;
                 f.dc.onerror = null;
@@ -2053,7 +2052,7 @@ TransferredFile.prototype.answer = async function(sdp) {
     });
 
     let answer = await pc.createAnswer();
-    if(!answer)
+    if (!answer)
         throw new Error("Couldn't create answer");
     await pc.setLocalDescription(answer);
     f.sc.userMessage('filetransfer', f.userid, {
@@ -2069,9 +2068,9 @@ TransferredFile.prototype.answer = async function(sdp) {
  * Transfer file data.  Don't call this, it is called automatically
  * after negotiation completes.
  */
-TransferredFile.prototype.send = async function() {
+TransferredFile.prototype.send = async function () {
     let f = this;
-    if(!f.up)
+    if (!f.up)
         throw new Error('sending in wrong direction');
     let r = f.file.stream().getReader();
 
@@ -2079,14 +2078,14 @@ TransferredFile.prototype.send = async function() {
 
     /** @param {Uint8Array} a */
     async function write(a) {
-        while(f.dc.bufferedAmount > f.dc.bufferedAmountLowThreshold) {
+        while (f.dc.bufferedAmount > f.dc.bufferedAmountLowThreshold) {
             await new Promise((resolve, reject) => {
-                if(!f.dc) {
+                if (!f.dc) {
                     reject(new Error('File is closed.'));
                     return;
                 }
-                f.dc.onbufferedamountlow = function(e) {
-                    if(!f.dc) {
+                f.dc.onbufferedamountlow = function (e) {
+                    if (!f.dc) {
                         reject(new Error('File is closed.'));
                         return;
                     }
@@ -2102,20 +2101,20 @@ TransferredFile.prototype.send = async function() {
         f.event('connected');
     }
 
-    while(true) {
+    while (true) {
         let v = await r.read();
-        if(v.done)
+        if (v.done)
             break;
         let data = v.value;
-        if(!(data instanceof Uint8Array))
+        if (!(data instanceof Uint8Array))
             throw new Error('Unexpected type for chunk');
         /* Base SCTP only supports up to 16kB data chunks.  There are
            extensions to handle larger chunks, but they don't interoperate
            between browsers, so we chop the file into small pieces. */
-        if(data.length <= 16384) {
+        if (data.length <= 16384) {
             await write(data);
         } else {
-            for(let i = 0; i < v.value.length; i += 16384) {
+            for (let i = 0; i < v.value.length; i += 16384) {
                 let d = data.subarray(i, Math.min(i + 16384, data.length));
                 await write(d);
             }
@@ -2128,9 +2127,9 @@ TransferredFile.prototype.send = async function() {
  *
  * @param {string} sdp
  */
-TransferredFile.prototype.receiveFile = async function(sdp) {
+TransferredFile.prototype.receiveFile = async function (sdp) {
     let f = this;
-    if(f.up)
+    if (f.up)
         throw new Error('Receiving in wrong direction');
     await f.pc.setRemoteDescription({
         type: 'answer',
@@ -2144,26 +2143,26 @@ TransferredFile.prototype.receiveFile = async function(sdp) {
  *
  * @param {Blob|ArrayBuffer} data
  */
-TransferredFile.prototype.receiveData = async function(data) {
+TransferredFile.prototype.receiveData = async function (data) {
     let f = this;
-    if(f.up)
+    if (f.up)
         throw new Error('Receiving in wrong direction');
     f.bufferData(data);
 
-    if(f.datalen < f.size) {
+    if (f.datalen < f.size) {
         f.event('connected');
         return;
     }
 
     f.dc.onmessage = null;
 
-    if(f.datalen != f.size) {
+    if (f.datalen != f.size) {
         f.cancel('extra data at end of file');
         return;
     }
 
     let blob = f.getBufferedData();
-    if(blob.size != f.size) {
+    if (blob.size != f.size) {
         f.cancel("inconsistent data size (this shouldn't happen)");
         return;
     }
@@ -2172,12 +2171,12 @@ TransferredFile.prototype.receiveData = async function(data) {
     // we've received the whole file.  Send the final handshake, but don't
     // complain if the peer has closed the channel in the meantime.
     await new Promise((resolve, reject) => {
-        let timer = setTimeout(function(e) { resolve(); }, 2000);
-        f.dc.onclose = function(e) {
+        let timer = setTimeout(function (e) { resolve(); }, 2000);
+        f.dc.onclose = function (e) {
             clearTimeout(timer);
             resolve();
         };
-        f.dc.onerror = function(e) {
+        f.dc.onerror = function (e) {
             clearTimeout(timer);
             resolve();
         };
@@ -2195,113 +2194,113 @@ TransferredFile.prototype.receiveData = async function(data) {
  * @param {string} username
  * @param {object} message
  */
-ServerConnection.prototype.fileTransfer = function(id, username, message) {
+ServerConnection.prototype.fileTransfer = function (id, username, message) {
     let sc = this;
-    switch(message.type) {
-    case 'invite': {
-        /** @type {string} */
-        let version;
-        if((message.version instanceof Array) && message.version.includes('1')) {
-            version = '1';
-        } else {
-            sendFileCancel(sc, id, message.id,
-                       `Unknown protocol version ${message.version}; ` +
-                       'perhaps you need to upgrade your client ?');
-            return;
-        }
-
-        let f = new TransferredFile(
-            sc, id, message.id, false, username,
-            message.name, message.mimetype, message.size,
-        );
-        f.version = version;
-        f.state = 'inviting';
-
-        let fid = f.fullid();
-        if(fid in sc.transferredFiles) {
-            sendFileCancel(sc, id, message.id,
-                           'Duplicate file transfer id; ' +
-                           'perhaps you have tried to send a file to yourself?');
-            return;
-        }
-
-
-        try {
-            if(sc.onfiletransfer)
-                sc.onfiletransfer.call(sc, f);
-            else {
-                f.cancel('this client does not implement file transfer');
+    switch (message.type) {
+        case 'invite': {
+            /** @type {string} */
+            let version;
+            if ((message.version instanceof Array) && message.version.includes('1')) {
+                version = '1';
+            } else {
+                sendFileCancel(sc, id, message.id,
+                    `Unknown protocol version ${message.version}; ` +
+                    'perhaps you need to upgrade your client ?');
                 return;
             }
-        } catch(e) {
-            f.cancel(e);
-            return;
-        }
 
-        sc.transferredFiles[fid] = f;
-        break;
-    }
-    case 'offer': {
-        let f = sc.getTransferredFile(id, message.id);
-        if(!f) {
-            console.error(`Unexpected ${message.type} for file transfer`);
+            let f = new TransferredFile(
+                sc, id, message.id, false, username,
+                message.name, message.mimetype, message.size,
+            );
+            f.version = version;
+            f.state = 'inviting';
+
+            let fid = f.fullid();
+            if (fid in sc.transferredFiles) {
+                sendFileCancel(sc, id, message.id,
+                    'Duplicate file transfer id; ' +
+                    'perhaps you have tried to send a file to yourself?');
+                return;
+            }
+
+
+            try {
+                if (sc.onfiletransfer)
+                    sc.onfiletransfer.call(sc, f);
+                else {
+                    f.cancel('this client does not implement file transfer');
+                    return;
+                }
+            } catch (e) {
+                f.cancel(e);
+                return;
+            }
+
+            sc.transferredFiles[fid] = f;
+            break;
+        }
+        case 'offer': {
+            let f = sc.getTransferredFile(id, message.id);
+            if (!f) {
+                console.error(`Unexpected ${message.type} for file transfer`);
+                return;
+            }
+            if ((message.version instanceof Array) && message.version.includes('1')) {
+                f.version = '1';
+            } else {
+                f.cancel(`Unknown protocol version ${message.version}; ` +
+                    'perhaps you need to upgrade your client ?'
+                );
+                return;
+            }
+            f.answer(message.sdp).catch(e => f.cancel(e));
+            break;
+        }
+        case 'answer': {
+            let f = sc.getTransferredFile(id, message.id);
+            if (!f) {
+                console.error(`Unexpected ${message.type} for file transfer`);
+                return;
+            }
+            f.receiveFile(message.sdp).catch(e => f.cancel(e));
+            break;
+        }
+        case 'ice':
+            {
+                let f = sc.getTransferredFile(id, message.id);
+                if (!f || !f.pc) {
+                    console.warn(`Unexpected ${message.type} for file transfer`);
+                    return;
+                }
+                if (f.pc.signalingState === 'stable')
+                    f.pc.addIceCandidate(message.candidate).catch(console.warn);
+                else
+                    f.candidates.push(message.candidate);
+                break;
+            }
+        case 'cancel': {
+            let f = sc.getTransferredFile(id, message.id);
+            if (!f) {
+                console.error(`Unexpected ${message.type} for file transfer`);
+                return;
+            }
+            f.event('cancelled', message.message || null);
+            f.close();
+            break;
+        }
+        case 'upice':
+        case 'downice':
+        case 'reject':
+        case 'abort': {
+            let f = sc.getTransferredFile(id, message.id);
+            if (f)
+                f.cancel(`Obsolete file transfer message ${message.type};` +
+                    ' please upgrade your client');
             return;
         }
-        if((message.version instanceof Array) && message.version.includes('1')) {
-            f.version = '1';
-        } else {
-            f.cancel(`Unknown protocol version ${message.version}; ` +
-                     'perhaps you need to upgrade your client ?'
-                    );
-            return;
-        }
-        f.answer(message.sdp).catch(e => f.cancel(e));
-        break;
-    }
-    case 'answer': {
-        let f = sc.getTransferredFile(id, message.id);
-        if(!f) {
-            console.error(`Unexpected ${message.type} for file transfer`);
-            return;
-        }
-        f.receiveFile(message.sdp).catch(e => f.cancel(e));
-        break;
-    }
-    case 'ice':
-        {
-        let f = sc.getTransferredFile(id, message.id);
-        if(!f || !f.pc) {
-            console.warn(`Unexpected ${message.type} for file transfer`);
-            return;
-        }
-        if(f.pc.signalingState === 'stable')
-            f.pc.addIceCandidate(message.candidate).catch(console.warn);
-        else
-            f.candidates.push(message.candidate);
-        break;
-    }
-    case 'cancel': {
-        let f = sc.getTransferredFile(id, message.id);
-        if(!f) {
-            console.error(`Unexpected ${message.type} for file transfer`);
-            return;
-        }
-        f.event('cancelled', message.message || null);
-        f.close();
-        break;
-    }
-    case 'upice':
-    case 'downice':
-    case 'reject':
-    case 'abort': {
-        let f = sc.getTransferredFile(id, message.id);
-        if(f)
-            f.cancel(`Obsolete file transfer message ${message.type};` +
-                     ' please upgrade your client');
-        return;
-    }
-    default:
-        console.error(`Unknown filetransfer message ${message.type}`);
-        break;
+        default:
+            console.error(`Unknown filetransfer message ${message.type}`);
+            break;
     }
 }

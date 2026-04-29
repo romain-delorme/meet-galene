@@ -5,16 +5,15 @@
  *
  * @param {string} url
  */
-async function start(url) {
+async function start(url, token = null, groupName) {
     // fetch the group information
     let r = await fetch(url + ".status");
     if (!r.ok) {
+        console.log(r);
         throw new Error(`${r.status} ${r.statusText}`);
     }
     let status = await r.json();
-    console.log('status : ', status);
     // parse a token in the URL.
-    let token = null;
     let parms = new URLSearchParams(window.location.search);
     if (parms.has('token')) {
         token = parms.get('token');
@@ -22,13 +21,13 @@ async function start(url) {
 
     // connect to the server
     if (token) {
-        serverConnect(status, token);
+        serverConnect(status, token, groupName);
     } else if (status.authPortal) {
         console.log('entre elif');
         window.location.href = groupStatus.authPortal
         return;
     } else {
-        serverConnect(status, null);
+        serverConnect(status, null, groupName);
     }
 }
 
@@ -57,7 +56,7 @@ function serverConnect(status, token, group) {
             { type: 'token', token: token } :
             { type: 'password', password: 'password' };
         // join the group and wait for the onjoined callback
-        await this.join(group, "test", creds);
+        await this.join(group, "token-user", creds);
     };
     conn.onchat = onChat;
     conn.onusermessage = onUserMessage;
@@ -66,9 +65,11 @@ function serverConnect(status, token, group) {
         displayStatus('Disconnected');
     }
     conn.onjoined = onJoined;
-
     // connect and wait for the onconnected callback
-    conn.connect(status.endpoint);
+    let wsUrl = new URL(status.endpoint, window.location.href);
+    wsUrl.protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    wsUrl.host = window.location.host;
+    conn.connect(wsUrl.href);
 }
 
 /**
@@ -309,7 +310,7 @@ document.getElementById('start').onclick = async function (e) {
     let button = /** @type{HTMLButtonElement} */(this);
     button.hidden = true;
     try {
-        await start("/group/public/");
+        await start(url);
     } catch (e) {
         displayError(e);
     };
@@ -319,13 +320,12 @@ document.getElementById('connect-button').onclick = async function (e) {
     let groupName = document.getElementById('group-select').value;
     let url = '/group/' + groupName + '/';
 
-
-
     let button = /** @type{HTMLButtonElement} */(this);
     button.hidden = true;
 
     try {
-        await start(url);
+        let myToken = "eyJhbGciOiJIUzI1NiIsImtpZCI6IkpXVC1IUzI1Ni1rZXkiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJ0b2tlbi11c2VyIiwiYXVkIjoiaHR0cHM6Ly9kdHktczI2LXAyLWdhbGVuZS5rOHMtY2xvdWQuY2VudHJhbGVzdXBlbGVjLmZyL2dyb3VwL25pZ2h0LXdhdGNoLyIsInBlcm1pc3Npb25zIjpbInByZXNlbnQiXSwiaWF0IjoxNzc3NDY0NDYzLCJleHAiOjE3Nzc1MDA0NjN9.EOrCvdBIu11H5XptM6vw4mqbWUr7jp_YdOTeZujrPAs";
+        await start(url, myToken, groupName);
     } catch (e) {
         displayError(e);
     };
