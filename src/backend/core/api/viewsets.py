@@ -566,7 +566,7 @@ class RoomViewSet(
         methods=["post"],
         url_path="start-subtitle",
         permission_classes=[
-            permissions.HasLiveKitRoomAccess,
+            permissions.HasGaleneRoomAccess,
         ],
         authentication_classes=[GaleneTokenAuthentication],
     )
@@ -712,7 +712,7 @@ class RoomViewSet(
         methods=["post"],
         url_path="toggle-hand",
         url_name="toggle-hand",
-        permission_classes=[permissions.HasLiveKitRoomAccess],
+        permission_classes=[permissions.HasGaleneRoomAccess],
         authentication_classes=[GaleneTokenAuthentication],
     )
     def toggle_hand(self, request, pk=None):  # pylint: disable=unused-argument
@@ -759,7 +759,7 @@ class RoomViewSet(
         methods=["post"],
         url_path="rename",
         url_name="rename",
-        permission_classes=[permissions.HasLiveKitRoomAccess],
+        permission_classes=[permissions.HasGaleneRoomAccess],
         authentication_classes=[GaleneTokenAuthentication],
     )
     def rename(self, request, pk=None):  # pylint: disable=unused-argument

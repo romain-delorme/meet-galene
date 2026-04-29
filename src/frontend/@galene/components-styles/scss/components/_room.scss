@@ -1,4 +1,4 @@
-@import '../preflight';
+@use '../preflight' as *;
 
 .room-container {
   @extend %container-style;

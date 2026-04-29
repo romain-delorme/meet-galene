@@ -324,7 +324,7 @@ document.getElementById('connect-button').onclick = async function (e) {
     button.hidden = true;
 
     try {
-        let myToken = "eyJhbGciOiJIUzI1NiIsImtpZCI6IkpXVC1IUzI1Ni1rZXkiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJ0b2tlbi11c2VyIiwiYXVkIjoiaHR0cHM6Ly9kdHktczI2LXAyLWdhbGVuZS5rOHMtY2xvdWQuY2VudHJhbGVzdXBlbGVjLmZyL2dyb3VwL25pZ2h0LXdhdGNoLyIsInBlcm1pc3Npb25zIjpbInByZXNlbnQiXSwiaWF0IjoxNzc3NDY0NDYzLCJleHAiOjE3Nzc1MDA0NjN9.EOrCvdBIu11H5XptM6vw4mqbWUr7jp_YdOTeZujrPAs";
+        let myToken = "eyJhbGciOiJIUzI1NiIsImtpZCI6IkpXVC1IUzI1Ni1rZXkiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJ0b2tlbi11c2VyIiwiYXVkIjoiaHR0cHM6Ly9kdHktczI2LXAyLWdhbGVuZS5rOHMtY2xvdWQuY2VudHJhbGVzdXBlbGVjLmZyL2dyb3VwL25pZ2h0LXdhdGNoLyIsInBlcm1pc3Npb25zIjpbInByZXNlbnQiXSwiaWF0IjoxNzc3NDUzMTI1LCJleHAiOjE3Nzc0NTY3MjV9.7woy7DAKzxlRaLkFFC8RKCcipZoqTIzYlj8aZGsMmZY";
         await start(url, myToken, groupName);
     } catch (e) {
         displayError(e);

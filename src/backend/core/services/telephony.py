@@ -100,7 +100,7 @@ class TelephonyService:
 
     @async_to_sync
     async def delete_dispatch_rule(self, room_id):
-        '''Delete all SIP inbound dispatch rules associated with a specific room.
+        '''Delete all SIP inbound dispatch rules associated with a specific room.'''
 
         rules_ids = await self._list_dispatch_rules_ids(room_id)
 

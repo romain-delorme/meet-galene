@@ -1,4 +1,4 @@
-@import '../preflight';
+@use '../preflight' as *;
 
 .prejoin {
   @extend %container-style;

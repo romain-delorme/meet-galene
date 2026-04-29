@@ -27,9 +27,9 @@ from galene.api import (
     AccessToken,
     VideoGrants,
     GaleneAPI,
-    GaleneError,
     GroupDefinition
 )
+from galene.api.exceptions import GaleneError
 
 """from livekit.api import (  # pylint: disable=E0611
     AccessToken,

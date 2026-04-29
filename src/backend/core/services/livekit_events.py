@@ -24,7 +24,7 @@ from core.recording.services.recording_events import (
 )
 
 from .lobby import LobbyService
-from .telephony import TelephonyException, TelephonyService
+#from .telephony import TelephonyException, TelephonyService
 
 logger = getLogger(__name__)
 
@@ -84,11 +84,13 @@ class LiveKitWebhookEventType(Enum):
     INGRESS_ENDED = "ingress_ended"
 
 
+
 class LiveKitEventsService:
     """Service for processing and handling LiveKit webhook events and notifications."""
-
+    pass
+"""
     def __init__(self):
-        """Initialize with required services."""
+        '''Initialize with required services.'''
         return
 
         token_verifier = api.TokenVerifier(
@@ -112,7 +114,7 @@ class LiveKitEventsService:
                 )
 
     def receive(self, request):
-        """Process webhook and route to appropriate handler."""
+        '''Process webhook and route to appropriate handler.'''
 
         auth_token = request.headers.get("Authorization")
         if not auth_token:
@@ -148,7 +150,7 @@ class LiveKitEventsService:
         handler(data)
 
     def _handle_egress_updated(self, data):
-        """Handle 'egress_updated' event."""
+        '''Handle 'egress_updated' event.'''
 
         egress_id = data.egress_info.egress_id
         try:
@@ -162,7 +164,7 @@ class LiveKitEventsService:
         self.recording_events.handle_update(recording, egress_status)
 
     def _handle_egress_ended(self, data):
-        """Handle 'egress_ended' event."""
+        '''Handle 'egress_ended' event.'''
 
         try:
             recording = models.Recording.objects.select_related("room").get(
@@ -199,7 +201,7 @@ class LiveKitEventsService:
                 ) from e
 
     def _handle_room_started(self, data):
-        """Handle 'room_started' event."""
+        '''Handle 'room_started' event.'''
 
         try:
             room_id = uuid.UUID(data.room.name)
@@ -224,7 +226,7 @@ class LiveKitEventsService:
                 ) from e
 
     def _handle_room_finished(self, data):
-        """Handle 'room_finished' event."""
+        '''Handle 'room_finished' event.'''
 
         try:
             room_id = uuid.UUID(data.room.name)
@@ -249,3 +251,4 @@ class LiveKitEventsService:
             raise ActionFailedError(
                 f"Failed to clear room cache for room {room_id}"
             ) from e
+"""

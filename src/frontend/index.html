@@ -1,56 +1,27 @@
 <!doctype html>
 <html lang="en" data-lk-theme="visio-light">
-  <head>
+
+<head>
     <meta charset="UTF-8" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
     <link rel="manifest" href="/site.webmanifest">
     <!-- Font URLs are resolved and replaced by Vite during the build process. Font loading failures will not break the application. -->
-    <link
-      rel="preload"
-      as="font"
-      crossorigin="anonymous"
-      href="/node_modules/@fontsource/material-icons-outlined/files/material-icons-outlined-latin-400-normal.woff2"
-      type="font/woff2"
-    />
+    <link rel="preload" as="font" crossorigin="anonymous"
+        href="/node_modules/@fontsource/material-icons-outlined/files/material-icons-outlined-latin-400-normal.woff2"
+        type="font/woff2" />
     <!-- Font URLs are resolved and replaced by Vite during the build process. Font loading failures will not break the application. -->
-    <link
-      rel="preload"
-      as="font"
-      crossorigin="anonymous"
-      href="/node_modules/@fontsource-variable/material-symbols-outlined/files/material-symbols-outlined-latin-wght-normal.woff2"
-      type="font/woff2"
-    />
+    <link rel="preload" as="font" crossorigin="anonymous"
+        href="/node_modules/@fontsource-variable/material-symbols-outlined/files/material-symbols-outlined-latin-wght-normal.woff2"
+        type="font/woff2" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>%VITE_APP_TITLE%</title>
-  </head>
-  <body>
+</head>
+
+<body>
     <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+</body>
 
-    <div><button id="start">Start</button></p>
-
-    <p id="status"></p>
-    <p id="error"></p>
-
-    <div><button id="show" disabled>Show/hide yourself</button></div>
-
-    <div id="videos"></div>
-
-    <div id="chat"></div>
-
-
-
-    <div>
-      <button id="connect-button">connect</button>
-      <input placeholder="group-name" id="group-select">
-    </div>
-    
-
-    
-    <!-- <script type="module" src="/src/main.tsx"></script> -->
-    <script src="@galene/protocol.js"></script>
-    <script src="@galene/example.js"></script>
-
-  </body>
 </html>
