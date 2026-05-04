@@ -1,4 +1,4 @@
-export type ApiLiveKit = {
+export type ApiGalene = {
   url: string
   room: string
   token: string
@@ -17,7 +17,7 @@ export type ApiRoom = {
   pin_code: string
   is_administrable: boolean
   access_level: ApiAccessLevel
-  livekit?: ApiLiveKit
+  galene?: ApiGalene
   configuration?: {
     [key: string]: string | number | boolean | string[]
   }

@@ -2304,3 +2304,6 @@ ServerConnection.prototype.fileTransfer = function (id, username, message) {
             break;
     }
 }
+
+
+export { ServerConnection, Stream, TransferredFile };

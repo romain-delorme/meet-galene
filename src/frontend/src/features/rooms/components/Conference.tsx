@@ -1,17 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import {
-  LiveKitRoom,
-  usePersistentUserChoices,
-} from '@livekit/components-react'
-import {
-  DisconnectReason,
-  MediaDeviceFailure,
-  Room,
-  RoomOptions,
-  VideoPresets,
-} from 'livekit-client'
 import { keys } from '@/api/queryKeys'
 import { queryClient } from '@/api/queryClient'
 import { Screen } from '@/layout/Screen'
@@ -22,17 +11,15 @@ import { ApiRoom } from '../api/ApiRoom'
 import { useCreateRoom } from '../api/createRoom'
 import { InviteDialog } from './InviteDialog'
 import { VideoConference } from '../livekit/prefabs/VideoConference'
-import { css } from '@/styled-system/css'
-import { BackgroundProcessorFactory } from '../livekit/components/blur'
-import { LocalUserChoices } from '@/stores/userChoices'
-import { MediaDeviceErrorAlert } from './MediaDeviceErrorAlert'
 import { usePostHog } from 'posthog-js/react'
 import { useConfig } from '@/api/useConfig'
-import { isFireFox } from '@/utils/livekit'
 import { useIsMobile } from '@/utils/useIsMobile'
 import { navigateTo } from '@/navigation/navigateTo'
-import { useSnapshot } from 'valtio'
 import { connectionObserverStore } from '@/stores/connectionObserver'
+
+import { GaleneRoom } from '../galene/components/GaleneRoom'
+import { usePersistentUserChoices } from '@livekit/components-react'
+import { LocalUserChoices } from '@/stores/userChoices'
 
 export const Conference = ({
   roomId,
@@ -46,8 +33,6 @@ export const Conference = ({
   const posthog = usePostHog()
   const { data: apiConfig } = useConfig()
 
-  const connectionObserverSnap = useSnapshot(connectionObserverStore)
-
   const { userChoices: userConfig } = usePersistentUserChoices() as {
     userChoices: LocalUserChoices
   }
@@ -55,9 +40,8 @@ export const Conference = ({
   useEffect(() => {
     posthog.capture('visit-room', { slug: roomId })
   }, [roomId, posthog])
-  const fetchKey = [keys.room, roomId]
 
-  const [isConnectionWarmedUp, setIsConnectionWarmedUp] = useState(false)
+  const fetchKey = [keys.room, roomId]
 
   const {
     mutateAsync: createRoom,
@@ -74,9 +58,8 @@ export const Conference = ({
     isError: isFetchError,
     data,
   } = useQuery({
-    /* eslint-disable @tanstack/query/exhaustive-deps */
     queryKey: fetchKey,
-    staleTime: 6 * 60 * 60 * 1000, // By default, LiveKit access tokens expire 6 hours after generation
+    staleTime: 6 * 60 * 60 * 1000, // By default, Galene tokens expire 6 hours after generation
     initialData: initialRoomData,
     queryFn: () =>
       fetchRoom({
@@ -90,107 +73,17 @@ export const Conference = ({
     retry: false,
   })
 
-  const roomOptions = useMemo((): RoomOptions => {
-    return {
-      adaptiveStream: true,
-      dynacast: true,
-      publishDefaults: {
-        videoCodec: 'vp9',
-      },
-      videoCaptureDefaults: {
-        deviceId: userConfig.videoDeviceId ?? undefined,
-        resolution: userConfig.videoPublishResolution
-          ? VideoPresets[userConfig.videoPublishResolution].resolution
-          : undefined,
-      },
-      audioCaptureDefaults: {
-        deviceId: userConfig.audioDeviceId ?? undefined,
-      },
-      audioOutput: {
-        deviceId: userConfig.audioOutputDeviceId ?? undefined,
-      },
-    }
-    // do not rely on the userConfig object directly as its reference may change on every render
-  }, [
-    userConfig.videoDeviceId,
-    userConfig.videoPublishResolution,
-    userConfig.audioDeviceId,
-    userConfig.audioOutputDeviceId,
-  ])
-
-  const room = useMemo(() => new Room(roomOptions), [roomOptions])
-
-  useEffect(() => {
-    /**
-     * Warm up connection to LiveKit server before joining room
-     * This prefetch helps reduce initial connection latency by establishing
-     * an early HTTP connection to the WebRTC signaling server
-     *
-     * It should cache DNS and TLS keys.
-     */
-    const prepareConnection = async () => {
-      if (!apiConfig || isConnectionWarmedUp) return
-      await room.prepareConnection(apiConfig.livekit.url)
-
-      if (isFireFox() && apiConfig.livekit.enable_firefox_proxy_workaround) {
-        try {
-          const wssUrl =
-            apiConfig.livekit.url
-              .replace('https://', 'wss://')
-              .replace(/\/$/, '') + '/rtc'
-
-          /**
-           * FIREFOX + PROXY WORKAROUND:
-           *
-           * Issue: On Firefox behind proxy configurations, WebSocket signaling fails to establish.
-           * Symptom: Client receives HTTP 200 instead of expected 101 (Switching Protocols).
-           * Root Cause: Certificate/security issue where the initial request is considered unsecure.
-           *
-           * Solution: Pre-establish a WebSocket connection to the signaling server, which fails.
-           * This "primes" the connection, allowing subsequent WebSocket establishments to work correctly.
-           *
-           * Note: This issue is reproducible on LiveKit's demo app.
-           * Reference: livekit-examples/meet/issues/466
-           */
-          const ws = new WebSocket(wssUrl)
-          // 401 unauthorized response is expected
-          ws.onerror = () => ws.readyState <= 1 && ws.close()
-        } catch (e) {
-          console.debug('Firefox WebSocket workaround failed.', e)
-        }
-      }
-
-      setIsConnectionWarmedUp(true)
-    }
-    prepareConnection()
-  }, [room, apiConfig, isConnectionWarmedUp])
-
   const [showInviteDialog, setShowInviteDialog] = useState(mode === 'create')
-  const [mediaDeviceError, setMediaDeviceError] = useState<{
-    error: MediaDeviceFailure | null
-    kind: MediaDeviceKind | null
-  }>({
-    error: null,
-    kind: null,
-  })
-
   const isMobile = useIsMobile()
 
-  /*
-   * Ensure stable WebSocket connection URL. This is critical for legacy browser compatibility
-   * (Firefox <124, Chrome <125, Edge <125) where HTTPS URLs in WebSocket() constructor
-   *  may fail - the force_wss_protocol flag allows explicit WSS protocol conversion
-   */
   const serverUrl = useMemo(() => {
-    const livekit_url = apiConfig?.livekit.url
-    if (!livekit_url) return
-    if (apiConfig?.livekit.force_wss_protocol) {
-      return livekit_url.replace('https://', 'wss://')
-    }
-    return livekit_url
-  }, [apiConfig?.livekit])
+    const galene_url = apiConfig?.galene?.url
+    if (!galene_url) return
+    return galene_url
+  }, [apiConfig])
 
   const { t } = useTranslation('rooms')
+
   if (isCreateError) {
     // this error screen should be replaced by a proper waiting room for anonymous user.
     return (
@@ -211,75 +104,20 @@ export const Conference = ({
   return (
     <QueryAware status={isFetchError ? createStatus : fetchStatus}>
       <Screen header={false} footer={false}>
-        <LiveKitRoom
-          room={room}
+        <GaleneRoom
+          groupName={roomId}
           serverUrl={serverUrl}
-          token={data?.livekit?.token}
-          connect={isConnectionWarmedUp}
-          audio={userConfig.audioEnabled}
-          video={
-            userConfig.videoEnabled && {
-              processor: BackgroundProcessorFactory.fromProcessorConfig(
-                userConfig.processorConfig
-              ),
-            }
-          }
-          connectOptions={connectOptions}
-          className={css({
-            backgroundColor: 'primaryDark.50 !important',
-          })}
-          onError={(e) => {
-            posthog.captureException(e)
-          }}
+          token={data?.galene?.token}
+          username={userConfig.username}
+          audioEnabled={userConfig.audioEnabled}
+          videoEnabled={userConfig.videoEnabled}
           onDisconnected={(e) => {
-            const metadata = {
-              room_id: roomId,
-              pc_publisher: connectionObserverSnap.publisher && {
-                ...connectionObserverSnap.publisher,
-              },
-              pc_subscriber: connectionObserverSnap.subscriber && {
-                ...connectionObserverSnap.subscriber,
-              },
-              pc_publisher_changes_count:
-                connectionObserverSnap.publisherChangesCount,
-              pc_subscriber_changes_count:
-                connectionObserverSnap.subscriberChangesCount,
-            }
-
             connectionObserverStore.publisher = null
             connectionObserverStore.publisherChangesCount = 0
             connectionObserverStore.subscriber = null
             connectionObserverStore.subscriberChangesCount = 0
 
-            switch (e) {
-              case DisconnectReason.CLIENT_INITIATED:
-                navigateTo(
-                  'feedback',
-                  {},
-                  {
-                    state: { ...metadata },
-                  }
-                )
-                return
-              case DisconnectReason.DUPLICATE_IDENTITY:
-              case DisconnectReason.PARTICIPANT_REMOVED:
-                navigateTo(
-                  'feedback',
-                  {},
-                  {
-                    state: {
-                      reason: e,
-                      ...metadata,
-                    },
-                  }
-                )
-                return
-            }
-          }}
-          onMediaDeviceFailure={(e, kind) => {
-            if (e == MediaDeviceFailure.DeviceInUse && !!kind) {
-              setMediaDeviceError({ error: e, kind })
-            }
+            navigateTo('feedback', {}, { state: { room_id: roomId } })
           }}
         >
           <VideoConference />
@@ -290,11 +128,7 @@ export const Conference = ({
               onClose={() => setShowInviteDialog(false)}
             />
           )}
-          <MediaDeviceErrorAlert
-            {...mediaDeviceError}
-            onClose={() => setMediaDeviceError({ error: null, kind: null })}
-          />
-        </LiveKitRoom>
+        </GaleneRoom>
       </Screen>
     </QueryAware>
   )

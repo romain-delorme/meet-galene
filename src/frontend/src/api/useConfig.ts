@@ -46,6 +46,9 @@ export interface ApiConfig {
     default_country?: string
   }
   manifest_link?: string
+  galene: {
+    url: string
+  }
   // livekit: {
   //   url: string
   //   force_wss_protocol: boolean
