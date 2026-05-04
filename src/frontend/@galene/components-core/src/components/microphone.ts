@@ -1,15 +1,15 @@
 import type { ServerConnection, Stream } from "../protocol";
 
-export function cameraStream(conn: ServerConnection): Stream | null {
+function audioStream(conn: ServerConnection): Stream | null{
     for (const id in conn.up) {
         const s = conn.up[id];
-        if (s.label === 'camera')
+        if (s.label === 'microphone')
             return s;
     }
     return null;
 }
 
-function makeVideoElement(id: string): HTMLVideoElement {
+function makeAudioElement(id: string): HTMLAudioElement {
     const v = document.createElement('video');
     v.id = 'video-' + id;
     const container = document.getElementById('videos');
@@ -17,19 +17,19 @@ function makeVideoElement(id: string): HTMLVideoElement {
     return v;
 }
 
-export function getVideoElement(id: string): HTMLVideoElement {
-    const v = document.getElementById('video-' + id) as HTMLVideoElement;
+export function getAudioElement(id: string): HTMLAudioElement {
+    const v = document.getElementById('video-' + id) as HTMLAudioElement;
     return v!;
 }
 
-export async function showCamera(conn: ServerConnection): Promise<void> {
-    const ms = await navigator.mediaDevices.getUserMedia({ audio: false, video: true });
+export async function enableMicrophone(conn: ServerConnection): Promise<void> {
+    const ms = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
 
     /* Send the new stream to the server */
     const s = conn.newUpStream();
-    s.label = 'camera';
+    s.label = 'microphone';
     s.setStream(ms);
-    const v = makeVideoElement(s.localId);
+    const v = makeAudioElement(s.localId);
     s.onclose = function () {
         s.stream.getTracks().forEach((t: MediaStreamTrack) => t.stop());
         v.srcObject = null;
@@ -55,14 +55,14 @@ export async function showCamera(conn: ServerConnection): Promise<void> {
     // Add any existing tracks.
     ms.getTracks().forEach(addTrack);
 
-    // Connect the MediaStream to the video element and start playing.
+    // Connect the MediaStream to the audio element and start playing.
     v.srcObject = ms;
-    v.muted = true;
+    v.muted = false;
     v.play();
 }
 
-export async function hideCamera(conn: ServerConnection): Promise<void> {
-    const s = cameraStream(conn);
-    s!.stream.getTracks().forEach(t => t.stop());
-    s!.close();
+export async function muteMicrophone(conn: ServerConnection): Promise<void> {
+    const s = audioStream(conn);
+        s!.stream.getTracks().forEach(t => t.stop());
+        s!.close();
 }
