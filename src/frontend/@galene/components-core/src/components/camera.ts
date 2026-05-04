@@ -1,4 +1,4 @@
-import { ServerConnection, Stream } from "protocol.js"
+import { ServerConnection, Stream } from "../protocol";
 
 export function cameraStream(conn: ServerConnection) {
     for (const id in conn.up) {
@@ -9,24 +9,7 @@ export function cameraStream(conn: ServerConnection) {
     return null;
 }
 
-export function enableShowCamera(conn: ServerConnection, enable: boolean) {
-    const b = (document.getElementById('show-camera')) as HTMLButtonElement;
-    if (enable) {
-        b!.onclick = function () {
-            const s = cameraStream(conn);
-            if (!s)
-                showCamera(conn);
-            else
-                hide(conn, s);
-        }
-        b!.disabled = false;
-    } else {
-        b!.disabled = true;
-        b!.onclick = null;
-    }
-}
-
-export function makeVideoElement(id: string) {
+function makeVideoElement(id: string) {
     const v = document.createElement('video');
     v.id = 'video-' + id;
     const container = document.getElementById('videos');
@@ -76,4 +59,10 @@ export async function showCamera(conn: ServerConnection) {
     v.srcObject = ms;
     v.muted = true;
     v.play();
+}
+
+export async function hideCamera(conn: ServerConnection) {
+    const s = cameraStream(conn);
+    s!.stream.getTracks().forEach(t => t.stop());
+    s!.close();
 }
