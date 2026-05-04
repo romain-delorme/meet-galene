@@ -138,8 +138,8 @@ function cameraStream(conn) {
  * @parm{ServerConnection} conn
  * @parm{boolean} enable
  */
-function enableShow(conn, enable) {
-    let b = /** @type{HTMLButtonElement} */(document.getElementById('show'));
+function enableShowCamera(conn, enable) {
+    let b = /** @type{HTMLButtonElement} */(document.getElementById('show-camera'));
     if (enable) {
         b.onclick = function () {
             let s = cameraStream(conn);
@@ -166,7 +166,7 @@ async function onJoined(kind, group, perms, status, data, error, message) {
     switch (kind) {
         case 'fail':
             displayError(message);
-            enableShow(this, false);
+            enableShowCamera(this, false);
             this.close();
             break;
         case 'redirect':
@@ -175,13 +175,13 @@ async function onJoined(kind, group, perms, status, data, error, message) {
             return;
         case 'leave':
             displayStatus('Connected');
-            enableShow(this, false);
+            enableShowCamera(this, false);
             this.close();
             break;
         case 'join':
         case 'change':
             displayStatus(`Connected as ${this.username} in group ${this.group}.`);
-            enableShow(this, true);
+            enableShowCamera(this, true);
             // request videos from the server
             this.request({ '': ['audio', 'video'] });
             break;
@@ -262,6 +262,71 @@ async function showCamera(conn) {
     v.muted = true;
     v.play();
 }
+
+//#region trying to separate mic from camera
+
+/**
+ * Find the audio stream, if any.
+ *
+ * @parm {string} conn
+ * @returns {Stream}
+ */
+function audioStream(conn) {
+    for (let id in conn.up) {
+        let s = conn.up[id];
+        if (s.label === 'microphone')
+            return s;
+    }
+    return null;
+}
+
+function enableOpenMic(conn, enable) {
+    let b = /** @type{HTMLButtonElement} */(document.getElementById('toggle-mic'));
+    if (enable) {
+        b.onclick = function () {
+            let s = audioStream(conn);
+            if (!s)
+                enableMicrophone(conn);
+            else
+                hide(conn, s);
+        }
+        b.disabled = false;
+    } else {
+        b.disabled = true;
+        b.onclick = null;
+    }
+}
+
+function makeAudioElement(id) {
+    let v = document.createElement('audio');
+    v.id = 'audio-' + id;
+    let container = document.getElementById('videos');
+    container.appendChild(v);
+    return v;
+}
+
+/**
+ * Find the video element that shows a given id.
+ *
+ * @parm {string} id
+ * @returns {HTMLVideoElement}
+ */
+function getVideoElement(id) {
+    let v = document.getElementById('video-' + id);
+    return /** @type{HTMLVideoElement} */(v);
+}
+
+
+async function enableMicrophone(conn) {
+    let ms = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+
+    /* Send the new stream to the server */
+    let s = conn.newUpStream();
+    s.label = 'microphone';
+    s.setStream(ms);
+}
+
+//#endregion
 
 /**
  * Stop broadcasting.
