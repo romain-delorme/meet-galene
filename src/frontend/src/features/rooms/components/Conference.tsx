@@ -10,16 +10,15 @@ import { fetchRoom } from '../api/fetchRoom'
 import { ApiRoom } from '../api/ApiRoom'
 import { useCreateRoom } from '../api/createRoom'
 import { InviteDialog } from './InviteDialog'
-import { VideoConference } from '../livekit/prefabs/VideoConference'
 import { usePostHog } from 'posthog-js/react'
 import { useConfig } from '@/api/useConfig'
 import { useIsMobile } from '@/utils/useIsMobile'
 import { navigateTo } from '@/navigation/navigateTo'
 import { connectionObserverStore } from '@/stores/connectionObserver'
-
 import { GaleneRoom } from '../galene/components/GaleneRoom'
 import { usePersistentUserChoices } from '@livekit/components-react'
 import { LocalUserChoices } from '@/stores/userChoices'
+import { VideoConference } from '../galene/components/VideoConference'
 
 export const Conference = ({
   roomId,
