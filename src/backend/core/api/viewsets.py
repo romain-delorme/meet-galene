@@ -287,6 +287,7 @@ class RoomViewSet(
 
     def perform_create(self, serializer):
         """Set the current user as owner of the newly created room."""
+        logger.warning(f"REQUEST {self.request.user}")
         room = serializer.save()
         models.ResourceAccess.objects.create(
             resource=room,
@@ -415,6 +416,7 @@ class RoomViewSet(
         participant, galene = lobby_service.request_entry(
             room=room,
             request=request,
+            permissions= ["present"],
             **serializer.validated_data,
         )
         response = drf_response.Response({**participant.to_dict(), "galene": galene})

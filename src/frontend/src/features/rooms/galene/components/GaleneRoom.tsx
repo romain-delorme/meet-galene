@@ -132,7 +132,7 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
         });
 
         // Quand le flux reçoit ses données audio/video
-        s.ondowntrack = (track: any, stream: any) => {
+        s.ondowntrack = (track: any, transceiver: any, stream: any) => {
           console.log("🔄 Track attachée au downstream:", track.kind);
           // On force un refresh en mettant à jour le state
           setState(prev => ({

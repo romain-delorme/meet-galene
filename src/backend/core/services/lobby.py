@@ -158,9 +158,9 @@ class LobbyService:
                 participant.status = LobbyParticipantStatus.ACCEPTED
             
             galene_config = utils.generate_galene_config(
-                room=room_id,
+                room_id=room_id,
                 username=username,
-                permissions= permissions
+                permissions=permissions
             )
             '''
             livekit_config = utils.generate_livekit_config(

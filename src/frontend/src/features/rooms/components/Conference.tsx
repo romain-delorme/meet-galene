@@ -16,8 +16,8 @@ import { useIsMobile } from '@/utils/useIsMobile'
 import { navigateTo } from '@/navigation/navigateTo'
 import { connectionObserverStore } from '@/stores/connectionObserver'
 import { GaleneRoom } from '../galene/components/GaleneRoom'
-import { usePersistentUserChoices } from '@livekit/components-react'
-import { LocalUserChoices } from '@/stores/userChoices'
+import { useSnapshot } from 'valtio'
+import { userChoicesStore } from '@/stores/userChoices'
 import { VideoConference } from '../galene/components/VideoConference'
 
 export const Conference = ({
@@ -32,9 +32,7 @@ export const Conference = ({
   const posthog = usePostHog()
   const { data: apiConfig } = useConfig()
 
-  const { userChoices: userConfig } = usePersistentUserChoices() as {
-    userChoices: LocalUserChoices
-  }
+  const userConfig = useSnapshot(userChoicesStore)
 
   useEffect(() => {
     posthog.capture('visit-room', { slug: roomId })
