@@ -620,6 +620,7 @@ class Base(Configuration):
         "url": "https://dty-s26-p2-galene.k8s-cloud.centralesupelec.fr",
         "api_admin_login": environ.get("GALENE_ADMIN_LOGIN"),
         "api_admin_password": environ.get("GALENE_ADMIN_PASSWORD"),
+        "token key for jwt": environ.get("APPLICATION_JWT_SECRET_KEY"),
     }
 
     """
@@ -837,9 +838,9 @@ class Base(Configuration):
         environ_name="APPLICATION_CLIENT_SECRET_LENGTH",
         environ_prefix=None,
     )
-    APPLICATION_JWT_SECRET_KEY = SecretFileValue(
+    '''APPLICATION_JWT_SECRET_KEY = SecretFileValue(
         None, environ_name="APPLICATION_JWT_SECRET_KEY", environ_prefix=None
-    )
+    )'''
     APPLICATION_JWT_ALG = values.Value(
         "HS256",
         environ_name="APPLICATION_JWT_ALG",
