@@ -1,4 +1,4 @@
-import { ServerConnection, Stream } from "../protocol";
+import type { ServerConnection } from "../protocol";
 
 export function cameraStream(conn: ServerConnection) {
     for (const id in conn.up) {
@@ -31,15 +31,15 @@ export async function showCamera(conn: ServerConnection) {
     s.setStream(ms);
     const v = makeVideoElement(s.localId);
     s.onclose = function () {
-        s.stream.getTracks().forEach((t: Stream) => t.stop());
+        s.stream.getTracks().forEach((t: MediaStreamTrack) => t.stop());
         v.srcObject = null;
         v.parentNode!.removeChild(v);
     }
 
-    function addTrack(t: Stream) {
-        t.oneneded = function () {
+    function addTrack(t: MediaStreamTrack) {
+        t.onended = function () {
             ms.onaddtrack = null;
-            s.onremovetrack = null;
+            s.stream.onremovetrack = null;
             s.close();
         }
         s.pc.addTransceiver(t, {
@@ -49,7 +49,7 @@ export async function showCamera(conn: ServerConnection) {
     }
 
     // Make sure all future tracks are added.
-    s.onaddtrack = function (e: Stream) {
+    s.stream.onaddtrack = function (e: MediaStreamTrackEvent) {
         addTrack(e.track);
     }
     // Add any existing tracks.
