@@ -140,7 +140,6 @@ class RoomSerializer(serializers.ModelSerializer):
         """
         output = super().to_representation(instance)
         request = self.context.get("request")
-
         if not request:
             return output
 
@@ -156,11 +155,10 @@ class RoomSerializer(serializers.ModelSerializer):
                 many=True,
             )
             output["accesses"] = access_serializer.data
-
-        configuration = output["configuration"]
-
+        #configuration = output["configuration"]
         if not is_admin_or_owner:
             del output["configuration"]
+        
 
         should_access_room = (
             (
@@ -170,15 +168,15 @@ class RoomSerializer(serializers.ModelSerializer):
             or role is not None
             or instance.is_public
         )
+        logger.warning(f"request : {request}")
 
         if should_access_room:
             room_id = f"{instance.id!s}"
             username = request.query_params.get("username", None)
             output["galene"] = utils.generate_galene_config(
                 room_id=room_id,
-                user=request.user,
                 username=username,
-                configuration=configuration,
+                permissions= [role],
             )
         else:
             del output["pin_code"]

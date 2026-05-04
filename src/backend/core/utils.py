@@ -106,7 +106,7 @@ def generate_token(
     return token.to_jwt()
 
 def generate_galene_config(
-    room: str,
+    room_id: str,
     username: str,
     permissions: List[str]
 ) -> dict:
@@ -128,9 +128,9 @@ def generate_galene_config(
 
     return {
         "url": settings.GALENE_CONFIGURATION["url"],
-        "room": room,
+        "room": room_id,
         "token": generate_token(
-            room=room,
+            room=room_id,
             permissions= permissions,
             username=username,
         ),

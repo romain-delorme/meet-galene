@@ -616,6 +616,12 @@ class Base(Configuration):
     )
 
     # Video conference configuration
+    GALENE_CONFIGURATION = {
+        "url": "https://dty-s26-p2-galene.k8s-cloud.centralesupelec.fr",
+        "api_admin_login": environ.get("GALENE_ADMIN_LOGIN"),
+        "api_admin_password": environ.get("GALENE_ADMIN_PASSWORD"),
+    }
+
     """
     LIVEKIT_CONFIGURATION = {
         "api_key": SecretFileValue(environ_name="LIVEKIT_API_KEY", environ_prefix=None),
@@ -1075,11 +1081,7 @@ class Test(Base):
     USE_SWAGGER = True
     EXTERNAL_API_ENABLED = True
 
-    GALENE_CONFIGURATION = {
-        "url": "https://dty-s26-p2-galene.k8s-cloud.centralesupelec.fr",
-        "api_admin_login": environ.get("GALENE_ADMIN_LOGIN"),
-        "api_admin_password": environ.get("GALENE_ADMIN_PASSWORD"),
-    }
+    
     
     """
     LIVEKIT_CONFIGURATION = {
