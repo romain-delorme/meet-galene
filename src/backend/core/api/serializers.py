@@ -168,7 +168,7 @@ class RoomSerializer(serializers.ModelSerializer):
             or role is not None
             or instance.is_public
         )
-        logger.warning(f"request : {request}")
+        logger.warning(f"request : {role}")
 
         if should_access_room:
             room_id = f"{instance.id!s}"

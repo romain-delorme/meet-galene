@@ -300,7 +300,6 @@ ServerConnection.prototype.error = function (e) {
   * @param {message} m - the message to send.
   */
 ServerConnection.prototype.send = function (m) {
-    console.log('send', m);
     if (!this.socket || this.socket.readyState !== this.socket.OPEN) {
         // send on a closed socket doesn't throw
         throw (new Error('Connection is not open'));

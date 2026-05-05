@@ -27,6 +27,7 @@ export const CreateMeetingButton = () => {
 
   const initialRoom = useMemo(() => {
     const roomSlug = searchParams.get('slug')
+    console.log('room slug', roomSlug);
     if (!roomSlug) return undefined
     return {
       slug: roomSlug.trim(), // Trim whitespace for safety

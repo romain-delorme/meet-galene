@@ -110,7 +110,7 @@ def generate_galene_config(
     username: str,
     permissions: List[str]
 ) -> dict:
-    """Generate LiveKit configuration for room access.
+    """Generate Galene configuration for room access.
 
     Args:
         room_id: Room identifier

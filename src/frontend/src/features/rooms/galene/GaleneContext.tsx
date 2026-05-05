@@ -26,6 +26,7 @@ export interface GaleneContextState {
   status: 'disconnected' | 'connecting' | 'connected' | 'joined' | 'error';
   participants: GaleneParticipant[];
   tracks: GaleneTrack[];
+  error: string | null;
 }
 
 export const GaleneContext = createContext<GaleneContextState>({
@@ -33,4 +34,5 @@ export const GaleneContext = createContext<GaleneContextState>({
   status: 'disconnected',
   participants: [],
   tracks: [],
+  error: null,
 });
