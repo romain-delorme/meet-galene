@@ -1,11 +1,15 @@
 /* eslint-disable react-refresh/only-export-components */
 import { ToastQueue, useToastQueue } from '@react-stately/toast'
 import { ToastRegion } from './ToastRegion'
-import { Participant } from 'livekit-client'
 import { NotificationType } from '../NotificationType'
 
+export interface ToastParticipant {
+  name?: string
+  isLocal?: boolean
+}
+
 export interface ToastData {
-  participant?: Participant
+  participant?: ToastParticipant
   type: NotificationType
   message?: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

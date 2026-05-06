@@ -1,8 +1,7 @@
 import { A, Div, H, Text } from '@/primitives'
 
 import { css } from '@/styled-system/css'
-import { useRoomId } from '@/features/rooms/livekit/hooks/useRoomId'
-import { useRoomContext } from '@livekit/components-react'
+import { useRoomId } from '@/features/rooms/galene/hooks/useRoomId'
 import {
   RecordingMode,
   useHumanizeRecordingMaxDuration,
@@ -25,7 +24,7 @@ import { VStack } from '@/styled-system/jsx'
 import { Checkbox } from '@/primitives/Checkbox'
 import { useTranscriptionLanguage } from '@/features/settings'
 import { useMutateRecording } from '../hooks/useMutateRecording'
-import { useSidePanel } from '@/features/rooms/livekit/hooks/useSidePanel'
+import { useSidePanel } from '@/features/rooms/hooks/useSidePanel'
 import { useIsAdminOrOwner } from '@/features/rooms/galene/hooks/useIsAdminOrOwner'
 
 export const ScreenRecordingSidePanel = () => {
@@ -50,7 +49,6 @@ export const ScreenRecordingSidePanel = () => {
 
   const statuses = useRecordingStatuses(RecordingMode.ScreenRecording)
 
-  const room = useRoomContext()
   const { openTranscript } = useSidePanel()
 
   const handleRequestScreenRecording = async () => {
@@ -73,10 +71,7 @@ export const ScreenRecordingSidePanel = () => {
         await notifyParticipants({
           type: NotificationType.ScreenRecordingStopped,
         })
-        notifyRecordingSaveInProgress(
-          RecordingMode.ScreenRecording,
-          room.localParticipant
-        )
+        notifyRecordingSaveInProgress(RecordingMode.ScreenRecording)
       } else {
         const recordingOptions = {
           ...(!isLanguageSetToAuto && {

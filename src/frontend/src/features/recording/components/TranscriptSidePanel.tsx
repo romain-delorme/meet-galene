@@ -1,8 +1,7 @@
 import { A, Button, Div, H, Text } from '@/primitives'
 
 import { css } from '@/styled-system/css'
-import { useRoomId } from '@/features/rooms/livekit/hooks/useRoomId'
-import { useRoomContext } from '@livekit/components-react'
+import { useRoomId } from '@/features/rooms/galene/hooks/useRoomId'
 import {
   RecordingMode,
   useHasRecordingAccess,
@@ -33,7 +32,7 @@ import { ControlsButton } from './ControlsButton'
 import { RowWrapper } from './RowWrapper'
 import { useMutateRecording } from '../hooks/useMutateRecording'
 import { useIsMetadataCollectorEnabled } from '../hooks/useMetadataCollectorEnabled'
-import { useSidePanel } from '@/features/rooms/livekit/hooks/useSidePanel'
+import { useSidePanel } from '@/features/rooms/hooks/useSidePanel'
 
 export const TranscriptSidePanel = () => {
   const { data } = useConfig()
@@ -69,7 +68,7 @@ export const TranscriptSidePanel = () => {
 
   const statuses = useRecordingStatuses(RecordingMode.Transcript)
 
-  const room = useRoomContext()
+
   const { openScreenRecording } = useSidePanel()
 
   const handleRequestTranscription = async () => {
@@ -92,10 +91,7 @@ export const TranscriptSidePanel = () => {
         await notifyParticipants({
           type: NotificationType.TranscriptionStopped,
         })
-        notifyRecordingSaveInProgress(
-          RecordingMode.Transcript,
-          room.localParticipant
-        )
+        notifyRecordingSaveInProgress(RecordingMode.Transcript)
       } else {
         const recordingMode = includeScreenRecording
           ? RecordingMode.ScreenRecording

@@ -1,12 +1,12 @@
 import { toastQueue } from './components/ToastProvider'
 import { NotificationType } from './NotificationType'
 import { NotificationDuration } from './NotificationDuration'
-import { Participant } from 'livekit-client'
 import { NotificationPayload } from './NotificationPayload'
+import { ToastParticipant } from './components/ToastProvider'
 import { RecordingMode } from '@/features/recording'
 
 export const showLowerHandToast = (
-  participant: Participant,
+  participant: ToastParticipant,
   onClose: () => void
 ) => {
   toastQueue.add(
@@ -51,13 +51,9 @@ export const decodeNotificationDataReceived = (
   }
 }
 
-export const notifyRecordingSaveInProgress = (
-  mode: RecordingMode,
-  participant: Participant
-) => {
+export const notifyRecordingSaveInProgress = (mode: RecordingMode) => {
   toastQueue.add(
     {
-      participant,
       mode,
       type: NotificationType.RecordingSaving,
     },

@@ -6,9 +6,9 @@ import { HStack } from '@/styled-system/jsx'
 import { RiCheckLine, RiFileCopyLine, RiSpam2Fill } from '@remixicon/react'
 import { css } from '@/styled-system/css'
 import { ApiAccessLevel, ApiRoom } from '@/features/rooms/api/ApiRoom'
-import { useTelephony } from '@/features/rooms/livekit/hooks/useTelephony'
+import { useTelephony } from '@/features/rooms/hooks/useTelephony'
 import { formatPinCode } from '@/features/rooms/utils/telephony'
-import { useCopyRoomToClipboard } from '@/features/rooms/livekit/hooks/useCopyRoomToClipboard'
+import { useCopyRoomToClipboard } from '@/features/rooms/hooks/useCopyRoomToClipboard'
 
 // fixme - duplication with the InviteDialog
 export const LaterMeetingDialog = ({

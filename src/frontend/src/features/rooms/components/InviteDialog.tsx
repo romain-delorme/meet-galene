@@ -12,11 +12,11 @@ import {
 } from '@remixicon/react'
 import { useMemo } from 'react'
 import { css } from '@/styled-system/css'
-import { useRoomData } from '@/features/rooms/livekit/hooks/useRoomData'
+import { useRoomData } from '@/features/rooms/hooks/useRoomData'
 import { ApiAccessLevel } from '@/features/rooms/api/ApiRoom'
-import { useTelephony } from '@/features/rooms/livekit/hooks/useTelephony'
+import { useTelephony } from '@/features/rooms/hooks/useTelephony'
 import { formatPinCode } from '@/features/rooms/utils/telephony'
-import { useCopyRoomToClipboard } from '@/features/rooms/livekit/hooks/useCopyRoomToClipboard'
+import { useCopyRoomToClipboard } from '@/features/rooms/hooks/useCopyRoomToClipboard'
 
 // fixme - extract in a proper primitive this dialog without overlay
 const StyledRACDialog = styled(Dialog, {

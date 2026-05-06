@@ -31,16 +31,6 @@ from galene.api import (
     GroupDefinition
 )
 
-"""from livekit.api import (  # pylint: disable=E0611
-    AccessToken,
-    ListRoomsRequest,
-    LiveKitAPI,
-    SendDataRequest,
-    TwirpError,
-    UpdateRoomMetadataRequest,
-    VideoGrants,
-)"""
-
 logger = logging.getLogger(__name__)
 
 
@@ -72,25 +62,6 @@ def generate_token(
     permissions: List[str],
     username: Optional[str] = None,
 ) -> str:
-    '''Generate a LiveKit access token for a user in a specific room.
-
-    Args:
-        room (str): The name of the room.
-        user (User): The user which request the access token.
-        username (Optional[str]): The username to be displayed in the room.
-                         If none, a default value will be used.
-        color (Optional[str]): The color to be displayed in the room.
-                         If none, a value will be generated
-        sources: (Optional[List[str]]): List of media sources the user can publish
-                         If none, defaults to LIVEKIT_DEFAULT_SOURCES.
-        is_admin_or_owner (bool): Whether user has admin privileges
-        participant_id (Optional[str]): Stable identifier for anonymous users;
-                         used as identity when user.is_anonymous.
-
-    Returns:
-        str: The LiveKit JWT access token.
-    '''
-
 
     video_grants = VideoGrants(
         room=room,
@@ -110,21 +81,6 @@ def generate_galene_config(
     username: str,
     permissions: List[str]
 ) -> dict:
-    """Generate Galene configuration for room access.
-
-    Args:
-        room_id: Room identifier
-        user: User instance requesting access
-        username: Display name in room
-        is_admin_or_owner (bool): Whether the user has admin/owner privileges for this room.
-        color (Optional[str]): Optional color to associate with the participant.
-        configuration (Optional[dict]): Room configuration dict that can override default settings.
-        participant_id (Optional[str]): Stable identifier for anonymous users;
-                         used as identity when user.is_anonymous.
-
-    Returns:
-        dict: LiveKit configuration with URL, room and access token
-    """
 
     return {
         "url": settings.GALENE_CONFIGURATION["url"],
@@ -136,123 +92,6 @@ def generate_galene_config(
         ),
     }
 
-
-"""  
-def generate_token(
-    room: str,
-    user,
-    username: Optional[str] = None,
-    color: Optional[str] = None,
-    sources: Optional[List[str]] = None,
-    is_admin_or_owner: bool = False,
-    participant_id: Optional[str] = None,
-) -> str:
-    '''Generate a LiveKit access token for a user in a specific room.
-
-    Args:
-        room (str): The name of the room.
-        user (User): The user which request the access token.
-        username (Optional[str]): The username to be displayed in the room.
-                         If none, a default value will be used.
-        color (Optional[str]): The color to be displayed in the room.
-                         If none, a value will be generated
-        sources: (Optional[List[str]]): List of media sources the user can publish
-                         If none, defaults to LIVEKIT_DEFAULT_SOURCES.
-        is_admin_or_owner (bool): Whether user has admin privileges
-        participant_id (Optional[str]): Stable identifier for anonymous users;
-                         used as identity when user.is_anonymous.
-
-    Returns:
-        str: The LiveKit JWT access token.
-    '''
-
-    if is_admin_or_owner:
-        sources = settings.LIVEKIT_DEFAULT_SOURCES
-
-    if sources is None:
-        sources = settings.LIVEKIT_DEFAULT_SOURCES
-
-    video_grants = VideoGrants(
-        room=room,
-        room_join=True,
-        room_admin=is_admin_or_owner,
-        can_update_own_metadata=False,
-        can_publish=bool(sources),
-        can_publish_sources=sources,
-        can_subscribe=True,
-    )
-
-    if user.is_anonymous:
-        identity = participant_id or str(uuid4())
-        default_username = "Anonymous"
-    else:
-        identity = str(user.sub)
-        default_username = str(user)
-
-    if color is None:
-        color = generate_color(identity)
-
-    token = (
-        AccessToken(
-            api_key=settings.LIVEKIT_CONFIGURATION["api_key"],
-            api_secret=settings.LIVEKIT_CONFIGURATION["api_secret"],
-        )
-        .with_grants(video_grants)
-        .with_identity(identity)
-        .with_name(username or default_username)
-        .with_attributes(
-            {"color": color, "room_admin": "true" if is_admin_or_owner else "false"}
-        )
-    )
-
-    return token.to_jwt()
-
-
-
-def generate_livekit_config(
-    room_id: str,
-    user,
-    username: str,
-    is_admin_or_owner: bool,
-    color: Optional[str] = None,
-    configuration: Optional[dict] = None,
-    participant_id: Optional[str] = None,
-) -> dict:
-    '''Generate LiveKit configuration for room access.
-
-    Args:
-        room_id: Room identifier
-        user: User instance requesting access
-        username: Display name in room
-        is_admin_or_owner (bool): Whether the user has admin/owner privileges for this room.
-        color (Optional[str]): Optional color to associate with the participant.
-        configuration (Optional[dict]): Room configuration dict that can override default settings.
-        participant_id (Optional[str]): Stable identifier for anonymous users;
-                         used as identity when user.is_anonymous.
-
-    Returns:
-        dict: LiveKit configuration with URL, room and access token
-    '''
-
-    sources = None
-    if configuration is not None:
-        sources = configuration.get("can_publish_sources", None)
-
-    return {
-        "url": settings.LIVEKIT_CONFIGURATION["url"],
-        "room": room_id,
-        "token": generate_token(
-            room=room_id,
-            user=user,
-            username=username,
-            color=color,
-            sources=sources,
-            is_admin_or_owner=is_admin_or_owner,
-            participant_id=participant_id,
-        ),
-    }
-
-"""
 
 def generate_s3_authorization_headers(key):
     """
@@ -289,60 +128,13 @@ def create_galene_client():
     print(server_url, settings.GALENE_CONFIGURATION["api_admin_login"], settings.GALENE_CONFIGURATION["api_admin_password"])
     return GaleneAPI(server_url, username=settings.GALENE_CONFIGURATION["api_admin_login"], password=settings.GALENE_CONFIGURATION["api_admin_password"])
 
-"""
-def create_livekit_client(custom_configuration=None):
-    '''Create and return a configured LiveKit API client.'''
 
-    custom_session = None
-
-    if not settings.LIVEKIT_VERIFY_SSL:
-        connector = aiohttp.TCPConnector(ssl=False)
-        custom_session = aiohttp.ClientSession(connector=connector)
-
-    # Use default configuration if none provided
-    configuration = custom_configuration or settings.LIVEKIT_CONFIGURATION
-
-    return LiveKitAPI(session=custom_session, **configuration)
-"""
 
 
 class NotificationError(Exception):
     """Notification delivery to room participants fails."""
 
 
-
-
-"""
-@async_to_sync
-async def notify_participants(room_name: str, notification_data: dict):
-    '''Send notification data to all participants in a LiveKit room.'''
-
-    lkapi = create_livekit_client()
-
-    try:
-        room_response = await lkapi.room.list_rooms(
-            ListRoomsRequest(
-                names=[room_name],
-            )
-        )
-
-        # Check if the room exists
-        if not room_response.rooms:
-            return
-
-        await lkapi.room.send_data(
-            SendDataRequest(
-                room=room_name,
-                data=json.dumps(notification_data).encode("utf-8"),
-                kind="RELIABLE",
-            )
-        )
-    except TwirpError as e:
-        raise NotificationError("Failed to notify room participants") from e
-    finally:
-        await lkapi.aclose()
-
-"""
 
 class MetadataUpdateException(Exception):
     """Room's metadata update fails."""
@@ -351,7 +143,7 @@ class MetadataUpdateException(Exception):
 async def update_room_metadata(
     group_name: str, changes: dict = None
 ):
-    '''Update LiveKit room metadata by merging new values with existing metadata.
+    '''Update Galene room metadata by merging new values with existing metadata.
 
     Args:
         room_name: Name of the room to update
@@ -380,53 +172,6 @@ async def update_room_metadata(
         await galene_api.aclose()
 
 
-"""
-@async_to_sync
-async def update_room_metadata(
-    room_name: str, metadata: dict, remove_keys: Optional[list[str]] = None
-):
-    '''Update LiveKit room metadata by merging new values with existing metadata.
-
-    Args:
-        room_name: Name of the room to update
-        metadata: Dictionary of metadata key-values to add/update
-        remove_keys: Optional list of keys to remove from existing metadata.
-    '''
-
-    lkapi = create_livekit_client()
-
-    try:
-        response = await lkapi.room.list_rooms(
-            ListRoomsRequest(
-                names=[room_name],
-            )
-        )
-
-        if not response.rooms:
-            return
-
-        room = response.rooms[0]
-
-        existing_metadata = json.loads(room.metadata) if room.metadata else {}
-
-        if remove_keys:
-            for key in remove_keys:
-                existing_metadata.pop(key, None)
-
-        updated_metadata = {**existing_metadata, **metadata}
-
-        await lkapi.room.update_room_metadata(
-            UpdateRoomMetadataRequest(
-                room=room_name, metadata=json.dumps(updated_metadata).encode("utf-8")
-            )
-        )
-    except TwirpError as e:
-        raise MetadataUpdateException(
-            f"Failed to update metadata for room {room_name}: {e}"
-        ) from e
-    finally:
-        await lkapi.aclose()
-"""
 
 ALPHANUMERIC_CHARSET = string.ascii_letters + string.digits
 
