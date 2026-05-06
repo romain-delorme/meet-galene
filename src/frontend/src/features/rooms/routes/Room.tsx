@@ -28,7 +28,8 @@ export const Room = () => {
   const [location, setLocation] = useLocation()
   const initialRoomData = history.state?.initialRoomData
   const mode = isLoggedIn && history.state?.create ? 'create' : 'join'
-  const skipJoinScreen = isLoggedIn && mode === 'create'
+  // const skipJoinScreen = isLoggedIn && mode === 'create'
+  const skipJoinScreen = false
 
   useKeyboardShortcuts()
 

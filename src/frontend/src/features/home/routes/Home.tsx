@@ -148,7 +148,7 @@ const IntroText = styled('div', {
 
 export const Home = () => {
   const { t } = useTranslation('home')
-  const { isLoggedIn } = useUser()
+  const { isLoggedIn, user } = useUser()
 
   const {
     userChoices: { username },
@@ -211,7 +211,7 @@ export const Home = () => {
                       }
                       onAction={async () => {
                         const slug = generateRoomId()
-                        createRoom({ slug, username }).then((data) =>
+                        createRoom({ slug, username: user?.full_name || username }).then((data) =>
                           navigateTo('room', data.slug, {
                             state: { create: true, initialRoomData: data },
                           })
@@ -228,7 +228,7 @@ export const Home = () => {
                       }
                       onAction={() => {
                         const slug = generateRoomId()
-                        createRoom({ slug, username }).then((data) =>
+                        createRoom({ slug, username: user?.full_name || username }).then((data) =>
                           setLaterRoom(data)
                         )
                       }}

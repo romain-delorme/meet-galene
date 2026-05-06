@@ -19,6 +19,7 @@ import { useLoginHint } from '@/hooks/useLoginHint'
 import { openPermissionsDialog } from '@/stores/permissions'
 import { usePersistentUserChoices } from '../galene/hooks/usePersistentUserChoices'
 import { useCannotUseDevice } from '../galene/hooks/useCannotUseDevice'
+import { useUser } from '@/features/auth'
 import { SelectDevice } from '../galene/components/controls/SelectDevice'
 import { ToggleDevice } from '../galene/components/controls/ToggleDevice'
 
@@ -30,6 +31,8 @@ export const Join = ({
   roomId: string
 }) => {
   const { t } = useTranslation('rooms', { keyPrefix: 'join' })
+
+  const { user } = useUser()
 
   const {
     userChoices: {
@@ -47,6 +50,12 @@ export const Join = ({
     saveVideoInputDeviceId,
     saveUsername,
   } = usePersistentUserChoices()
+
+  useEffect(() => {
+    if (!username && user?.email) {
+      saveUsername(user.email)
+    }
+  }, [user?.email])
 
   const [videoTrack, setVideoTrack] = useState<MediaStreamTrack | null>(null)
   const [audioTrack, setAudioTrack] = useState<MediaStreamTrack | null>(null)

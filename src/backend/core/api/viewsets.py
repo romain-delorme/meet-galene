@@ -287,7 +287,6 @@ class RoomViewSet(
 
     def perform_create(self, serializer):
         """Set the current user as owner of the newly created room."""
-        logger.warning(f"REQUEST {self.request.user}")
         room = serializer.save()
         models.ResourceAccess.objects.create(
             resource=room,

@@ -69,6 +69,7 @@ def generate_token(
     )
 
     identity = username
+
     key = settings.GALENE_CONFIGURATION["token key for jwt"]
     # Later we will need to make a real key
     server = settings.GALENE_CONFIGURATION["url"]
@@ -81,7 +82,6 @@ def generate_galene_config(
     username: str,
     permissions: List[str]
 ) -> dict:
-
     return {
         "url": settings.GALENE_CONFIGURATION["url"],
         "room": room_id,
