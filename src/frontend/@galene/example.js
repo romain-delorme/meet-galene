@@ -138,8 +138,8 @@ function cameraStream(conn) {
  * @parm{ServerConnection} conn
  * @parm{boolean} enable
  */
-function enableShow(conn, enable) {
-    let b = /** @type{HTMLButtonElement} */(document.getElementById('show'));
+function enableShowCamera(conn, enable) {
+    let b = /** @type{HTMLButtonElement} */(document.getElementById('show-camera'));
     if (enable) {
         b.onclick = function () {
             let s = cameraStream(conn);
@@ -166,7 +166,8 @@ async function onJoined(kind, group, perms, status, data, error, message) {
     switch (kind) {
         case 'fail':
             displayError(message);
-            enableShow(this, false);
+            enableShowCamera(this, false);
+            enableOpenMic(this, true);
             this.close();
             break;
         case 'redirect':
@@ -175,13 +176,15 @@ async function onJoined(kind, group, perms, status, data, error, message) {
             return;
         case 'leave':
             displayStatus('Connected');
-            enableShow(this, false);
+            enableShowCamera(this, false);
+            enableOpenMic(this, true);
             this.close();
             break;
         case 'join':
         case 'change':
             displayStatus(`Connected as ${this.username} in group ${this.group}.`);
-            enableShow(this, true);
+            enableShowCamera(this, true);
+            enableOpenMic(this, true);
             // request videos from the server
             this.request({ '': ['audio', 'video'] });
             break;
@@ -263,6 +266,101 @@ async function showCamera(conn) {
     v.play();
 }
 
+//#region trying to separate mic from camera
+
+/**
+ * Find the audio stream, if any.
+ *
+ * @parm {string} conn
+ * @returns {Stream}
+ */
+function audioStream(conn) {
+    for (let id in conn.up) {
+        let s = conn.up[id];
+        if (s.label === 'microphone')
+            return s;
+    }
+    return null;
+}
+
+function enableOpenMic(conn, enable) {
+    let b = /** @type{HTMLButtonElement} */(document.getElementById('toggle-mic'));
+    if (enable) {
+        b.onclick = function () {
+            let s = audioStream(conn);
+            if (!s)
+                enableMicrophone(conn);
+            else
+                hide(conn, s);
+        }
+        b.disabled = false;
+    } else {
+        b.disabled = true;
+        b.onclick = null;
+    }
+}
+
+function makeAudioElement(id) {
+    let v = document.createElement('audio');
+    v.id = 'audio-' + id;
+    let container = document.getElementById('videos');
+    container.appendChild(v);
+    return v;
+}
+
+/**
+ * Find the video element that shows a given id.
+ *
+ * @parm {string} id
+ * @returns {HTMLVideoElement}
+ */
+function getAudioElement(id) {
+    let v = document.getElementById('video-' + id);
+    return /** @type{HTMLVideoElement} */(v);
+}
+
+
+async function enableMicrophone(conn) {
+    let ms = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+
+    /* Send the new stream to the server */
+    let s = conn.newUpStream();
+    s.label = 'microphone';
+    s.setStream(ms);
+    let v = makeAudioElement(s.localId);
+    s.onclose = function (replace) {
+        s.stream.getTracks().forEach(t => t.stop());
+        v.srcObject = null;
+        v.parentNode.removeChild(v);
+    }
+
+    function addTrack(t) {
+        t.oneneded = function (e) {
+            ms.onaddtrack = null;
+            s.onremovetrack = null;
+            s.close();
+        }
+        s.pc.addTransceiver(t, {
+            direction: 'sendonly',
+            streams: [ms],
+        });
+    }
+
+    // Make sure all future tracks are added.
+    s.onaddtrack = function (e) {
+        addTrack(e.track);
+    }
+    // Add any existing tracks.
+    ms.getTracks().forEach(addTrack);
+
+    // Connect the MediaStream to the video element and start playing.
+    v.srcObject = ms;
+    v.muted = true;
+    v.play();
+}
+
+//#endregion
+
 /**
  * Stop broadcasting.
  *
@@ -324,8 +422,11 @@ document.getElementById('connect-button').onclick = async function (e) {
     button.hidden = true;
 
     try {
-        let myToken = "eyJhbGciOiJIUzI1NiIsImtpZCI6IkpXVC1IUzI1Ni1rZXkiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJ0b2tlbi11c2VyIiwiYXVkIjoiaHR0cHM6Ly9kdHktczI2LXAyLWdhbGVuZS5rOHMtY2xvdWQuY2VudHJhbGVzdXBlbGVjLmZyL2dyb3VwL25pZ2h0LXdhdGNoLyIsInBlcm1pc3Npb25zIjpbInByZXNlbnQiXSwiaWF0IjoxNzc3NDUzMTI1LCJleHAiOjE3Nzc0NTY3MjV9.7woy7DAKzxlRaLkFFC8RKCcipZoqTIzYlj8aZGsMmZY";
-        await start(url, myToken, groupName);
+        // let myToken = "eyJhbGciOiJIUzI1NiIsImtpZCI6IkpXVC1IUzI1Ni1rZXkiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJ0b2tlbi11c2VyIiwiYXVkIjoiaHR0cHM6Ly9kdHktczI2LXAyLWdhbGVuZS5rOHMtY2xvdWQuY2VudHJhbGVzdXBlbGVjLmZyL2dyb3VwL25pZ2h0LXdhdGNoLyIsInBlcm1pc3Npb25zIjpbInByZXNlbnQiXSwiaWF0IjoxNzc3NDUzMTI1LCJleHAiOjE3Nzc0NTY3MjV9.7woy7DAKzxlRaLkFFC8RKCcipZoqTIzYlj8aZGsMmZY";
+        // await start(url, myToken, groupName);
+
+        let token = document.getElementById("token-field").value;
+        await start(url, token, groupName)
     } catch (e) {
         displayError(e);
     };
