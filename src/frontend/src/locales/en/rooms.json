@@ -80,6 +80,12 @@
     "timeoutInvite": {
       "title": "You cannot join this call",
       "body": "No one responded to your request"
+    },
+    "device": {
+      "audioinput": "Microphone",
+      "audiooutput": "Speaker",
+      "videoinput": "Camera",
+      "unnamed": "Device {{n}}"
     }
   },
   "leaveRoomPrompt": "This will make you leave the meeting.",

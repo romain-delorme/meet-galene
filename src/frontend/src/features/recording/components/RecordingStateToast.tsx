@@ -9,10 +9,9 @@ import {
 } from '@/features/recording'
 import { FeatureFlags } from '@/features/analytics/enums'
 import { Button as RACButton } from 'react-aria-components'
-import { useSidePanel } from '@/features/rooms/livekit/hooks/useSidePanel'
+import { useSidePanel } from '@/features/rooms/hooks/useSidePanel'
 import { useRoomMetadata } from '../hooks/useRoomMetadata'
 import { RecordingStatusIcon } from './RecordingStatusIcon'
-import { useIsRecording } from '@livekit/components-react'
 import { useScreenReaderAnnounce } from '@/hooks/useScreenReaderAnnounce'
 
 export const RecordingStateToast = () => {
@@ -51,7 +50,7 @@ export const RecordingStateToast = () => {
   const isStarting = isTranscriptStarting || isScreenRecordingStarting
 
   const metadata = useRoomMetadata()
-  const isRecording = useIsRecording()
+  const isRecording = metadata?.recording_status === 'started'
 
   const key = useMemo(() => {
     if (!metadata?.recording_status || !metadata?.recording_mode) {

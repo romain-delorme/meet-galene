@@ -6,7 +6,7 @@ import { HStack } from '@/styled-system/jsx'
 import { Button, Div } from '@/primitives'
 import { useTranslation } from 'react-i18next'
 import { RiCloseLine, RiHand } from '@remixicon/react'
-import { useSidePanel } from '@/features/rooms/livekit/hooks/useSidePanel'
+import { useSidePanel } from '@/features/rooms/hooks/useSidePanel'
 import { css } from '@/styled-system/css'
 
 export function ToastRaised({ state, ...props }: Readonly<ToastProps>) {

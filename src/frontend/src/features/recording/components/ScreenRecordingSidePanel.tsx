@@ -26,7 +26,7 @@ import { Checkbox } from '@/primitives/Checkbox'
 import { useTranscriptionLanguage } from '@/features/settings'
 import { useMutateRecording } from '../hooks/useMutateRecording'
 import { useSidePanel } from '@/features/rooms/livekit/hooks/useSidePanel'
-import { useIsAdminOrOwner } from '@/features/rooms/livekit/hooks/useIsAdminOrOwner.ts'
+import { useIsAdminOrOwner } from '@/features/rooms/galene/hooks/useIsAdminOrOwner'
 
 export const ScreenRecordingSidePanel = () => {
   const { data } = useConfig()

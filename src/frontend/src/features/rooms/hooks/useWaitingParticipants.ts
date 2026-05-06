@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useRoomContext } from '@livekit/components-react'
 import { RoomEvent } from 'livekit-client'
 import { useRoomData } from '@/features/rooms/livekit/hooks/useRoomData'
-import { useIsAdminOrOwner } from '@/features/rooms/livekit/hooks/useIsAdminOrOwner'
+import { useIsAdminOrOwner } from '@/features/rooms/galene/hooks/useIsAdminOrOwner'
 import { useEnterRoom } from '../api/enterRoom'
 import {
   useListWaitingParticipants,

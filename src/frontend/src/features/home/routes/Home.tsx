@@ -15,7 +15,7 @@ import { ReactNode, useEffect, useState } from 'react'
 
 import { css } from '@/styled-system/css'
 import { menuRecipe } from '@/primitives/menuRecipe.ts'
-import { usePersistentUserChoices } from '@/features/rooms/livekit/hooks/usePersistentUserChoices'
+import { usePersistentUserChoices } from '@/features/rooms/galene/hooks/usePersistentUserChoices'
 import { useConfig } from '@/api/useConfig'
 import { LoginButton } from '@/components/LoginButton'
 import { ApiRoom } from '@/features/rooms/api/ApiRoom'

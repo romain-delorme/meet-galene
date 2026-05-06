@@ -1,7 +1,6 @@
 import { RecordingMode } from '@/features/recording'
 import { useRoomMetadata } from './useRoomMetadata'
 import { useMemo } from 'react'
-import { useIsRecording } from '@livekit/components-react'
 
 export enum RecordingStatus {
   Starting = 'starting',
@@ -27,7 +26,8 @@ export const useRecordingStatuses = (
   mode: RecordingMode
 ): RecordingStatuses => {
   const metadata = useRoomMetadata()
-  const isRecording = useIsRecording()
+  // With Galene there is no room-level recording signal; trust backend metadata directly.
+  const isRecording = metadata?.recording_status === RecordingStatus.Started
 
   return useMemo(() => {
     if (metadata && metadata?.recording_mode === mode) {

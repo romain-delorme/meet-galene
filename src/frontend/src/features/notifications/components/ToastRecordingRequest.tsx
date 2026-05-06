@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next'
 import { NotificationType } from '../NotificationType'
 import { Button } from '@/primitives'
 import { css } from '@/styled-system/css'
-import { useSidePanel } from '@/features/rooms/livekit/hooks/useSidePanel'
+import { useSidePanel } from '@/features/rooms/hooks/useSidePanel'
 
 export function ToastRecordingRequest({
   state,

@@ -11,7 +11,7 @@ import { useNotificationSound } from '@/features/notifications/hooks/useSoundNot
 import { ToastProvider, toastQueue } from './components/ToastProvider'
 import { WaitingParticipantNotification } from './components/WaitingParticipantNotification'
 import { layoutStore } from '@/stores/layout'
-import { PanelId } from '@/features/rooms/livekit/hooks/useSidePanel'
+import { PanelId } from '@/features/rooms/hooks/useSidePanel'
 import { useScreenReaderAnnounce } from '@/hooks/useScreenReaderAnnounce'
 import { Emoji } from '@/features/reactions/types'
 import { useReactions } from '@/features/reactions/hooks/useReactions'

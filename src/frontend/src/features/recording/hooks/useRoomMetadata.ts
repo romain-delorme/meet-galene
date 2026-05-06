@@ -1,18 +1,12 @@
-import { useRoomInfo } from '@livekit/components-react'
-import { useMemo } from 'react'
+// Galene has no equivalent to LiveKit's room-level metadata broadcast.
+// Recording status is surfaced via the backend API instead of via the room connection.
+// TODO: implement via API polling or Galene user-messages when recording is needed.
+type RoomMetadata = {
+  recording_status?: string
+  recording_mode?: string
+  [key: string]: unknown
+}
 
-export const useRoomMetadata = () => {
-  const { metadata } = useRoomInfo()
-  return useMemo(() => {
-    if (metadata) {
-      try {
-        return JSON.parse(metadata)
-      } catch (error) {
-        console.error('Failed to parse room metadata:', error)
-        return undefined
-      }
-    } else {
-      return undefined
-    }
-  }, [metadata])
+export const useRoomMetadata = (): RoomMetadata | undefined => {
+  return undefined
 }

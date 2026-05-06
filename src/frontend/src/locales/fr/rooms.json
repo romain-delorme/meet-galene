@@ -80,6 +80,12 @@
     "timeoutInvite": {
       "title": "Vous ne pouvez pas participer à cet appel",
       "body": "Personne n'a répondu à votre demande de participation à l'appel"
+    },
+    "device": {
+      "audioinput": "Microphone",
+      "audiooutput": "Haut-parleur",
+      "videoinput": "Caméra",
+      "unnamed": "Appareil {{n}}"
     }
   },
   "leaveRoomPrompt": "Revenir à l'accueil vous fera quitter la réunion.",

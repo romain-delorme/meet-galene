@@ -1,8 +1,15 @@
 import { proxy } from 'valtio'
-import {
-  PanelId,
-  SubPanelId,
-} from '@/features/rooms/livekit/hooks/useSidePanel'
+
+export enum PanelId {
+  CHAT = 'chat',
+  PARTICIPANTS = 'participants',
+  TRANSCRIPT = 'transcript',
+  SCREEN_RECORDING = 'screen_recording',
+}
+
+export enum SubPanelId {
+  NONE = 'none',
+}
 
 type State = {
   showHeader: boolean

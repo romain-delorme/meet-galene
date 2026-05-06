@@ -80,6 +80,12 @@
     "timeoutInvite": {
       "title": "U kunt niet deelnemen aan dit gesprek",
       "body": "Niemand heeft gereageerd op uw verzoek om deel te nemen aan het gesprek"
+    },
+    "device": {
+      "audioinput": "Microfoon",
+      "audiooutput": "Luidspreker",
+      "videoinput": "Camera",
+      "unnamed": "Apparaat {{n}}"
     }
   },
   "leaveRoomPrompt": "Dat zal u de vergadering doen verlaten.",

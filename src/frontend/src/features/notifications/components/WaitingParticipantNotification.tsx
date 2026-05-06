@@ -9,7 +9,7 @@ import { useEffect, useRef, useState } from 'react'
 import { usePrevious } from '@/hooks/usePrevious'
 import { WaitingParticipant } from '@/features/rooms/api/listWaitingParticipants'
 import { useWaitingParticipants } from '@/features/rooms/hooks/useWaitingParticipants'
-import { useSidePanel } from '@/features/rooms/livekit/hooks/useSidePanel'
+import { useSidePanel } from '@/features/rooms/hooks/useSidePanel'
 import { useNotificationSound } from '../hooks/useSoundNotification'
 import { NotificationType } from '@/features/notifications'
 

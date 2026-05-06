@@ -80,6 +80,12 @@
     "timeoutInvite": {
       "title": "Du kannst diesem Meeting nicht beitreten",
       "body": "Niemand hat auf deine Anfrage reagiert"
+    },
+    "device": {
+      "audioinput": "Mikrofon",
+      "audiooutput": "Lautsprecher",
+      "videoinput": "Kamera",
+      "unnamed": "Gerät {{n}}"
     }
   },
   "leaveRoomPrompt": "Hiermit verlässt du das Meeting.",
@@ -307,7 +313,6 @@
         }
       }
     },
-
     "faceLandmarks": {
       "title": "Visuelle Effekte",
       "glasses": {

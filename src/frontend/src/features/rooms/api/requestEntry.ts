@@ -1,5 +1,5 @@
 import { fetchApi } from '@/api/fetchApi'
-import { ApiLiveKit } from '@/features/rooms/api/ApiRoom'
+import { ApiGalene } from '@/features/rooms/api/ApiRoom'
 
 export interface RequestEntryParams {
   roomId: string
@@ -16,7 +16,7 @@ export enum ApiLobbyStatus {
 
 export interface ApiRequestEntry {
   status: ApiLobbyStatus
-  livekit?: ApiLiveKit
+  galene?: ApiGalene
 }
 
 export const requestEntry = async ({

@@ -24,7 +24,7 @@ import { ShortcutTab } from './tabs/ShortcutTab'
 import { useRef } from 'react'
 import { useMediaQuery } from '@/features/rooms/livekit/hooks/useMediaQuery'
 import { SettingsDialogExtendedKey } from '@/features/settings/type'
-import { useIsAdminOrOwner } from '@/features/rooms/livekit/hooks/useIsAdminOrOwner'
+import { useIsAdminOrOwner } from '@/features/rooms/galene/hooks/useIsAdminOrOwner'
 import { AccessibilityTab } from './tabs/AccessibilityTab'
 
 const tabsStyle = css({

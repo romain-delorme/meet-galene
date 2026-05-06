@@ -15,6 +15,7 @@ import { useConfig } from '@/api/useConfig'
 import { useIsMobile } from '@/utils/useIsMobile'
 import { navigateTo } from '@/navigation/navigateTo'
 import { connectionObserverStore } from '@/stores/connectionObserver'
+import { roomStore } from '@/stores/room'
 import { GaleneRoom } from '../galene/components/GaleneRoom'
 import { useSnapshot } from 'valtio'
 import { userChoicesStore } from '@/stores/userChoices'
@@ -69,6 +70,13 @@ export const Conference = ({
       }),
     retry: false,
   })
+
+  useEffect(() => {
+    roomStore.isAdminOrOwner = data?.is_administrable ?? false
+    return () => {
+      roomStore.isAdminOrOwner = false
+    }
+  }, [data?.is_administrable])
 
   const [showInviteDialog, setShowInviteDialog] = useState(mode === 'create')
   const isMobile = useIsMobile()
