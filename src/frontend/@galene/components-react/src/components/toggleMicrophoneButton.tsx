@@ -6,7 +6,7 @@ const STYLE_PATH = 'src/frontend/@galene/components-styles/';
 const openMicIconPath = STYLE_PATH + 'assets/icons/mic-icon.svg';
 const mutedMicIconPath = STYLE_PATH + 'assets/icons/mic-disabled-icon.svg';
 
-export function useToggleMicrophone(){
+export function useToggleMicrophone(): JSX.Element{
     const [micEnabled, setMicEnabled] = useState(false);
     const [micIconPath, setMicIconPath] = useState(mutedMicIconPath);
 
@@ -15,11 +15,11 @@ export function useToggleMicrophone(){
 
         if(micEnabled) enableMicrophone(this);
         else muteMicrophone(this);
-    }, [micEnabled])
+    }, [micEnabled]);
 
     return(
         <button onClick={() => setMicEnabled(!micEnabled)}>
             <img src={micIconPath} alt={micEnabled?"disable":"enable" + " microphone"}></img>
         </button>
-    )
+    );
 }

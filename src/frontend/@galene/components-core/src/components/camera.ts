@@ -9,7 +9,7 @@ export function cameraStream(conn: ServerConnection): Stream | null {
     return null;
 }
 
-function makeVideoElement(id: string): HTMLVideoElement {
+export function makeVideoElement(id: string): HTMLVideoElement {
     const v = document.createElement('video');
     v.id = 'video-' + id;
     const container = document.getElementById('videos');
