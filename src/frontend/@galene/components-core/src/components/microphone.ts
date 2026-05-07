@@ -1,3 +1,4 @@
+// @ts-expect-error the galene protocol needs to be rewritten in typescript for this to work
 import type { ServerConnection, Stream } from "../protocol";
 
 function audioStream(conn: ServerConnection): Stream | null{
@@ -63,6 +64,6 @@ export async function enableMicrophone(conn: ServerConnection): Promise<void> {
 
 export async function muteMicrophone(conn: ServerConnection): Promise<void> {
     const s = audioStream(conn);
-        s!.stream.getTracks().forEach(t => t.stop());
+        s!.stream.getTracks().forEach((t: MediaStreamTrack) => t.stop());
         s!.close();
 }

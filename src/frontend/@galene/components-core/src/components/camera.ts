@@ -1,3 +1,4 @@
+// @ts-expect-error the galene protocol needs to be rewritten in typescript for this to work
 import type { ServerConnection, Stream } from "../protocol";
 
 export function cameraStream(conn: ServerConnection): Stream | null {
@@ -63,6 +64,6 @@ export async function showCamera(conn: ServerConnection): Promise<void> {
 
 export async function hideCamera(conn: ServerConnection): Promise<void> {
     const s = cameraStream(conn);
-    s!.stream.getTracks().forEach(t => t.stop());
+    s!.stream.getTracks().forEach((t: MediaStreamTrack) => t.stop());
     s!.close();
 }

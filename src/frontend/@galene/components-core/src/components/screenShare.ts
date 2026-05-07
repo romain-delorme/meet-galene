@@ -1,3 +1,4 @@
+// @ts-expect-error the galene protocol needs to be rewritten in typescript for this to work
 import type { ServerConnection, Stream } from "../protocol";
 import { makeVideoElement } from "./camera";
 
