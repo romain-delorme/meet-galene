@@ -251,6 +251,8 @@ class RoomViewSet(
                 raise
             slug = slugify(self.kwargs["pk"])
             username = request.query_params.get("username", None)
+            room = request.query_params.get("name", None)
+
             data = {
                 "id": None,
                 "galene": {
@@ -288,6 +290,7 @@ class RoomViewSet(
     def perform_create(self, serializer):
         """Set the current user as owner of the newly created room."""
         room = serializer.save()
+        logger.warning(f"[core] perform_create room {room}, {self.request.user}")
         models.ResourceAccess.objects.create(
             resource=room,
             user=self.request.user,

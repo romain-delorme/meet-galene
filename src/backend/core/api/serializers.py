@@ -169,7 +169,8 @@ class RoomSerializer(serializers.ModelSerializer):
         )
 
         if should_access_room:
-            room_id = f"{instance.id!s}"
+            room_id = f"{instance}"
+            logger.warning(f'roomid: {room_id}')
             username = request.query_params.get("username", None)
             output["galene"] = utils.generate_galene_config(
                 room_id=room_id,
