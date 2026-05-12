@@ -82,6 +82,12 @@ export const Conference = ({
   const isMobile = useIsMobile()
 
   const serverUrl = useMemo(() => {
+    // In dev, Vite proxies /ws to the Galène server with the correct Origin header.
+    // In production, connect directly to the Galène WebSocket endpoint.
+    if (import.meta.env.DEV) {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+      return `${protocol}//${window.location.host}/ws`
+    }
     const galene_url = apiConfig?.galene?.url;
     if (!galene_url) return
     const wsUrl = galene_url.replace(/^https?:/, (m) => (m === 'https:' ? 'wss:' : 'ws:'))

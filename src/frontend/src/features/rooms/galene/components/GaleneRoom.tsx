@@ -273,8 +273,8 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
       disposed = true;
       try {
         conn.close();
-      } catch (e) {
-        console.warn('Erreur lors de la fermeture de la connexion:', e);
+      } catch (_) {
+        // May warn in dev (StrictMode) — harmless
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
