@@ -28,7 +28,7 @@ from galene.api import (
     VideoGrants,
     GaleneAPI,
     GaleneError,
-    GroupDefinition
+    GroupDefinition,
 )
 
 logger = logging.getLogger(__name__)
@@ -138,6 +138,23 @@ class NotificationError(Exception):
 
 class MetadataUpdateException(Exception):
     """Room's metadata update fails."""
+
+@async_to_sync
+async def create_galene_group(group_name: str) -> None:
+    '''Create a Galène group and configure it with the app's JWT signing key.'''
+    galene_api = create_galene_client()
+    logger.warning(f'group créé : {group_name}')
+    try:
+        await galene_api.groups.create_group(groupname=group_name, definition=GroupDefinition())
+        jwt_secret = settings.GALENE_CONFIGURATION["token key for jwt"]
+        await galene_api.groups.set_auth_keys(groupname=group_name, key=jwt_secret)
+    except GaleneError as e:
+        raise MetadataUpdateException(
+            f"Failed to create group {group_name}: {e}"
+        ) from e
+    finally:
+        await galene_api.close()
+
 
 @async_to_sync
 async def update_room_metadata(

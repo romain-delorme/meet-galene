@@ -252,15 +252,20 @@ class RoomViewSet(
             slug = slugify(self.kwargs["pk"])
             username = request.query_params.get("username", None)
             room = request.query_params.get("name", None)
+            logger.warning(f'room : {room} slug : {slug}')
+            try:
+                utils.create_galene_group(slug)
+            except utils.MetadataUpdateException as e:
+                logger.error("[core] Failed to create Galene group for unregistered room %s: %s", slug, e)
+            
+            
 
             data = {
                 "id": None,
                 "galene": {
                     "url": settings.GALENE_CONFIGURATION["url"],
-                    "room": slug,
-                    "token": utils.generate_token(
-                        room=slug, user=request.user, username=username
-                    ),
+                    "room": room,
+                    "token": utils.generate_token(room=room, username=username, permissions=['present']),
                 },
             }
         else:
@@ -290,15 +295,19 @@ class RoomViewSet(
     def perform_create(self, serializer):
         """Set the current user as owner of the newly created room."""
         room = serializer.save()
-        logger.warning(f"[core] perform_create room {room}, {self.request.user}")
         models.ResourceAccess.objects.create(
             resource=room,
             user=self.request.user,
             role=models.RoleChoices.OWNER,
         )
 
+        try:
+            utils.create_galene_group(room.slug)
+        except utils.MetadataUpdateException as e:
+            logger.error("[core] Failed to create Galene group for room %s: %s", room.slug, e)
+
         if callback_id := self.request.data.get("callback_id"):
-            RoomCreation().persist_callback_state(callback_id, room)
+            RoomCreation().persist_callback_state(callback_id, room.slug)
 
     @decorators.action(
         detail=True,

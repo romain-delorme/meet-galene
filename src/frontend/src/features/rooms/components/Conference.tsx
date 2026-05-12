@@ -84,7 +84,8 @@ export const Conference = ({
   const serverUrl = useMemo(() => {
     const galene_url = apiConfig?.galene?.url
     if (!galene_url) return
-    return galene_url
+    const wsUrl = galene_url.replace(/^https?:/, (m) => (m === 'https:' ? 'wss:' : 'ws:'))
+    return wsUrl.endsWith('/ws') ? wsUrl : wsUrl + '/ws'
   }, [apiConfig])
 
   const { t } = useTranslation('rooms')
