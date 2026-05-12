@@ -143,8 +143,7 @@ class LobbyService:
 
         participant_id = self._get_or_create_participant_id(request)
         participant = self._get_participant(room.id, participant_id)
-
-        room_id = str(room.id)
+        galene_config = None
 
         if self.can_bypass_lobby(room=room, user=request.user):
             if participant is None:
@@ -156,25 +155,13 @@ class LobbyService:
                 )
             else:
                 participant.status = LobbyParticipantStatus.ACCEPTED
-            
+
             galene_config = utils.generate_galene_config(
-                room_id=room_id,
+                room_id=room.slug,
                 username=username,
                 permissions=permissions
             )
-            '''
-            livekit_config = utils.generate_livekit_config(
-                room_id=room_id,
-                user=request.user,
-                username=username,
-                color=participant.color,
-                configuration=room.configuration,
-                is_admin_or_owner=False,
-                participant_id=participant_id,
-            )
-            return participant, livekit_config
-            '''
-
+            return participant, galene_config
 
         if participant is None:
             participant = self.enter(room.id, participant_id, username)
@@ -183,25 +170,11 @@ class LobbyService:
             self.refresh_waiting_status(room.id, participant_id)
 
         elif participant.status == LobbyParticipantStatus.ACCEPTED:
-            # wrongly named, contains access token to join a room
             galene_config = utils.generate_galene_config(
-                room=room_id,
+                room_id=room.slug,
                 username=username,
-                permissions= permissions
+                permissions=permissions
             )
-            '''
-            livekit_config = utils.generate_livekit_config(
-                room_id=room_id,
-                user=request.user,
-                username=username,
-                color=participant.color,
-                configuration=room.configuration,
-                is_admin_or_owner=False,
-                participant_id=participant_id,
-            )
-            '''
-            pass
-
 
         return participant, galene_config
 

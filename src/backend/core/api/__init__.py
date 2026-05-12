@@ -66,7 +66,9 @@ def get_frontend_configuration(request):
             "default_country": settings.ROOM_TELEPHONY_DEFAULT_COUNTRY,
         },
         "subtitle": {"enabled": settings.ROOM_SUBTITLE_ENABLED},
-        # Might add some galene configuration tweaks to senf to the client here
+        "galene": {
+            "url": settings.GALENE_CONFIGURATION["url"],
+        },
     }
     frontend_configuration.update(settings.FRONTEND_CONFIGURATION)
     return Response(frontend_configuration)

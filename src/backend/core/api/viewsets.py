@@ -264,8 +264,8 @@ class RoomViewSet(
                 "id": None,
                 "galene": {
                     "url": settings.GALENE_CONFIGURATION["url"],
-                    "room": room,
-                    "token": utils.generate_token(room=room, username=username, permissions=['present']),
+                    "room": slug,
+                    "token": utils.generate_token(room=slug, username=username, permissions=['present']),
                 },
             }
         else:

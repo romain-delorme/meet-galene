@@ -82,7 +82,7 @@ export const Conference = ({
   const isMobile = useIsMobile()
 
   const serverUrl = useMemo(() => {
-    const galene_url = apiConfig?.galene?.url
+    const galene_url = apiConfig?.galene?.url;
     if (!galene_url) return
     const wsUrl = galene_url.replace(/^https?:/, (m) => (m === 'https:' ? 'wss:' : 'ws:'))
     return wsUrl.endsWith('/ws') ? wsUrl : wsUrl + '/ws'
@@ -99,7 +99,6 @@ export const Conference = ({
       />
     )
   }
-
   return (
     <QueryAware status={isFetchError ? createStatus : fetchStatus}>
       <Screen header={false} footer={false}>

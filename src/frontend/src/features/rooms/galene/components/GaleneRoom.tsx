@@ -40,9 +40,9 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
 
   // Latest status, read by onclose to decide whether the close was "user left
   // a joined room" or "connect failed before join".
+
   const statusRef = useRef(state.status);
   statusRef.current = state.status;
-
   useEffect(() => {
     if (!serverUrl || !token) return;
 

@@ -172,10 +172,17 @@ class RoomSerializer(serializers.ModelSerializer):
             room_id = instance.slug
             logger.warning(f"generagte galene config {room_id}")
             username = request.query_params.get("username", None)
+            if not username:
+                username = "User"
+            
+            galene_permissions = ["present"]
+            if role in [models.RoleChoices.OWNER, models.RoleChoices.ADMIN]:
+                galene_permissions.extend(["op", "record"])
+
             output["galene"] = utils.generate_galene_config(
                 room_id=room_id,
                 username=username,
-                permissions= [role],
+                permissions=galene_permissions,
             )
         else:
             del output["pin_code"]
