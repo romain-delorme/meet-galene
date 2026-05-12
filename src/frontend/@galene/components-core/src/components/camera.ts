@@ -14,7 +14,7 @@ export function makeVideoElement(id: string): HTMLVideoElement {
     const v = document.createElement('video');
     v.id = 'video-' + id;
     const container = document.getElementById('videos');
-    container!.appendChild(v);
+    container?.appendChild(v);
     return v;
 }
 
@@ -25,6 +25,7 @@ export function getVideoElement(id: string): HTMLVideoElement {
 
 export async function showCamera(conn: ServerConnection): Promise<void> {
     const ms = await navigator.mediaDevices.getUserMedia({ audio: false, video: true });
+    console.log("here")
 
     /* Send the new stream to the server */
     const s = conn.newUpStream();
@@ -64,6 +65,16 @@ export async function showCamera(conn: ServerConnection): Promise<void> {
 
 export async function hideCamera(conn: ServerConnection): Promise<void> {
     const s = cameraStream(conn);
-    s!.stream.getTracks().forEach((t: MediaStreamTrack) => t.stop());
-    s!.close();
+    s?.stream.getTracks().forEach((t: MediaStreamTrack) => t.stop());
+    s?.close();
+}
+
+export async function showCameraNoBackend(conn: ServerConnection): Promise<HTMLVideoElement> {
+    const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: false, video: true });
+    const stream = conn.newUpStream();
+    stream.label = 'camera';
+    stream.setStream(mediaStream);
+    const video = makeVideoElement(stream.localId);
+
+    return video;
 }

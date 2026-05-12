@@ -6,16 +6,16 @@ import type { ServerConnection } from "../../../components-core/src/protocol";
 const STYLE_PATH = 'src/frontend/@galene/components-styles/';
 
 
-function useToggleCamera(): JSX.Element{
+function useToggleCamera(conn: ServerConnection): JSX.Element{
     const [cameraEnabled, setCameraEnabled] = useState(false);
     const [cameraIconPath, setCameraIconPath] = useState(STYLE_PATH + 'assets/icons/camera-disabled-icon.svg');
 
-    useEffect(function(this: ServerConnection) {
+    useEffect(function(): void {
         setCameraIconPath(cameraEnabled? STYLE_PATH + 'assets/icons/camera-icon.svg' : STYLE_PATH + 'assets/icons/camera-disabled-icon.svg');
 
-        if(cameraEnabled) showCamera(this);
-        else hideCamera(this);
-    }, [cameraEnabled]);
+        if(cameraEnabled) showCamera(conn);
+        else hideCamera(conn);
+    }, [cameraEnabled, conn]);
 
     return(
         <button onClick={() => setCameraEnabled(!cameraEnabled)}>

@@ -11,7 +11,7 @@ export function screenShareStream(conn: ServerConnection): Stream | null {
     return null;
 }
 
-export async function shareScreen(conn: ServerConnection): Promise<void> {
+export async function shareScreen(conn: ServerConnection): Promise<string> {
     const mediaStream: MediaStream = await navigator.mediaDevices.getDisplayMedia();
 
     //send the new stream to the server
@@ -49,6 +49,7 @@ export async function shareScreen(conn: ServerConnection): Promise<void> {
     video.srcObject = mediaStream;
     video.muted = true;
     video.play();
+    return video.id;
 }
 
 // specify id of stream to hide in order to handle multiple screen shares on a single device
