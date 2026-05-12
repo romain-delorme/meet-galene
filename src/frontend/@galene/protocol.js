@@ -328,8 +328,10 @@ ServerConnection.prototype.connect = function (url) {
             sc.error(new Error('Timeout'));
             return;
         }
-        if (sc.version && d >= 15000)
+        if (sc.version && d >= 15000) {
             sc.send({ type: 'ping' });
+            console.log('send ping');
+        }
     }, 10000);
 
     this.socket.onerror = function (e) {
@@ -387,6 +389,7 @@ ServerConnection.prototype.connect = function (url) {
             return;
         }
         sc.lastServerMessage = new Date().valueOf();
+        console.log('received message:', m.type);
         switch (m.type) {
             case 'handshake': {
                 if ((m.version instanceof Array) && m.version.includes('2')) {
@@ -513,6 +516,7 @@ ServerConnection.prototype.connect = function (url) {
                 sc.send({
                     type: 'pong',
                 });
+                console.log('pong send');
                 break;
             case 'pong':
                 /* nothing */

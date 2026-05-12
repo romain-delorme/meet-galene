@@ -145,6 +145,7 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
       }
     };
 
+
     conn.onuser = (id: string, kind: string) => {
       if (disposed) return;
       const remoteUser = conn.users?.[id];
@@ -177,6 +178,7 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
         return prev;
       });
     };
+
 
     conn.ondownstream = (s: any) => {
       console.log('🎥 Nouveau flux distant', s.id, s.label, s.source);

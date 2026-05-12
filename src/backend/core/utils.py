@@ -143,7 +143,6 @@ class MetadataUpdateException(Exception):
 async def create_galene_group(group_name: str) -> None:
     '''Create a Galène group and configure it with the app's JWT signing key.'''
     galene_api = create_galene_client()
-    logger.warning(f'group créé : {group_name}')
     try:
         await galene_api.groups.create_group(groupname=group_name, definition=GroupDefinition())
         jwt_secret = settings.GALENE_CONFIGURATION["token key for jwt"]
