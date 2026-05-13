@@ -48,6 +48,13 @@ export function GaleneControlBar() {
     }
   }, [connection])
 
+  const newScreenShare = useCallback(async () => {
+    if(!localStream) return;
+    const newStream: MediaStream = await navigator.mediaDevices.getDisplayMedia();
+    newStream.getTracks().forEach((t: MediaStreamTrack) => localStream.addTrack(t))
+
+  }, [localStream])
+
   const buttonBase = css({
     display: 'flex',
     alignItems: 'center',
@@ -132,6 +139,14 @@ export function GaleneControlBar() {
         ) : (
           <RiVideoOffLine size={20} />
         )}
+      </button>
+
+      <button
+        onClick={newScreenShare}
+        aria-label="partager l'écran"
+        title="partager l'écran"
+      >
+        partager l'écran
       </button>
 
       {/* Leave room */}
