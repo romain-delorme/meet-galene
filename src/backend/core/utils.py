@@ -125,7 +125,6 @@ def generate_s3_authorization_headers(key):
 def create_galene_client():
     '''Create and return a configured Galene API client.'''
     server_url = settings.GALENE_CONFIGURATION["url"]
-    print(server_url, settings.GALENE_CONFIGURATION["api_admin_login"], settings.GALENE_CONFIGURATION["api_admin_password"])
     return GaleneAPI(server_url, username=settings.GALENE_CONFIGURATION["api_admin_login"], password=settings.GALENE_CONFIGURATION["api_admin_password"])
 
 

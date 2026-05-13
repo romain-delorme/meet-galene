@@ -20,6 +20,8 @@ const labelToSource = (label: string | null | undefined): StreamSource => {
   return 'camera';
 };
 
+
+
 export const GaleneRoom: React.FC<GaleneRoomProps> = ({
   serverUrl,
   token,

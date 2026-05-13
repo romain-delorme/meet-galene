@@ -304,6 +304,7 @@ ServerConnection.prototype.send = function (m) {
         // send on a closed socket doesn't throw
         throw (new Error('Connection is not open'));
     }
+    console.log('sending message:', m);
     return this.socket.send(JSON.stringify(m));
 };
 
@@ -389,7 +390,7 @@ ServerConnection.prototype.connect = function (url) {
             return;
         }
         sc.lastServerMessage = new Date().valueOf();
-        console.log('received message:', m.type);
+        console.log('received message:', m);
         switch (m.type) {
             case 'handshake': {
                 if ((m.version instanceof Array) && m.version.includes('2')) {

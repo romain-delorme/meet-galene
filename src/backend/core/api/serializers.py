@@ -170,7 +170,6 @@ class RoomSerializer(serializers.ModelSerializer):
 
         if should_access_room:
             room_id = instance.slug
-            logger.warning(f"generagte galene config {room_id}")
             username = request.query_params.get("username", None)
             if not username:
                 username = "User"

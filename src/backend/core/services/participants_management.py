@@ -13,6 +13,7 @@ from galene.api import (
     UserDefinition,
     GaleneError
 )
+import httpx
 """
 from livekit.api import (
     MuteRoomTrackRequest,
@@ -55,10 +56,10 @@ class ParticipantsManagement:
         user_definition = UserDefinition.model_validate({"permissions": permissions})
         try:
             await galene_api.users.update_user(groupname=group_name, username=username, definition=user_definition)
-        except GaleneError as e:
+        except (GaleneError, httpx.HTTPError) as e:
             raise ParticipantsManagementException("Could not add user") from e
         finally:
-            await galene_api.aclose()
+            await galene_api.close()
     
     @async_to_sync 
     async def remove(self, room_name: str, identity: str):
@@ -71,10 +72,10 @@ class ParticipantsManagement:
             raise ParticipantNotFoundException("User does not exist")
         try:
             await galene_api.users.delete_user(groupname=room_name, username=identity)
-        except GaleneError as e:
+        except (GaleneError, httpx.HTTPError) as e:
             raise ParticipantsManagementException("Could not delete user") from e
         finally:
-            await galene_api.aclose()
+            await galene_api.close()
     
     @async_to_sync
     async def update(self, room_name: str, identity: str, changes: Dict):
@@ -90,10 +91,10 @@ class ParticipantsManagement:
             existing_config = user.model_dump(exclude_unset=True)
             updated_config = {**existing_config, **changes}
             await galene_api.users.update_user(groupname=room_name, username=identity, definition=UserDefinition.model_validate(updated_config))
-        except GaleneError as e:
+        except (GaleneError, httpx.HTTPError) as e:
             raise ParticipantsManagementException(f"Failed to update user : {e}") from e
         finally:
-            await galene_api.aclose()
+            await galene_api.close()
     
 
 
