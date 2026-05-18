@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { GaleneContext, GaleneContextState, GaleneParticipant, GaleneTrack } from '../GaleneContext';
+import { GaleneContext, GaleneContextState, GaleneParticipant, GaleneTrack, ChatMessage } from '../GaleneContext';
 import { ServerConnection } from '../../../../../@galene/protocol';
 import type { Stream } from '../../../../../@galene/protocol';
 
@@ -42,11 +42,20 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
   onDisconnected,
   children,
 }) => {
+  const [isAudioEnabled, setIsAudioEnabled] = useState(audioEnabled);
+  const [isVideoEnabled, setIsVideoEnabled] = useState(videoEnabled);
+
   const [state, setState] = useState<GaleneContextState>({
     connection: null,
     status: 'disconnected',
     participants: [],
     tracks: [],
+    messages: [],
+    sendMessage: () => { },
+    isAudioEnabled: audioEnabled,
+    isVideoEnabled: videoEnabled,
+    toggleAudio: () => { },
+    toggleVideo: () => { },
     error: null,
   });
 
@@ -67,12 +76,22 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
       isSpeaking: false,
     };
 
+    const sendMessage = (message: string, kind = 'chat', dest = '') => {
+      try {
+        conn.chat(kind, dest, message);
+      } catch (e) {
+        console.error('sendMessage error:', e);
+      }
+    };
+
     setState((prev) => ({
       ...prev,
       connection: conn,
       status: 'connecting',
       participants: [localParticipant],
       tracks: [],
+      messages: [],
+      sendMessage,
       error: null,
     }));
 
@@ -98,13 +117,27 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
       _source: string,
       dest: string,
       chatUsername: string,
-      _time: Date,
-      _privileged: boolean,
-      _history: boolean,
-      _kind: string,
+      time: Date,
+      privileged: boolean,
+      history: boolean,
+      kind: string,
       message: string,
     ) {
-      console.log(`💬 Chat ${chatUsername}${dest ? ' → ' + dest : ''}: ${message}`);
+      if (disposed) return;
+      if (kind === 'caption') return; // captions handled separately
+
+      const chatMsg: ChatMessage = {
+        id: `${id}-${Date.now()}-${Math.random()}`,
+        peerId: id,
+        dest,
+        nick: chatUsername,
+        time,
+        privileged,
+        history,
+        kind,
+        message,
+      };
+      setState((prev) => ({ ...prev, messages: [...prev.messages, chatMsg] }));
     };
 
     conn.onusermessage = function (
@@ -203,6 +236,7 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
 
     conn.onuser = (id: string, kind: string) => {
       if (disposed) return;
+      if (id === conn.id) return; // local user is already tracked as 'local'
       const remoteUser = conn.users?.[id];
       setState((prev) => {
         if (kind === 'delete') {
@@ -212,11 +246,25 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
           };
         }
         if (!remoteUser) return prev;
+
+        let hasAudio = false;
+        let hasVideo = false;
+        if (remoteUser.streams) {
+          for (const label in remoteUser.streams) {
+            for (const streamKind in remoteUser.streams[label]) {
+              if (streamKind === 'audio') hasAudio = true;
+              if (streamKind === 'video') hasVideo = true;
+            }
+          }
+        }
+
         const participant: GaleneParticipant = {
           id,
           username: remoteUser.username || 'Participant',
           isLocal: false,
           isSpeaking: false,
+          hasAudio,
+          hasVideo,
         };
         const exists = prev.participants.some((p) => p.id === id);
         if (kind === 'add' && !exists) {
@@ -226,7 +274,14 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
           return {
             ...prev,
             participants: prev.participants.map((p) =>
-              p.id === id ? { ...p, username: participant.username } : p,
+              p.id === id
+                ? {
+                  ...p,
+                  username: participant.username,
+                  hasAudio: participant.hasAudio,
+                  hasVideo: participant.hasVideo,
+                }
+                : p,
             ),
           };
         }
@@ -339,7 +394,16 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
   }, [serverUrl, token, groupName]);
 
   async function showCamera(conn: any, video: boolean, audio: boolean) {
-    const ms = await navigator.mediaDevices.getUserMedia({ audio, video });
+    // Always request both tracks so toggles can flip them without restarting the stream.
+    // Immediately set enabled to match intent so remote peers see/hear only what's wanted.
+    let ms: MediaStream;
+    try {
+      ms = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+    } catch {
+      ms = await navigator.mediaDevices.getUserMedia({ audio, video });
+    }
+    ms.getAudioTracks().forEach((t) => { t.enabled = audio; });
+    ms.getVideoTracks().forEach((t) => { t.enabled = video; });
     const s = conn.newUpStream();
     s.label = 'camera';
     s.setStream(ms);
@@ -387,5 +451,33 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
     setState((prev) => ({ ...prev, tracks: [...prev.tracks, localTrack] }));
   }
 
-  return <GaleneContext.Provider value={state}>{children}</GaleneContext.Provider>;
+  function toggleAudio() {
+    const next = !isAudioEnabled;
+    const conn = state.connection;
+    const s = conn ? cameraStream(conn) : null;
+    if (s?.stream) {
+      s.stream.getAudioTracks().forEach((t) => { t.enabled = next; });
+    } else if (next && conn) {
+      showCamera(conn, isVideoEnabled, true).catch(console.error);
+    }
+    setIsAudioEnabled(next);
+  }
+
+  function toggleVideo() {
+    const next = !isVideoEnabled;
+    const conn = state.connection;
+    const s = conn ? cameraStream(conn) : null;
+    if (s?.stream) {
+      s.stream.getVideoTracks().forEach((t) => { t.enabled = next; });
+    } else if (next && conn) {
+      showCamera(conn, true, isAudioEnabled).catch(console.error);
+    }
+    setIsVideoEnabled(next);
+  }
+
+  return (
+    <GaleneContext.Provider value={{ ...state, isAudioEnabled, isVideoEnabled, toggleAudio, toggleVideo }}>
+      {children}
+    </GaleneContext.Provider>
+  );
 };

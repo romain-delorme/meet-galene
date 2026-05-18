@@ -20,13 +20,33 @@ export interface GaleneParticipant {
   username: string;
   isLocal: boolean;
   isSpeaking: boolean;
+  hasAudio?: boolean;
+  hasVideo?: boolean;
+}
+
+export interface ChatMessage {
+  id: string;
+  peerId: string;
+  dest: string;
+  nick: string;
+  time: Date;
+  privileged: boolean;
+  history: boolean;
+  kind: string;
+  message: string;
 }
 
 export interface GaleneContextState {
-  connection: ServerConnection | null; // The ServerConnection instance
+  connection: ServerConnection | null;
   status: 'disconnected' | 'connecting' | 'connected' | 'joined' | 'error';
   participants: GaleneParticipant[];
   tracks: GaleneTrack[];
+  messages: ChatMessage[];
+  sendMessage: (message: string, kind?: string, dest?: string) => void;
+  isAudioEnabled: boolean;
+  isVideoEnabled: boolean;
+  toggleAudio: () => void;
+  toggleVideo: () => void;
   error: string | null;
 }
 
@@ -35,5 +55,11 @@ export const GaleneContext = createContext<GaleneContextState>({
   status: 'disconnected',
   participants: [],
   tracks: [],
+  messages: [],
+  sendMessage: () => {},
+  isAudioEnabled: false,
+  isVideoEnabled: false,
+  toggleAudio: () => {},
+  toggleVideo: () => {},
   error: null,
 });

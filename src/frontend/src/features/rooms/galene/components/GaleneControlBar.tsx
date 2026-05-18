@@ -1,7 +1,7 @@
 import { useContext, useCallback } from 'react'
 import { css } from '@/styled-system/css'
 import { GaleneContext } from '../GaleneContext'
-// import { navigateTo } from '@/navigation/navigateTo'
+import { useSidePanel } from '../../hooks/useSidePanel'
 import {
   RiMicLine,
   RiMicOffLine,
@@ -9,6 +9,8 @@ import {
   RiVideoOffLine,
   RiPhoneLine,
   RiArrowUpBoxLine,
+  RiMessage2Line,
+  RiGroupLine,
 } from '@remixicon/react'
 
 /**
@@ -16,32 +18,12 @@ import {
  * Provides mic toggle, camera toggle, and a leave button.
  */
 export function GaleneControlBar() {
-  const { connection, tracks } = useContext(GaleneContext)
+  const { connection, tracks, isAudioEnabled, isVideoEnabled, toggleAudio, toggleVideo } = useContext(GaleneContext)
+  const { isChatOpen, toggleChat, isParticipantsOpen, toggleParticipants } = useSidePanel()
 
   // Find the local video track to determine current camera/mic state
   const localTrack = tracks.find((t) => t.participant?.isLocal)
   const localStream = localTrack?.stream
-
-  const isAudioEnabled =
-    localStream?.getAudioTracks().some((t) => t.enabled) ?? false
-  const isVideoEnabled =
-    localStream?.getVideoTracks().some((t) => t.enabled) ?? false
-
-  const toggleMicrophone = useCallback(() => {
-    if (!localStream) return
-    localStream.getAudioTracks().forEach((t) => {
-      t.enabled = !t.enabled
-    })
-    // Force re-render by triggering a state update — the GaleneRoom parent
-    // will detect the track change via the stream reference
-  }, [localStream])
-
-  const toggleCamera = useCallback(() => {
-    if (!localStream) return
-    localStream.getVideoTracks().forEach((t) => {
-      t.enabled = !t.enabled
-    })
-  }, [localStream])
 
   const leaveRoom = useCallback(() => {
     if (connection) {
@@ -117,7 +99,7 @@ export function GaleneControlBar() {
       {/* Microphone toggle */}
       <button
         className={`${buttonBase} ${isAudioEnabled ? controlButton : controlButtonOff}`}
-        onClick={toggleMicrophone}
+        onClick={toggleAudio}
         aria-label={isAudioEnabled ? 'Couper le micro' : 'Activer le micro'}
         title={isAudioEnabled ? 'Couper le micro' : 'Activer le micro'}
       >
@@ -131,7 +113,7 @@ export function GaleneControlBar() {
       {/* Camera toggle */}
       <button
         className={`${buttonBase} ${isVideoEnabled ? controlButton : controlButtonOff}`}
-        onClick={toggleCamera}
+        onClick={toggleVideo}
         aria-label={isVideoEnabled ? 'Couper la caméra' : 'Activer la caméra'}
         title={isVideoEnabled ? 'Couper la caméra' : 'Activer la caméra'}
       >
@@ -149,6 +131,26 @@ export function GaleneControlBar() {
         title="partager l'écran"
       >
         <RiArrowUpBoxLine size={20}/>
+      </button>
+
+      {/* Chat toggle */}
+      <button
+        className={`${buttonBase} ${isChatOpen ? controlButtonOff : controlButton}`}
+        onClick={toggleChat}
+        aria-label="Chat"
+        title="Chat"
+      >
+        <RiMessage2Line size={20} />
+      </button>
+
+      {/* Participants toggle */}
+      <button
+        className={`${buttonBase} ${isParticipantsOpen ? controlButtonOff : controlButton}`}
+        onClick={toggleParticipants}
+        aria-label="Participants"
+        title="Participants"
+      >
+        <RiGroupLine size={20} />
       </button>
 
       {/* Leave room */}

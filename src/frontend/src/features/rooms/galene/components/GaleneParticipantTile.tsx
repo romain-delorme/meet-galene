@@ -1,6 +1,7 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useContext } from 'react'
 import { css } from '@/styled-system/css'
-import { GaleneTrack } from '../GaleneContext'
+import { GaleneTrack, GaleneContext } from '../GaleneContext'
+import { RiMicOffLine } from '@remixicon/react'
 
 interface GaleneParticipantTileProps {
   track: GaleneTrack
@@ -11,20 +12,23 @@ interface GaleneParticipantTileProps {
  * Attaches the MediaStream to a <video> element and shows a name overlay.
  */
 export function GaleneParticipantTile({ track }: GaleneParticipantTileProps) {
+  const { isAudioEnabled, isVideoEnabled } = useContext(GaleneContext)
   const videoRef = useRef<HTMLVideoElement>(null)
+
+  const isLocal = track.participant?.isLocal ?? false
+  const displayName = track.participant?.username ?? 'Participant'
+
+  const showVideo = isLocal
+    ? isVideoEnabled
+    : track.stream && track.stream.getVideoTracks().length > 0
 
   useEffect(() => {
     const el = videoRef.current
     if (!el || !track.stream) return
-
-    // Only update srcObject if it actually changed
     if (el.srcObject !== track.stream) {
       el.srcObject = track.stream
     }
-  }, [track.stream])
-
-  const isLocal = track.participant?.isLocal ?? false
-  const displayName = track.participant?.username ?? 'Participant'
+  }, [track.stream, showVideo])
 
   return (
     <div
@@ -40,7 +44,7 @@ export function GaleneParticipantTile({ track }: GaleneParticipantTileProps) {
         aspectRatio: '16/9',
       })}
     >
-      {track.stream ? (
+      {showVideo && track.stream ? (
         <video
           ref={videoRef}
           autoPlay
@@ -91,6 +95,19 @@ export function GaleneParticipantTile({ track }: GaleneParticipantTileProps) {
         })}
       >
         <span>{displayName}</span>
+        {isLocal && !isAudioEnabled && (
+          <span
+            className={css({
+              display: 'inline-flex',
+              alignItems: 'center',
+              color: 'error.400',
+              marginLeft: '0.25',
+            })}
+            title="Microphone coupé"
+          >
+            <RiMicOffLine size={14} />
+          </span>
+        )}
       </div>
     </div>
   )

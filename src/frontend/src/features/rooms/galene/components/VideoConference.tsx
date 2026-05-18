@@ -4,6 +4,7 @@ import { GaleneContext } from '../GaleneContext'
 import { GaleneParticipantTile } from './GaleneParticipantTile'
 import { GaleneAudioRenderer } from './GaleneAudioRenderer'
 import { GaleneControlBar } from './GaleneControlBar'
+import { SidePanel } from './SidePanel'
 
 /**
  * Galène-native VideoConference component.
@@ -36,13 +37,22 @@ export function VideoConference() {
   return (
     <div
       className={css({
-        position: 'relative',
+        display: 'flex',
         width: '100%',
         height: '100%',
         overflow: 'hidden',
         bg: 'primaryDark.50',
       })}
     >
+      {/* Main conference area */}
+      <div
+        className={css({
+          position: 'relative',
+          flex: 1,
+          height: '100%',
+          overflow: 'hidden',
+        })}
+      >
       {/* Status indicator while connecting */}
       {status !== 'joined' && (
         <div
@@ -82,11 +92,15 @@ export function VideoConference() {
         ))}
       </div>
 
-      {/* Remote audio playback */}
-      <GaleneAudioRenderer tracks={tracks} />
+        {/* Remote audio playback */}
+        <GaleneAudioRenderer tracks={tracks} />
 
-      {/* Controls */}
-      <GaleneControlBar />
+        {/* Controls */}
+        <GaleneControlBar />
+      </div>
+
+      {/* Side panel (chat / participants) */}
+      <SidePanel />
     </div>
   )
 }

@@ -1,0 +1,132 @@
+import { useContext } from 'react'
+import { css } from '@/styled-system/css'
+import { GaleneContext } from '../../../GaleneContext'
+import {
+  RiMicLine,
+  RiMicOffLine,
+  RiVideoOnLine,
+  RiVideoOffLine,
+} from '@remixicon/react'
+
+export function ParticipantsList() {
+  const { participants, isAudioEnabled, isVideoEnabled } = useContext(GaleneContext)
+  console.log('participants : ', participants);
+
+  return (
+    <div
+      className={css({
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        overflow: 'hidden',
+      })}
+    >
+      {/* Header */}
+      <div
+        className={css({
+          padding: '0.75 1',
+          borderBottom: '1px solid',
+          borderColor: 'primaryDark.100',
+          color: 'white',
+          fontWeight: 'semibold',
+          fontSize: '14',
+          flexShrink: 0,
+        })}
+      >
+        Participants ({participants.length})
+      </div>
+
+      {/* List */}
+      <div
+        className={css({
+          flex: 1,
+          overflowY: 'auto',
+          padding: '0.5',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.25',
+        })}
+      >
+        {participants.map((p) => {
+          const micOn = p.isLocal ? isAudioEnabled : (p.hasAudio ?? false)
+          const camOn = p.isLocal ? isVideoEnabled : (p.hasVideo ?? false)
+
+          return (
+            <div
+              key={p.id}
+              className={css({
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5',
+                padding: '0.375 0.5',
+                borderRadius: '4',
+                _hover: { bg: 'primaryDark.100' },
+              })}
+            >
+              {/* Avatar */}
+              <div
+                className={css({
+                  width: '2rem',
+                  height: '2rem',
+                  borderRadius: 'full',
+                  bg: 'primary.500',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                  fontSize: '13',
+                  fontWeight: 'bold',
+                  textTransform: 'uppercase',
+                  flexShrink: 0,
+                })}
+              >
+                {p.username.charAt(0)}
+              </div>
+
+              {/* Name */}
+              <span
+                className={css({
+                  color: 'white',
+                  fontSize: '13',
+                  flex: 1,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                })}
+              >
+                {p.username}
+                {p.isLocal && (
+                  <span className={css({ color: 'primaryDark.300', marginLeft: '0.25' })}>
+                    (vous)
+                  </span>
+                )}
+              </span>
+
+              {/* Status Icons */}
+              <div
+                className={css({
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.375',
+                  flexShrink: 0,
+                })}
+              >
+                {micOn ? (
+                  <RiMicLine size={16} className={css({ color: 'primary.500' })} title="Microphone activé" />
+                ) : (
+                  <RiMicOffLine size={16} className={css({ color: 'error.400' })} title="Microphone coupé" />
+                )}
+
+                {camOn ? (
+                  <RiVideoOnLine size={16} className={css({ color: 'primary.500' })} title="Caméra activée" />
+                ) : (
+                  <RiVideoOffLine size={16} className={css({ color: 'error.400' })} title="Caméra désactivée" />
+                )}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
