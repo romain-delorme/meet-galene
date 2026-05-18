@@ -57,10 +57,8 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
     if (!serverUrl || !token) return;
 
     console.log('🚀 Initialisation de Galène...', { serverUrl, groupName });
-
     const conn = new ServerConnection();
     let disposed = false;
-
     const localParticipant: GaleneParticipant = {
       id: 'local',
       username,
@@ -77,8 +75,6 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
       error: null,
     }));
 
-    // ── onconnected ─────────────────────────────────────────────────────
-    // Mirrors the example: once connected, build credentials and join.
     conn.onconnected = async function () {
       console.log('✅ Connecté au WebSocket Galène');
       try {
@@ -96,7 +92,6 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
       }
     };
 
-    // ── onchat ───────────────────────────────────────────────────────────
     conn.onchat = function (
       id: string,
       _source: string,
@@ -111,7 +106,6 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
       console.log(`💬 Chat ${chatUsername}${dest ? ' → ' + dest : ''}: ${message}`);
     };
 
-    // ── onusermessage ────────────────────────────────────────────────────
     conn.onusermessage = function (
       _id: string,
       _dest: string,
@@ -148,8 +142,6 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
       }
     };
 
-    // ── onjoined ─────────────────────────────────────────────────────────
-    // Full switch/case matching the example pattern.
     conn.onjoined = async function (
       kind: string,
       group: string,
@@ -187,14 +179,14 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
           );
           setState((prev) => ({ ...prev, status: 'joined' }));
 
-          // Request audio & video from other participants (mirrors example).
+          // Request audio & video from other participants
           try {
             conn.request({ '': ['audio', 'video'] });
           } catch (e) {
             console.error('Erreur request:', e);
           }
 
-          // Publish local camera if requested (mirrors showCamera).
+          // Publish local camera if requested
           if ((videoEnabled || audioEnabled) && !cameraStream(conn)) {
             showCamera(conn, videoEnabled, audioEnabled).catch((e: any) =>
               console.error('Erreur showCamera:', e),
@@ -208,7 +200,6 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
       }
     };
 
-    // ── onuser ──────────────────────────────────────────────────────────
     conn.onuser = (id: string, kind: string) => {
       if (disposed) return;
       const remoteUser = conn.users?.[id];
@@ -242,11 +233,8 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
       });
     };
 
-    // ── ondownstream ─────────────────────────────────────────────────────
-    // Mirrors the example: set up onclose and ondowntrack, then attach stream.
     conn.ondownstream = (s: any) => {
       console.log('🎥 Nouveau flux distant', s.id, s.label, s.source);
-
       const participantId: string = s.source || s.id;
       const remoteUsername: string = s.username || 'Participant';
       const source = labelToSource(s.label);
@@ -305,7 +293,6 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
       };
     };
 
-    // ── onerror ──────────────────────────────────────────────────────────
     conn.onerror = (e: any) => {
       console.error('❌ Erreur Galène:', e);
       setState((prev) => ({
@@ -315,7 +302,6 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
       }));
     };
 
-    // ── onclose ──────────────────────────────────────────────────────────
     conn.onclose = () => {
       if (disposed) return;
       console.log('❌ Connexion Galène fermée (status précédent:', statusRef.current, ')');
@@ -330,7 +316,6 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
       if (onDisconnected && wasJoined) onDisconnected();
     };
 
-    // ── Connect ──────────────────────────────────────────────────────────
     try {
       conn.connect(serverUrl);
     } catch (e: any) {
@@ -347,22 +332,16 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
       try {
         conn.close();
       } catch (_) {
-        // May warn in dev (StrictMode) — harmless
+        // Ignore 
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [serverUrl, token, groupName]);
 
-  // ── showCamera ──────────────────────────────────────────────────────────
-  // Mirrors the example's showCamera: getUserMedia, create upstream, add
-  // tracks with addTransceiver (sendonly), and register in context state.
   async function showCamera(conn: any, video: boolean, audio: boolean) {
     const ms = await navigator.mediaDevices.getUserMedia({ audio, video });
-
     const s = conn.newUpStream();
     s.label = 'camera';
     s.setStream(ms);
-
     s.onclose = function (_replace: boolean) {
       ms.getTracks().forEach((t: MediaStreamTrack) => t.stop());
       setState((prev) => ({
@@ -381,15 +360,10 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
       });
     }
 
-    // Add any existing tracks.
     ms.getTracks().forEach(addTrack);
-
-    // Make sure all future tracks are added.
     ms.onaddtrack = (e: MediaStreamTrackEvent) => {
       addTrack(e.track);
     };
-
-    // Register the local track in context state.
     const localTrack: GaleneTrack = {
       id: s.localId,
       participantId: 'local',
