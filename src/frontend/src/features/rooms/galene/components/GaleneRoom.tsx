@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { GaleneContext, GaleneContextState, GaleneParticipant, GaleneTrack } from '../GaleneContext';
 import { ServerConnection } from '../../../../../@galene/protocol';
+import type { Stream } from '../../../../../@galene/protocol';
 
 interface GaleneRoomProps {
   serverUrl?: string;
@@ -9,7 +10,7 @@ interface GaleneRoomProps {
   username?: string;
   audioEnabled?: boolean;
   videoEnabled?: boolean;
-  onDisconnected?: (reason?: any) => void;
+  onDisconnected?: (reason?: unknown) => void;
   children: React.ReactNode;
 }
 
@@ -23,7 +24,7 @@ const labelToSource = (label: string | null | undefined): StreamSource => {
 /**
  * Find the local camera upstream, if any.
  */
-function cameraStream(conn: any): any | null {
+function cameraStream(conn: ServerConnection): Stream | null {
   for (const id in conn.up) {
     const s = conn.up[id];
     if (s.label === 'camera') return s;

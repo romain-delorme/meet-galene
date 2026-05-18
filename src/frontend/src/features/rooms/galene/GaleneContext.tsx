@@ -1,4 +1,5 @@
 import { createContext } from 'react';
+import type { ServerConnection } from '../../../../@galene/protocol';
 
 export interface GaleneTrack {
   id: string;
@@ -22,7 +23,7 @@ export interface GaleneParticipant {
 }
 
 export interface GaleneContextState {
-  connection: any | null; // The ServerConnection instance
+  connection: ServerConnection | null; // The ServerConnection instance
   status: 'disconnected' | 'connecting' | 'connected' | 'joined' | 'error';
   participants: GaleneParticipant[];
   tracks: GaleneTrack[];
