@@ -1,13 +1,14 @@
 import { useContext, useCallback } from 'react'
 import { css } from '@/styled-system/css'
 import { GaleneContext } from '../GaleneContext'
-import { navigateTo } from '@/navigation/navigateTo'
+// import { navigateTo } from '@/navigation/navigateTo'
 import {
   RiMicLine,
   RiMicOffLine,
   RiVideoOnLine,
   RiVideoOffLine,
   RiPhoneLine,
+  RiArrowUpBoxLine,
 } from '@remixicon/react'
 
 /**
@@ -142,11 +143,12 @@ export function GaleneControlBar() {
       </button>
 
       <button
+        className={`${buttonBase} ${controlButton}`}
         onClick={newScreenShare}
         aria-label="partager l'écran"
         title="partager l'écran"
       >
-        partager l'écran
+        <RiArrowUpBoxLine size={20}/>
       </button>
 
       {/* Leave room */}
