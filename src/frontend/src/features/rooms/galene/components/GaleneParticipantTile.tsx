@@ -41,7 +41,8 @@ export function GaleneParticipantTile({ track }: GaleneParticipantTileProps) {
         alignItems: 'center',
         justifyContent: 'center',
         minHeight: '0',
-        aspectRatio: '16/9',
+        width: '100%',
+        height: '100%',
       })}
     >
       {showVideo && track.stream ? (

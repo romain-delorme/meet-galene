@@ -38,6 +38,7 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
   username = 'User',
   audioEnabled = false,
   videoEnabled = false,
+
   onDisconnected,
   children,
 }) => {

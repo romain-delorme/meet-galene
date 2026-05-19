@@ -34,6 +34,8 @@ export function VideoConference() {
   else if (count >= 5 && count <= 9) columns = 3
   else if (count >= 10) columns = 4
 
+  const rows = Math.ceil(count / columns) || 1
+
   return (
     <div
       className={css({
@@ -84,7 +86,8 @@ export function VideoConference() {
           alignContent: 'center',
         })}
         style={{
-          gridTemplateColumns: `repeat(${columns}, 1fr)`,
+          gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+          gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
         }}
       >
         {videoTracks.map((track) => (
