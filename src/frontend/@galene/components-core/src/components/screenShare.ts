@@ -45,9 +45,9 @@ export async function shareScreen(conn: ServerConnection): Promise<void> {
     mediaStream.getTracks().forEach(addTrack);
 
     // Connect the MediaStream to the video element and start playing.
-    // video.srcObject = mediaStream;
-    // video.muted = true;
-    // video.play();
+    video.srcObject = mediaStream;
+    video.muted = true;
+    video.play();
 }
 
 // specify id of stream to hide in order to handle multiple screen shares on a single device

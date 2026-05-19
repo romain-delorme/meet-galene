@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { GaleneContext, GaleneContextState, GaleneParticipant, GaleneTrack, ChatMessage } from '../GaleneContext';
-import { Stream, ServerConnection } from '../../../../../@galene/protocol';
+import { ServerConnection } from '../../../../../@galene/protocol';
+import type { Stream } from '../../../../../@galene/protocol';
 
 interface GaleneRoomProps {
   serverUrl?: string;
@@ -56,6 +57,7 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
     isVideoEnabled: videoEnabled,
     toggleAudio: () => { },
     toggleVideo: () => { },
+    shareScreen: () => { },
     error: null,
   });
 
@@ -76,7 +78,7 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
       isSpeaking: false,
     };
 
-    const sendMessage = (message: string, kind = 'null', dest = '') => {
+    const sendMessage = (message: string, kind = 'chat', dest = '') => {
       try {
         conn.chat(kind, dest, message);
       } catch (e) {
@@ -475,8 +477,61 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
     setIsVideoEnabled(next);
   }
 
+  async function newScreenShare(): Promise<void> {
+    const conn: ServerConnection | null = state.connection;
+    const ms: MediaStream = await navigator.mediaDevices.getDisplayMedia();
+    ms.getAudioTracks().forEach((t) => { t.enabled = false; });
+    ms.getVideoTracks().forEach((t) => { t.enabled = true; });
+    const s: Stream = conn!.newUpStream();
+    s.label = 'camera';
+    s.setStream(ms);
+
+    s.onclose = function () {
+      ms.getTracks().forEach((t: MediaStreamTrack) => t.stop());
+      setState((prev) => ({
+        ...prev,
+        tracks: prev.tracks.filter((t) => t.id !== s.id && t.id !== s.localId),
+      }));
+    };
+
+    function addTrack(t: MediaStreamTrack) {
+      t.onended = function () {
+        s.close();
+      };
+      s.pc.addTransceiver(t, {
+        direction: 'sendonly',
+        streams: [ms],
+      });
+    }
+
+    ms.getTracks().forEach(addTrack);
+    ms.onaddtrack = (e: MediaStreamTrackEvent) => {
+      addTrack(e.track);
+    };
+    const localTrack: GaleneTrack = {
+      id: s.localId,
+      participantId: 'local',
+      stream: ms,
+      source: 'screen_share',
+      publication: {
+        isSubscribed: true,
+        trackSid: s.localId,
+        kind: ms.getVideoTracks().length > 0 ? 'video' : 'audio',
+        source: 'screen_share',
+      },
+      participant: {
+        id: 'local',
+        username,
+        isLocal: true,
+        isSpeaking: false,
+      },
+    };
+
+    setState((prev) => ({ ...prev, tracks: [...prev.tracks, localTrack] }));
+  }
+
   return (
-    <GaleneContext.Provider value={{ ...state, isAudioEnabled, isVideoEnabled, toggleAudio, toggleVideo }}>
+    <GaleneContext.Provider value={{ ...state, isAudioEnabled, isVideoEnabled, toggleAudio, toggleVideo, newScreenShare }}>
       {children}
     </GaleneContext.Provider>
   );

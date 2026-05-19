@@ -12,13 +12,13 @@ import {
   RiMessage2Line,
   RiGroupLine,
 } from '@remixicon/react'
-import { shareScreen } from '../../../../../@galene/components-core/src/components/screenShare'
+
 /**
  * Minimal control bar for Galène rooms.
  * Provides mic toggle, camera toggle, and a leave button.
  */
 export function GaleneControlBar() {
-  const { connection, tracks, isAudioEnabled, isVideoEnabled, toggleAudio, toggleVideo } = useContext(GaleneContext)
+  const { connection, tracks, isAudioEnabled, isVideoEnabled, toggleAudio, toggleVideo, newScreenShare } = useContext(GaleneContext)
   const { isChatOpen, toggleChat, isParticipantsOpen, toggleParticipants } = useSidePanel()
 
   // Find the local video track to determine current camera/mic state
@@ -126,7 +126,7 @@ export function GaleneControlBar() {
 
       <button
         className={`${buttonBase} ${controlButton}`}
-        onClick={() => shareScreen(connection)}
+        onClick={newScreenShare}
         aria-label="partager l'écran"
         title="partager l'écran"
       >

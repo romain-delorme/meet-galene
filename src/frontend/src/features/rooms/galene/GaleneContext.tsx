@@ -47,6 +47,7 @@ export interface GaleneContextState {
   isVideoEnabled: boolean;
   toggleAudio: () => void;
   toggleVideo: () => void;
+  newScreenShare: () => Promise<void>;
   error: string | null;
 }
 
