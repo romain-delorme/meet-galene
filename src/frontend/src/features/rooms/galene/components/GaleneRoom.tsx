@@ -57,7 +57,7 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
     isVideoEnabled: videoEnabled,
     toggleAudio: () => { },
     toggleVideo: () => { },
-    shareScreen: () => { },
+    newScreenShare: async () => { },
     error: null,
   });
 
@@ -483,7 +483,7 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
     ms.getAudioTracks().forEach((t) => { t.enabled = false; });
     ms.getVideoTracks().forEach((t) => { t.enabled = true; });
     const s: Stream = conn!.newUpStream();
-    s.label = 'camera';
+    s.label = 'screenshare';
     s.setStream(ms);
 
     s.onclose = function () {
