@@ -116,7 +116,7 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
 
     conn.onchat = function (
       id: string,
-      _source: string,
+      source: string,
       dest: string,
       chatUsername: string,
       time: Date,
@@ -130,7 +130,7 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
 
       const chatMsg: ChatMessage = {
         id: `${id}-${Date.now()}-${Math.random()}`,
-        peerId: id,
+        peerId: source,
         dest,
         nick: chatUsername,
         time,
