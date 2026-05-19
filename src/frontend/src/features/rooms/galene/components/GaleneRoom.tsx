@@ -392,7 +392,7 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
     };
   }, [serverUrl, token, groupName]);
 
-  async function showCamera(conn: any, video: boolean, audio: boolean) {
+  async function showCamera(conn: ServerConnection, video: boolean, audio: boolean) {
     // Always request both tracks so toggles can flip them without restarting the stream.
     // Immediately set enabled to match intent so remote peers see/hear only what's wanted.
     let ms: MediaStream;
