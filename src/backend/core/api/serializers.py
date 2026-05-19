@@ -174,7 +174,7 @@ class RoomSerializer(serializers.ModelSerializer):
             if not username:
                 username = "User"
             
-            galene_permissions = ["present"]
+            galene_permissions = ["present", "message"]
             if role in [models.RoleChoices.OWNER, models.RoleChoices.ADMIN]:
                 galene_permissions.extend(["op", "record"])
 

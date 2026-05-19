@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { GaleneContext, GaleneContextState, GaleneParticipant, GaleneTrack, ChatMessage } from '../GaleneContext';
-import { ServerConnection } from '../../../../../@galene/protocol';
-import type { Stream } from '../../../../../@galene/protocol';
+import { Stream, ServerConnection } from '../../../../../@galene/protocol';
 
 interface GaleneRoomProps {
   serverUrl?: string;
@@ -76,7 +75,7 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
       isSpeaking: false,
     };
 
-    const sendMessage = (message: string, kind = 'chat', dest = '') => {
+    const sendMessage = (message: string, kind = 'null', dest = '') => {
       try {
         conn.chat(kind, dest, message);
       } catch (e) {
