@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useContext } from 'react'
 import { css } from '@/styled-system/css'
 import { GaleneTrack, GaleneContext } from '../GaleneContext'
-import { RiMicOffLine } from '@remixicon/react'
+import { RiCloseCircleLine, RiMicOffLine } from '@remixicon/react'
 
 interface GaleneParticipantTileProps {
   track: GaleneTrack
@@ -30,6 +30,10 @@ export function GaleneParticipantTile({ track }: GaleneParticipantTileProps) {
       el.srcObject = track.stream
     }
   }, [track.stream, showVideo])
+
+  const stopStream = () => {
+    track.stream?.getVideoTracks().forEach((t: MediaStreamTrack) => t.stop());
+  };
 
   return (
     <div
@@ -109,6 +113,12 @@ export function GaleneParticipantTile({ track }: GaleneParticipantTileProps) {
           >
             <RiMicOffLine size={14} />
           </span>
+        )}
+
+        {track.source === 'screen_share' && (
+          <button onClick={stopStream}>
+            <RiCloseCircleLine size={14} />
+          </button>
         )}
       </div>
     </div>
