@@ -17,6 +17,7 @@ export function GaleneParticipantTile({ track }: GaleneParticipantTileProps) {
 
   const isLocal = track.participant?.isLocal ?? false
   const displayName = track.participant?.username ?? 'Participant'
+  const isCamera = track.source === 'camera';
 
   const showVideo = isLocal
     ? isVideoEnabled
@@ -56,7 +57,7 @@ export function GaleneParticipantTile({ track }: GaleneParticipantTileProps) {
             height: '100%',
             objectFit: 'cover',
             // Mirror local camera
-            ...(isLocal ? { transform: 'scaleX(-1)' } : {}),
+            ...(isLocal && isCamera ? { transform: 'scaleX(-1)' } : {}),
           })}
         />
       ) : (
