@@ -31,10 +31,10 @@ export async function enableMicrophone(conn: ServerConnection): Promise<void> {
     s.setStream(ms);
     const v = makeAudioElement(s.localId);
     if (s.stream == null) {
-        
+        return;
     }
     s.onclose = function () {
-        s.stream.getTracks().forEach((t: MediaStreamTrack) => t.stop());
+        s.stream!.getTracks().forEach((t: MediaStreamTrack) => t.stop());
         v.srcObject = null;
         v.parentNode!.removeChild(v);
     }
@@ -42,7 +42,7 @@ export async function enableMicrophone(conn: ServerConnection): Promise<void> {
     function addTrack(t: MediaStreamTrack): void {
         t.onended = function () {
             ms.onaddtrack = null;
-            s.stream.onremovetrack = null;
+            s.stream!.onremovetrack = null;
             s.close();
         }
         s.pc.addTransceiver(t, {
@@ -66,6 +66,6 @@ export async function enableMicrophone(conn: ServerConnection): Promise<void> {
 
 export async function muteMicrophone(conn: ServerConnection): Promise<void> {
     const s = audioStream(conn);
-        s!.stream.getTracks().forEach(t => t.stop());
+        s!.stream!.getTracks().forEach(t => t.stop());
         s!.close();
 }
