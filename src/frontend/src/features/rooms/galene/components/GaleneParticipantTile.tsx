@@ -1,7 +1,7 @@
-import { useEffect, useRef, useContext } from 'react'
+import { useEffect, useRef, useContext, useState } from 'react'
 import { css } from '@/styled-system/css'
 import { GaleneTrack, GaleneContext } from '../GaleneContext'
-import { RiCloseCircleLine, RiMicOffLine } from '@remixicon/react'
+import { RiCloseCircleLine, RiEyeLine, RiEyeOffLine, RiMicOffLine } from '@remixicon/react'
 
 interface GaleneParticipantTileProps {
   track: GaleneTrack
@@ -12,6 +12,7 @@ interface GaleneParticipantTileProps {
  * Attaches the MediaStream to a <video> element and shows a name overlay.
  */
 export function GaleneParticipantTile({ track }: GaleneParticipantTileProps) {
+  const [ hidden, setHidden ] = useState(false);
   const { isAudioEnabled, isVideoEnabled, stopScreenShare } = useContext(GaleneContext)
   const videoRef = useRef<HTMLVideoElement>(null)
 
@@ -31,16 +32,11 @@ export function GaleneParticipantTile({ track }: GaleneParticipantTileProps) {
     }
   }, [track.stream, showVideo])
 
-  // const stopStream = () => {
-  //   track.stream.getTracks().forEach((t: MediaStreamTrack) => {
-  //     t.stop();
-  //     track.stream.removeTrack(t);
-  //   });
-  //   track.source = 'closed';
-  //   console.log("video tracks of closed stream: ", track.stream.getVideoTracks());
-  //   console.log("track source: ", track.source);
-    
-  // };
+  const toggleStream = () => {
+    if(hidden) track.stream.getTracks().forEach((t: MediaStreamTrack) => t.enabled = true) 
+    else track.stream.getTracks().forEach((t: MediaStreamTrack) => t.enabled = false);
+    setHidden(!hidden)
+  };
 
   return (
     <div
@@ -129,6 +125,14 @@ export function GaleneParticipantTile({ track }: GaleneParticipantTileProps) {
           </button>
         )}
       </div>
+
+      <button onClick={toggleStream} aria-label={hidden? 'Afficher la vidéo' : 'Masquer la vidéo'}>
+        {hidden?
+          <RiEyeLine size={14} />
+          :
+          <RiEyeOffLine size={14} />
+        }
+      </button>
     </div>
   )
 }
