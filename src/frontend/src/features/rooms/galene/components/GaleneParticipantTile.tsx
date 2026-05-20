@@ -55,6 +55,7 @@ export function GaleneParticipantTile({ track }: GaleneParticipantTileProps) {
         height: '100%',
       })}
     >
+      {/* eslint-disable jsx-a11y/media-has-caption */}
       {showVideo && track.stream ? (
         <video
           ref={videoRef}

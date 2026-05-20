@@ -65,6 +65,64 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
   const statusRef = useRef(state.status);
   statusRef.current = state.status;
 
+  const showCamera = useCallback(async (conn: ServerConnection, video: boolean, audio: boolean) => {
+    // Always request both tracks so toggles can flip them without restarting the stream.
+    // Immediately set enabled to match intent so remote peers see/hear only what's wanted.
+    let ms: MediaStream;
+    try {
+      ms = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+    } catch {
+      ms = await navigator.mediaDevices.getUserMedia({ audio, video });
+    }
+    ms.getAudioTracks().forEach((t) => { t.enabled = audio; });
+    ms.getVideoTracks().forEach((t) => { t.enabled = video; });
+    const s = conn.newUpStream();
+    s.label = 'camera';
+    s.setStream(ms);
+    s.onclose = function () {
+      ms.getTracks().forEach((t: MediaStreamTrack) => t.stop());
+      setState((prev) => ({
+        ...prev,
+        tracks: prev.tracks.filter((t) => t.id !== s.id && t.id !== s.localId),
+      }));
+    };
+
+    function addTrack(t: MediaStreamTrack) {
+      t.onended = function () {
+        s.close();
+      };
+      s.pc.addTransceiver(t, {
+        direction: 'sendonly',
+        streams: [ms],
+      });
+    }
+
+    ms.getTracks().forEach(addTrack);
+    ms.onaddtrack = (e: MediaStreamTrackEvent) => {
+      addTrack(e.track);
+    };
+    const localTrack: GaleneTrack = {
+      id: s.localId,
+      participantId: 'local',
+      stream: ms,
+      source: 'camera',
+      publication: {
+        isSubscribed: true,
+        trackSid: s.localId,
+        kind: ms.getVideoTracks().length > 0 ? 'video' : 'audio',
+        source: 'camera',
+      },
+      participant: {
+        id: 'local',
+        username,
+        isLocal: true,
+        isSpeaking: false,
+      },
+    };
+
+    setState((prev) => ({ ...prev, tracks: [...prev.tracks, localTrack] }));
+  }, [username]);
+
   useEffect(() => {
     if (!serverUrl || !token) return;
 
@@ -104,12 +162,13 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
           ? { type: 'token', token }
           : { type: 'password', password: '' };
         await conn.join(groupName, username, creds);
-      } catch (e: any) {
+      } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : String(e);
         console.error('Erreur de join:', e);
         setState((prev) => ({
           ...prev,
           status: 'error',
-          error: e?.message ?? String(e),
+          error: message,
         }));
       }
     };
@@ -181,11 +240,11 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
     conn.onjoined = async function (
       kind: string,
       group: string,
-      _perms: any,
-      _status: any,
-      _data: any,
-      error: any,
-      message: any,
+      _perms: string[],
+      _status: Record<string, unknown>,
+      _data: Record<string, unknown>,
+      error: string | null,
+      message: string | null,
     ) {
       console.log('🎉 onjoined', kind, group, message ?? error ?? '');
 
@@ -224,7 +283,7 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
 
           // Publish local camera if requested
           if ((videoEnabled || audioEnabled) && !cameraStream(conn)) {
-            showCamera(conn, videoEnabled, audioEnabled).catch((e: any) =>
+            showCamera(conn, videoEnabled, audioEnabled).catch((e: unknown) =>
               console.error('Erreur showCamera:', e),
             );
           }
@@ -290,14 +349,14 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
         return prev;
       });
     };
-
-    conn.ondownstream = (s: any) => {
+    
+    conn.ondownstream = (s: Stream) => {
       console.log('🎥 Nouveau flux distant', s.id, s.label, s.source);
       const participantId: string = s.source || s.id;
       const remoteUsername: string = s.username || 'Participant';
       const source = labelToSource(s.label);
 
-      s.onclose = function (_replace: boolean) {
+      s.onclose = function () {
         if (disposed) return;
         console.log('🛑 Flux fermé:', s.id);
         setState((prev) => ({
@@ -351,12 +410,12 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
       };
     };
 
-    conn.onerror = (e: any) => {
+    conn.onerror = (e: unknown) => {
       console.error('❌ Erreur Galène:', e);
       setState((prev) => ({
         ...prev,
         status: 'error',
-        error: e?.message ?? String(e),
+        error: e instanceof Error ? e.message : String(e),
       }));
     };
 
@@ -376,12 +435,12 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
 
     try {
       conn.connect(serverUrl);
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error('Erreur connect:', e);
       setState((prev) => ({
         ...prev,
         status: 'error',
-        error: e?.message ?? String(e),
+        error: e instanceof Error ? e.message : String(e),
       }));
     }
 
@@ -389,69 +448,13 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
       disposed = true;
       try {
         conn.close();
-      } catch (_) {
+      } catch {
         // Ignore 
       }
     };
-  }, [serverUrl, token, groupName]);
+  }, [serverUrl, token, groupName, audioEnabled, onDisconnected, showCamera, username, videoEnabled]);
 
-  async function showCamera(conn: ServerConnection, video: boolean, audio: boolean) {
-    // Always request both tracks so toggles can flip them without restarting the stream.
-    // Immediately set enabled to match intent so remote peers see/hear only what's wanted.
-    let ms: MediaStream;
-    try {
-      ms = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
-    } catch {
-      ms = await navigator.mediaDevices.getUserMedia({ audio, video });
-    }
-    ms.getAudioTracks().forEach((t) => { t.enabled = audio; });
-    ms.getVideoTracks().forEach((t) => { t.enabled = video; });
-    const s = conn.newUpStream();
-    s.label = 'camera';
-    s.setStream(ms);
-    s.onclose = function (_replace: boolean) {
-      ms.getTracks().forEach((t: MediaStreamTrack) => t.stop());
-      setState((prev) => ({
-        ...prev,
-        tracks: prev.tracks.filter((t) => t.id !== s.id && t.id !== s.localId),
-      }));
-    };
-
-    function addTrack(t: MediaStreamTrack) {
-      t.onended = function () {
-        s.close();
-      };
-      s.pc.addTransceiver(t, {
-        direction: 'sendonly',
-        streams: [ms],
-      });
-    }
-
-    ms.getTracks().forEach(addTrack);
-    ms.onaddtrack = (e: MediaStreamTrackEvent) => {
-      addTrack(e.track);
-    };
-    const localTrack: GaleneTrack = {
-      id: s.localId,
-      participantId: 'local',
-      stream: ms,
-      source: 'camera',
-      publication: {
-        isSubscribed: true,
-        trackSid: s.localId,
-        kind: ms.getVideoTracks().length > 0 ? 'video' : 'audio',
-        source: 'camera',
-      },
-      participant: {
-        id: 'local',
-        username,
-        isLocal: true,
-        isSpeaking: false,
-      },
-    };
-
-    setState((prev) => ({ ...prev, tracks: [...prev.tracks, localTrack] }));
-  }
+  
 
   function toggleAudio() {
     const next = !isAudioEnabled;
