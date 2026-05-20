@@ -32,6 +32,6 @@ function AudioElement({ track }: { track: GaleneTrack }) {
       el.srcObject = track.stream
     }
   }, [track.stream])
-
+  {/* eslint-disable jsx-a11y/media-has-caption */}
   return <audio ref={audioRef} autoPlay playsInline />
 }

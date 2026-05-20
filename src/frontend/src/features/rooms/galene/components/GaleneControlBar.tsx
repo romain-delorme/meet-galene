@@ -18,12 +18,14 @@ import {
  * Provides mic toggle, camera toggle, and a leave button.
  */
 export function GaleneControlBar() {
-  const { connection, tracks, isAudioEnabled, isVideoEnabled, toggleAudio, toggleVideo, newScreenShare } = useContext(GaleneContext)
+  const { connection, isAudioEnabled, isVideoEnabled, toggleAudio, toggleVideo, newScreenShare } = useContext(GaleneContext) // get tracks from here when it becomes necessary
   const { isChatOpen, toggleChat, isParticipantsOpen, toggleParticipants } = useSidePanel()
-
+  
   // Find the local video track to determine current camera/mic state
-  const localTrack = tracks.find((t) => t.participant?.isLocal)
-  const localStream = localTrack?.stream
+  // Those 2 are unused, for now ?
+  // const localTrack = tracks.find((t) => t.participant?.isLocal)
+  
+  // const localStream = localTrack?.stream
 
   const leaveRoom = useCallback(() => {
     if (connection) {
