@@ -12,7 +12,7 @@ interface GaleneParticipantTileProps {
  * Attaches the MediaStream to a <video> element and shows a name overlay.
  */
 export function GaleneParticipantTile({ track }: GaleneParticipantTileProps) {
-  const { isAudioEnabled, isVideoEnabled } = useContext(GaleneContext)
+  const { isAudioEnabled, isVideoEnabled, stopScreenShare } = useContext(GaleneContext)
   const videoRef = useRef<HTMLVideoElement>(null)
 
   const isLocal = track.participant?.isLocal ?? false
@@ -31,14 +31,16 @@ export function GaleneParticipantTile({ track }: GaleneParticipantTileProps) {
     }
   }, [track.stream, showVideo])
 
-  const stopStream = () => {
-    track.stream.getTracks().forEach((t: MediaStreamTrack) => {
-      t.stop();
-      track.stream.removeTrack(t);
-    });
-    track.source = 'closed';
-    console.log("video tracks of closed stream: ", track.stream.getVideoTracks());
-  };
+  // const stopStream = () => {
+  //   track.stream.getTracks().forEach((t: MediaStreamTrack) => {
+  //     t.stop();
+  //     track.stream.removeTrack(t);
+  //   });
+  //   track.source = 'closed';
+  //   console.log("video tracks of closed stream: ", track.stream.getVideoTracks());
+  //   console.log("track source: ", track.source);
+    
+  // };
 
   return (
     <div
@@ -122,7 +124,7 @@ export function GaleneParticipantTile({ track }: GaleneParticipantTileProps) {
         )}
 
         {track.source === 'screen_share' && (
-          <button onClick={stopStream}>
+          <button onClick={() => stopScreenShare(track)}>
             <RiCloseCircleLine size={14} />
           </button>
         )}

@@ -58,6 +58,7 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
     toggleAudio: () => { },
     toggleVideo: () => { },
     newScreenShare: async () => { },
+    stopScreenShare: () => { },
     error: null,
   });
 
@@ -533,8 +534,17 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
     setState((prev) => ({ ...prev, tracks: [...prev.tracks, localTrack] }));
   }
 
+  function stopScreenShare(track: GaleneTrack){
+    track.stream.getTracks().forEach((t: MediaStreamTrack) => {
+      t.stop();
+      track.stream.removeTrack(t);
+    });
+
+    setState((prev: GaleneContextState) => ({ ...prev, tracks: [...prev.tracks.filter((t: GaleneTrack) => t !== track)] }))
+  }
+
   return (
-    <GaleneContext.Provider value={{ ...state, isAudioEnabled, isVideoEnabled, toggleAudio, toggleVideo, newScreenShare }}>
+    <GaleneContext.Provider value={{ ...state, isAudioEnabled, isVideoEnabled, toggleAudio, toggleVideo, newScreenShare, stopScreenShare }}>
       {children}
     </GaleneContext.Provider>
   );

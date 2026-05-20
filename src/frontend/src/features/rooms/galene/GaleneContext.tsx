@@ -5,12 +5,12 @@ export interface GaleneTrack {
   id: string;
   participantId: string;
   stream: MediaStream;
-  source: 'camera' | 'screen_share' | 'microphone' | 'closed';
+  source: 'camera' | 'screen_share' | 'microphone';
   publication: {
     isSubscribed: boolean;
     trackSid: string;
     kind: 'video' | 'audio';
-    source: 'camera' | 'screen_share' | 'microphone' | 'closed';
+    source: 'camera' | 'screen_share' | 'microphone';
   };
   participant: GaleneParticipant;
 }
@@ -48,6 +48,7 @@ export interface GaleneContextState {
   toggleAudio: () => void;
   toggleVideo: () => void;
   newScreenShare: () => Promise<void>;
+  stopScreenShare: (track: GaleneTrack) => void;
   error: string | null;
 }
 
@@ -63,5 +64,6 @@ export const GaleneContext = createContext<GaleneContextState>({
   toggleAudio: () => { },
   toggleVideo: () => { },
   newScreenShare: async () => { },
+  stopScreenShare: () => {  },
   error: null,
 });
