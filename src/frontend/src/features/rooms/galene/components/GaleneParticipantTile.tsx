@@ -118,13 +118,24 @@ export function GaleneParticipantTile({ track }: GaleneParticipantTileProps) {
             <RiMicOffLine size={14} />
           </span>
         )}
+      </div>
 
-        {track.source === 'screen_share' && isLocal && (
-          <button onClick={() => stopScreenShare(track)} aria-label='Arrêter le partage'>
+      {track.source === 'screen_share' && isLocal && (
+          <button 
+            onClick={() => stopScreenShare(track)} 
+            aria-label='Arrêter le partage'
+            className={css({
+              bg: 'error.400',
+              color: 'white',
+              _hover: {
+                bg: 'error.300',
+              },
+            })}
+          >
             <RiCloseCircleLine size={14} />
           </button>
-        )}
-      </div>
+      )}
+
       {!isLocal &&  (
         <button 
           onClick={toggleStream} 
