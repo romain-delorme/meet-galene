@@ -32,8 +32,10 @@ export function GaleneParticipantTile({ track }: GaleneParticipantTileProps) {
   }, [track.stream, showVideo])
 
   const stopStream = () => {
-    track.stream?.getVideoTracks().forEach((t: MediaStreamTrack) => t.stop());
-    track = {} as GaleneTrack;
+    track.stream?.getVideoTracks().forEach((t: MediaStreamTrack) => {
+      t.stop();
+      track.stream?.removeTrack(t);
+    });
   };
 
   return (
