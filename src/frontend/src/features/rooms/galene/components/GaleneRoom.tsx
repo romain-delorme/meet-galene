@@ -60,6 +60,7 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
     newScreenShare: async () => { },
     stopScreenShare: () => { },
     error: null,
+    renameParticipant: async () => {}
   });
 
   // Track the last status so onclose can decide whether to fire onDisconnected.
