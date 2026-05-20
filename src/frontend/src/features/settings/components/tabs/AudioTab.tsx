@@ -10,7 +10,7 @@ import { isSafari } from '@/utils/livekit'
 import { useTranslation } from 'react-i18next'
 import { SoundTester } from '@/components/SoundTester'
 import { ActiveSpeaker } from '@/features/rooms/components/ActiveSpeaker'
-import { usePersistentUserChoices } from '@/features/rooms/livekit/hooks/usePersistentUserChoices'
+import { usePersistentUserChoices } from '@/features/rooms/galene/hooks/usePersistentUserChoices'
 import { useNoiseReductionAvailable } from '@/features/rooms/livekit/hooks/useNoiseReductionAvailable'
 import posthog from 'posthog-js'
 import { RowWrapper } from './layout/RowWrapper'
@@ -57,10 +57,10 @@ export const AudioTab = ({ id }: AudioTabProps) => {
   const disabledProps = isMicEnabled
     ? {}
     : {
-        placeholder: t('audio.permissionsRequired'),
-        isDisabled: true,
-        defaultSelectedKey: undefined,
-      }
+      placeholder: t('audio.permissionsRequired'),
+      isDisabled: true,
+      defaultSelectedKey: undefined,
+    }
 
   const noiseReductionAvailable = useNoiseReductionAvailable()
 

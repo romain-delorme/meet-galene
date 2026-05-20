@@ -49,6 +49,7 @@ export interface GaleneContextState {
   toggleVideo: () => void;
   newScreenShare: () => Promise<void>;
   stopScreenShare: (track: GaleneTrack) => void;
+  renameParticipant: (name: string) => Promise<void>;
   error: string | null;
 }
 
@@ -64,6 +65,7 @@ export const GaleneContext = createContext<GaleneContextState>({
   toggleAudio: () => { },
   toggleVideo: () => { },
   newScreenShare: async () => { },
-  stopScreenShare: () => {  },
+  stopScreenShare: () => { },
+  renameParticipant: async () => { },
   error: null,
 });

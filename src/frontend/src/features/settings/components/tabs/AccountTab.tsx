@@ -1,14 +1,13 @@
 import { A, Badge, Button, DialogProps, Field, H, P } from '@/primitives'
 import { Trans, useTranslation } from 'react-i18next'
-import { useRoomContext } from '@livekit/components-react'
 import { useUser } from '@/features/auth'
 import { css } from '@/styled-system/css'
 import { TabPanel, TabPanelProps } from '@/primitives/Tabs'
 import { HStack } from '@/styled-system/jsx'
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import { LoginButton } from '@/components/LoginButton'
-import { usePersistentUserChoices } from '@/features/rooms/livekit/hooks/usePersistentUserChoices'
-import { useRenameParticipant } from '@/features/rooms/api/renameParticipant'
+import { usePersistentUserChoices } from '@/features/rooms/galene/hooks/usePersistentUserChoices'
+import { GaleneContext } from '@/features/rooms/galene/GaleneContext'
 
 export type AccountTabProps = Pick<DialogProps, 'onOpenChange'> &
   Pick<TabPanelProps, 'id'>
@@ -16,12 +15,11 @@ export type AccountTabProps = Pick<DialogProps, 'onOpenChange'> &
 export const AccountTab = ({ id, onOpenChange }: AccountTabProps) => {
   const { t } = useTranslation('settings')
   const { saveUsername } = usePersistentUserChoices()
-  const room = useRoomContext()
+  const { connection, renameParticipant } = useContext(GaleneContext)
+  const room = connection?.group
   const { user, isLoggedIn, logout } = useUser()
 
-  const { renameParticipant } = useRenameParticipant()
-
-  const [name, setName] = useState(room?.localParticipant.name ?? '')
+  const [name, setName] = useState(connection?.localParticipant.name ?? '')
   const userDisplay =
     user?.full_name && user?.email
       ? `${user.full_name} (${user.email})`

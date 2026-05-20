@@ -22,7 +22,7 @@ import { VideoTab } from './tabs/VideoTab'
 import { TranscriptionTab } from './tabs/TranscriptionTab'
 import { ShortcutTab } from './tabs/ShortcutTab'
 import { useRef } from 'react'
-import { useMediaQuery } from '@/features/rooms/livekit/hooks/useMediaQuery'
+import { useMediaQuery } from '@/features/rooms/hooks/useMediaQuery'
 import { SettingsDialogExtendedKey } from '@/features/settings/type'
 import { useIsAdminOrOwner } from '@/features/rooms/galene/hooks/useIsAdminOrOwner'
 import { AccessibilityTab } from './tabs/AccessibilityTab'
@@ -135,7 +135,7 @@ export const SettingsDialogExtended = (props: SettingsDialogExtended) => {
             id={SettingsDialogExtendedKey.ACCOUNT}
             onOpenChange={props.onOpenChange}
           />
-          <AudioTab id={SettingsDialogExtendedKey.AUDIO} />
+          {/*<AudioTab id={SettingsDialogExtendedKey.AUDIO} />*/}
           <VideoTab id={SettingsDialogExtendedKey.VIDEO} />
           <GeneralTab id={SettingsDialogExtendedKey.GENERAL} />
           <NotificationsTab id={SettingsDialogExtendedKey.NOTIFICATIONS} />

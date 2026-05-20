@@ -101,13 +101,11 @@ export function VideoConference() {
 
         {/* Controls */}
         <GaleneControlBar />
+        <SettingsDialogProvider />
       </div>
 
       {/* Side panel (chat / participants) */}
       <SidePanel />
-      <SettingsDialogProvider />
-
-
     </div>
   )
 }

@@ -19,12 +19,13 @@ import {
  */
 export function GaleneControlBar() {
   const { connection, isAudioEnabled, isVideoEnabled, toggleAudio, toggleVideo, newScreenShare } = useContext(GaleneContext) // get tracks from here when it becomes necessary
+  console.log('connection : ', connection);
   const { isChatOpen, toggleChat, isParticipantsOpen, toggleParticipants } = useSidePanel()
-  
+
   // Find the local video track to determine current camera/mic state
   // Those 2 are unused, for now ?
   // const localTrack = tracks.find((t) => t.participant?.isLocal)
-  
+
   // const localStream = localTrack?.stream
 
   const leaveRoom = useCallback(() => {
@@ -132,7 +133,7 @@ export function GaleneControlBar() {
         aria-label="partager l'écran"
         title="partager l'écran"
       >
-        <RiArrowUpBoxLine size={20}/>
+        <RiArrowUpBoxLine size={20} />
       </button>
 
       {/* Chat toggle */}

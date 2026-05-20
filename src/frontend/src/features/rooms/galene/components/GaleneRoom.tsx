@@ -534,6 +534,18 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
     setState((prev) => ({ ...prev, tracks: [...prev.tracks, localTrack] }));
   }
 
+  async function renameParticipant(name: string) {
+    const conn = state.connection
+    if (!conn?.group) return
+    await conn.join(conn.group, name, { type: 'token', token })
+    setState((prev) => ({
+      ...prev,
+      participants: prev.participants.map((p) =>
+        p.id === 'local' ? { ...p, username: name } : p
+      ),
+    }))
+  }
+
   function stopScreenShare(track: GaleneTrack){
     const conn: ServerConnection | null = state.connection;
     let s: Stream | null = null;
@@ -552,7 +564,7 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
   }
 
   return (
-    <GaleneContext.Provider value={{ ...state, isAudioEnabled, isVideoEnabled, toggleAudio, toggleVideo, newScreenShare, stopScreenShare }}>
+    <GaleneContext.Provider value={{ ...state, isAudioEnabled, isVideoEnabled, toggleAudio, toggleVideo, newScreenShare, stopScreenShare, renameParticipant }}>
       {children}
     </GaleneContext.Provider>
   );
