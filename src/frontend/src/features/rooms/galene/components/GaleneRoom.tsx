@@ -1,7 +1,9 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { useSnapshot } from 'valtio';
 import { GaleneContext, GaleneContextState, GaleneParticipant, GaleneTrack, ChatMessage } from '../GaleneContext';
 import { ServerConnection } from '../../../../../@galene/protocol';
 import type { Stream } from '../../../../../@galene/protocol';
+import { userChoicesStore } from '@/stores/userChoices';
 
 interface GaleneRoomProps {
   serverUrl?: string;
@@ -46,6 +48,8 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
   const [isAudioEnabled, setIsAudioEnabled] = useState(audioEnabled);
   const [isVideoEnabled, setIsVideoEnabled] = useState(videoEnabled);
 
+  const { audioDeviceId, videoDeviceId } = useSnapshot(userChoicesStore);
+
   const [state, setState] = useState<GaleneContextState>({
     connection: null,
     status: 'disconnected',
@@ -70,9 +74,14 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
   const showCamera = useCallback(async (conn: ServerConnection, video: boolean, audio: boolean) => {
     // Always request both tracks so toggles can flip them without restarting the stream.
     // Immediately set enabled to match intent so remote peers see/hear only what's wanted.
+    const micId = userChoicesStore.audioDeviceId;
+    const camId = userChoicesStore.videoDeviceId;
     let ms: MediaStream;
     try {
-      ms = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+      ms = await navigator.mediaDevices.getUserMedia({
+        audio: micId ? { deviceId: { exact: micId } } : true,
+        video: camId ? { deviceId: { exact: camId } } : true,
+      });
     } catch {
       ms = await navigator.mediaDevices.getUserMedia({ audio, video });
     }
@@ -456,7 +465,64 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
     };
   }, [serverUrl, token, groupName, audioEnabled, onDisconnected, showCamera, username, videoEnabled]);
 
-  
+  // Switch the microphone track on the live WebRTC connection when the user
+  // selects a different input device in settings.
+  useEffect(() => {
+    if (!audioDeviceId) return;
+    const conn = state.connection;
+    if (!conn) return;
+    const s = cameraStream(conn);
+    const stream = s?.stream;
+    if (!s || !stream) return;
+
+    const oldTrack = stream.getAudioTracks()[0];
+    if (!oldTrack) return;
+    // Skip if the device hasn't actually changed.
+    if (oldTrack.getSettings().deviceId === audioDeviceId) return;
+
+    navigator.mediaDevices
+      .getUserMedia({ audio: { deviceId: { exact: audioDeviceId } } })
+      .then((newStream) => {
+        const newTrack = newStream.getAudioTracks()[0];
+        if (!newTrack) return;
+        const sender = s.pc.getSenders().find((s) => s.track?.kind === 'audio');
+        if (sender) sender.replaceTrack(newTrack);
+        // Keep stream in sync so toggleAudio still works.
+        stream.removeTrack(oldTrack);
+        stream.addTrack(newTrack);
+        // Preserve the muted/unmuted state.
+        newTrack.enabled = oldTrack.enabled;
+        oldTrack.stop();
+      })
+      .catch((e) => console.error('Error switching microphone:', e));
+  }, [audioDeviceId, state.connection]);
+
+  useEffect(() => {
+    if (!videoDeviceId) return;
+    const conn = state.connection;
+    if (!conn) return;
+    const s = cameraStream(conn);
+    const stream = s?.stream;
+    if (!s || !stream) return;
+
+    const oldTrack = stream.getVideoTracks()[0];
+    if (!oldTrack) return;
+    if (oldTrack.getSettings().deviceId === videoDeviceId) return;
+
+    navigator.mediaDevices
+      .getUserMedia({ video: { deviceId: { exact: videoDeviceId } } })
+      .then((newStream) => {
+        const newTrack = newStream.getVideoTracks()[0];
+        if (!newTrack) return;
+        const sender = s.pc.getSenders().find((s) => s.track?.kind === 'video');
+        if (sender) sender.replaceTrack(newTrack);
+        stream.removeTrack(oldTrack);
+        stream.addTrack(newTrack);
+        newTrack.enabled = oldTrack.enabled;
+        oldTrack.stop();
+      })
+      .catch((e) => console.error('Error switching camera:', e));
+  }, [videoDeviceId, state.connection]);
 
   function toggleAudio() {
     const next = !isAudioEnabled;

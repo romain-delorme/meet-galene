@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react'
+import { useSnapshot } from 'valtio'
 import { GaleneTrack } from '../GaleneContext'
+import { userChoicesStore } from '@/stores/userChoices'
 
 interface GaleneAudioRendererProps {
   tracks: GaleneTrack[]
@@ -23,15 +25,23 @@ export function GaleneAudioRenderer({ tracks }: GaleneAudioRendererProps) {
 
 function AudioElement({ track }: { track: GaleneTrack }) {
   const audioRef = useRef<HTMLAudioElement>(null)
+  const { audioOutputDeviceId } = useSnapshot(userChoicesStore)
 
   useEffect(() => {
     const el = audioRef.current
     if (!el || !track.stream) return
-
     if (el.srcObject !== track.stream) {
       el.srcObject = track.stream
     }
   }, [track.stream])
+
+  // Route this audio element to the user's selected output device.
+  useEffect(() => {
+    const el = audioRef.current
+    if (!el || !audioOutputDeviceId) return
+    el.setSinkId(audioOutputDeviceId).catch(console.error)
+  }, [audioOutputDeviceId])
+
   {/* eslint-disable jsx-a11y/media-has-caption */}
   return <audio ref={audioRef} autoPlay playsInline />
 }

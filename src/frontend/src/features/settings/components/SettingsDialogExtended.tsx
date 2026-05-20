@@ -19,7 +19,6 @@ import { NotificationsTab } from './tabs/NotificationsTab'
 import { GeneralTab } from './tabs/GeneralTab'
 import { AudioTab } from './tabs/AudioTab'
 import { VideoTab } from './tabs/VideoTab'
-import { TranscriptionTab } from './tabs/TranscriptionTab'
 import { ShortcutTab } from './tabs/ShortcutTab'
 import { useRef } from 'react'
 import { useMediaQuery } from '@/features/rooms/hooks/useMediaQuery'
@@ -135,7 +134,7 @@ export const SettingsDialogExtended = (props: SettingsDialogExtended) => {
             id={SettingsDialogExtendedKey.ACCOUNT}
             onOpenChange={props.onOpenChange}
           />
-          {/*<AudioTab id={SettingsDialogExtendedKey.AUDIO} />*/}
+          <AudioTab id={SettingsDialogExtendedKey.AUDIO} />
           <VideoTab id={SettingsDialogExtendedKey.VIDEO} />
           <GeneralTab id={SettingsDialogExtendedKey.GENERAL} />
           <NotificationsTab id={SettingsDialogExtendedKey.NOTIFICATIONS} />

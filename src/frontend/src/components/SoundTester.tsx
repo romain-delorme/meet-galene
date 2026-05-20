@@ -1,15 +1,14 @@
 import { Button } from '@/primitives'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useMediaDeviceSelect } from '@livekit/components-react'
-// https://docs.livekit.io/reference/components/react/hook/usemediadeviceselect/ probably need to rewrite this component
+import { usePersistentUserChoices } from '@/features/rooms/galene/hooks/usePersistentUserChoices'
 
 export const SoundTester = () => {
   const { t } = useTranslation('settings')
   const [isPlaying, setIsPlaying] = useState(false)
   const audioRef = useRef<HTMLAudioElement>(null)
 
-  const { activeDeviceId } = useMediaDeviceSelect({ kind: 'audiooutput' })
+  const { userChoices: { audioOutputDeviceId } } = usePersistentUserChoices()
 
   useEffect(() => {
     const updateActiveId = async (deviceId: string) => {
@@ -19,8 +18,8 @@ export const SoundTester = () => {
         console.error(`Error setting sinkId: ${error}`)
       }
     }
-    updateActiveId(activeDeviceId)
-  }, [activeDeviceId])
+    if (audioOutputDeviceId) updateActiveId(audioOutputDeviceId)
+  }, [audioOutputDeviceId])
 
   // prevent pausing the sound
   navigator.mediaSession.setActionHandler('pause', function () {})
