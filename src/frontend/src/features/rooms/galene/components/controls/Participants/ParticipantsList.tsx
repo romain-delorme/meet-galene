@@ -111,15 +111,15 @@ export function ParticipantsList() {
                 })}
               >
                 {micOn ? (
-                  <RiMicLine size={16} className={css({ color: 'primary.500' })} title="Microphone activé" />
+                  <RiMicLine size={16} className={css({ color: 'primary.500' })} />
                 ) : (
-                  <RiMicOffLine size={16} className={css({ color: 'error.400' })} title="Microphone coupé" />
+                  <RiMicOffLine size={16} className={css({ color: 'error.400' })} />
                 )}
 
                 {camOn ? (
-                  <RiVideoOnLine size={16} className={css({ color: 'primary.500' })} title="Caméra activée" />
+                  <RiVideoOnLine size={16} className={css({ color: 'primary.500' })} />
                 ) : (
-                  <RiVideoOffLine size={16} className={css({ color: 'error.400' })} title="Caméra désactivée" />
+                  <RiVideoOffLine size={16} className={css({ color: 'error.400' })} />
                 )}
               </div>
             </div>

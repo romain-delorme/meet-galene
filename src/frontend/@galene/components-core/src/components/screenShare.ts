@@ -18,8 +18,11 @@ export async function shareScreen(conn: ServerConnection): Promise<void> {
     stream.label = 'screenshare';
     stream.setStream(mediaStream);
     const video: HTMLVideoElement = makeVideoElement(stream.localId);
+    if (stream.stream == null) {
+        return;
+    }
     stream.onclose = function (){
-        stream.stream.getTracks().forEach((track: MediaStreamTrack) => track.stop());
+        stream.stream!.getTracks().forEach((track: MediaStreamTrack) => track.stop());
         video.srcObject = null;
         video.parentNode!.removeChild(video);
     };
@@ -27,7 +30,7 @@ export async function shareScreen(conn: ServerConnection): Promise<void> {
     function addTrack(track: MediaStreamTrack): void {
         track.onended = function () {
             mediaStream.onaddtrack = null;
-            stream.stream.onremovetrack = null;
+            stream.stream!.onremovetrack = null;
             stream.close();
         }
         stream.pc.addTransceiver(track, {
@@ -53,7 +56,7 @@ export async function shareScreen(conn: ServerConnection): Promise<void> {
 // specify id of stream to hide in order to handle multiple screen shares on a single device
 export async function hideScreenShare(conn: ServerConnection, id: string): Promise<void> {
     const stream: Stream | undefined = conn.up[id];
-    stream!.stream.getTracks().forEach((track: MediaStreamTrack) => track.stop());
+    stream!.stream!.getTracks().forEach((track: MediaStreamTrack) => track.stop());
     stream!.close();
 }
 
