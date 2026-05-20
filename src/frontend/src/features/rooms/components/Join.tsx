@@ -6,8 +6,9 @@ import { H } from '@/primitives/H'
 import { Field } from '@/primitives/Field'
 import { Button, Form, Text } from '@/primitives'
 import { VStack } from '@/styled-system/jsx'
-import { isMobileBrowser, isSafari } from '@/utils/browser'
+import { isSafari } from '@/utils/browser'
 import { fetchRoom } from '@/features/rooms/api/fetchRoom'
+import { ApiError } from '@/api/ApiError'
 import { keys } from '@/api/queryKeys'
 import { useLobby } from '../hooks/useLobby'
 import { useQuery } from '@tanstack/react-query'
@@ -55,7 +56,7 @@ export const Join = ({
     if (!username && user?.email) {
       saveUsername(user.email)
     }
-  }, [user?.email])
+  }, [user?.email, username, saveUsername])
 
   const [videoTrack, setVideoTrack] = useState<MediaStreamTrack | null>(null)
   const [audioTrack, setAudioTrack] = useState<MediaStreamTrack | null>(null)
@@ -168,7 +169,7 @@ export const Join = ({
   })
 
   useEffect(() => {
-    if (isError && (error as any)?.statusCode === '404') {
+    if (isError && error instanceof ApiError && error.statusCode === 404) {
       enterRoom()
     }
   }, [isError, error, enterRoom])

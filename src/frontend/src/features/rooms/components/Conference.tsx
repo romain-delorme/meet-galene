@@ -39,7 +39,7 @@ export const Conference = ({
     posthog.capture('visit-room', { slug: roomId })
   }, [roomId, posthog])
 
-  const fetchKey = [keys.room, roomId]
+  const fetchKey = [keys.room, roomId, userConfig.username]
 
   const {
     mutateAsync: createRoom,
@@ -115,7 +115,7 @@ export const Conference = ({
           username={userConfig.username}
           audioEnabled={userConfig.audioEnabled}
           videoEnabled={userConfig.videoEnabled}
-          onDisconnected={(e) => {
+          onDisconnected={() => {
             connectionObserverStore.publisher = null
             connectionObserverStore.publisherChangesCount = 0
             connectionObserverStore.subscriber = null
