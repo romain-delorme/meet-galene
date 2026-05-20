@@ -534,9 +534,10 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
     setState((prev) => ({ ...prev, tracks: [...prev.tracks, localTrack] }));
   }
 
-  function stopScreenShare(conn: ServerConnection, track: GaleneTrack){
+  function stopScreenShare(track: GaleneTrack){
+    const conn: ServerConnection | null = state.connection;
     let s: Stream | null = null;
-    for(const id in conn.up){
+    for(const id in conn?.up){
       if(conn.up[id].stream === track.stream) s = conn.up[id];
     }
     console.log("Closing stream ", s);
