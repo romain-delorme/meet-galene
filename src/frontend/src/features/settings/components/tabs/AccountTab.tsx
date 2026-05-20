@@ -19,7 +19,7 @@ export const AccountTab = ({ id, onOpenChange }: AccountTabProps) => {
   const room = connection?.group
   const { user, isLoggedIn, logout } = useUser()
 
-  const [name, setName] = useState(connection?.localParticipant.name ?? '')
+  const [name, setName] = useState(connection?.username ?? '')
   const userDisplay =
     user?.full_name && user?.email
       ? `${user.full_name} (${user.email})`

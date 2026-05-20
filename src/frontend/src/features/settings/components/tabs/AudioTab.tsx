@@ -11,7 +11,6 @@ import { useTranslation } from 'react-i18next'
 import { SoundTester } from '@/components/SoundTester'
 import { ActiveSpeaker } from '@/features/rooms/components/ActiveSpeaker'
 import { usePersistentUserChoices } from '@/features/rooms/galene/hooks/usePersistentUserChoices'
-import { useNoiseReductionAvailable } from '@/features/rooms/livekit/hooks/useNoiseReductionAvailable'
 import posthog from 'posthog-js'
 import { RowWrapper } from './layout/RowWrapper'
 
@@ -25,9 +24,8 @@ export const AudioTab = ({ id }: AudioTabProps) => {
   const { localParticipant } = useRoomContext()
 
   const {
-    userChoices: { noiseReductionEnabled, audioDeviceId, audioOutputDeviceId },
+    userChoices: { audioDeviceId, audioOutputDeviceId },
     saveAudioInputDeviceId,
-    saveNoiseReductionEnabled,
     saveAudioOutputDeviceId,
   } = usePersistentUserChoices()
 
@@ -62,7 +60,6 @@ export const AudioTab = ({ id }: AudioTabProps) => {
       defaultSelectedKey: undefined,
     }
 
-  const noiseReductionAvailable = useNoiseReductionAvailable()
 
   return (
     <TabPanel padding={'md'} flex id={id}>
@@ -114,23 +111,6 @@ export const AudioTab = ({ id }: AudioTabProps) => {
           <Text variant="warning" margin="md">
             {t('audio.speakers.safariWarning')}
           </Text>
-          <div />
-        </RowWrapper>
-      )}
-      {noiseReductionAvailable && (
-        <RowWrapper heading={t('audio.noiseReduction.heading')} beta>
-          <Switch
-            aria-label={t(
-              `audio.noiseReduction.ariaLabel.${noiseReductionEnabled ? 'disable' : 'enable'}`
-            )}
-            isSelected={noiseReductionEnabled}
-            onChange={(v) => {
-              saveNoiseReductionEnabled(v)
-              if (v) posthog.capture('noise-reduction-init')
-            }}
-          >
-            {t('audio.noiseReduction.label')}
-          </Switch>
           <div />
         </RowWrapper>
       )}

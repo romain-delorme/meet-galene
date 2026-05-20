@@ -141,7 +141,7 @@ export const SettingsDialogExtended = (props: SettingsDialogExtended) => {
           <NotificationsTab id={SettingsDialogExtendedKey.NOTIFICATIONS} />
           <ShortcutTab id={SettingsDialogExtendedKey.SHORTCUTS} />
           {/* Transcription tab won't be accessible if the tab is not active in the tab list */}
-          <TranscriptionTab id={SettingsDialogExtendedKey.TRANSCRIPTION} />
+          {/*<TranscriptionTab id={SettingsDialogExtendedKey.TRANSCRIPTION} />*/}
           <AccessibilityTab id={SettingsDialogExtendedKey.ACCESSIBILITY} />
         </div>
       </Tabs>
