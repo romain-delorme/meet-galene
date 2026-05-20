@@ -65,7 +65,7 @@ function newLocalId() {
  * @typedef {Object} user
  * @property {string} username
  * @property {Array<string>} permissions
- * @property {Object<string,any>} data
+ * @property {Object<string,unknown>} data
  * @property {Object<string,Object<string,boolean>>} streams
  */
 
@@ -198,7 +198,7 @@ function ServerConnection() {
      *
      * kind is one of 'join', 'fail', 'change' or 'leave'.
      *
-     * @type{(this: ServerConnection, kind: string, group: string, permissions: Array<string>, status: Object<string,any>, data: Object<string,any>, error: string, message: string) => void}
+     * @type{(this: ServerConnection, kind: string, group: string, permissions: Array<string>, status: Object<string,unknown>, data: Object<string,unknown>, error: string, message: string) => void}
      */
     this.onjoined = null;
     /**
@@ -287,7 +287,7 @@ ServerConnection.prototype.close = function () {
  * callback.  The onclose callback will be invoked when the connection
  * is effectively closed.
  *
- * @param {any} e
+ * @param {unknown} e
  */
 ServerConnection.prototype.error = function (e) {
     if (this.onerror)
@@ -555,7 +555,7 @@ function parseTime(value) {
  * @param {string} group - The name of the group to join.
  * @param {string} username - the username to join as.
  * @param {string|Object} credentials - password or authServer.
- * @param {Object<string,any>} [data] - the initial associated data.
+ * @param {Object<string,unknown>} [data] - the initial associated data.
  */
 ServerConnection.prototype.join = async function (group, username, credentials, data) {
     let m = {
@@ -775,7 +775,7 @@ ServerConnection.prototype.chat = function (kind, dest, value) {
  *
  * @param {string} kind - One of "op", "unop", "kick", "present", "unpresent".
  * @param {string} dest - The id of the user to act upon.
- * @param {any} [value] - An action-dependent parameter.
+ * @param {unknown} [value] - An action-dependent parameter.
  */
 ServerConnection.prototype.userAction = function (kind, dest, value) {
     this.send({

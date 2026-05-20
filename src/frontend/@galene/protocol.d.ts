@@ -6,8 +6,35 @@
 export interface User {
   username: string;
   permissions: string[];
-  data: Record<string, any>;
+  data: Record<string, unknown>;
   streams: Record<string, Record<string, boolean>>;
+}
+
+interface Message {
+    type: string;
+    version?: string[];
+    kind?: string;
+    error?: string;
+    id?: string;
+    replace?: string;
+    source?: string;
+    dest?: string;
+    username?: string;
+    password?: string;
+    token?: string;
+    privileged?: boolean;
+    permissions?: string[];
+    status?: Record<string, unknown>;
+    data?: Record<string, unknown>;
+    group?: string;
+    value?: unknown;
+    noecho?: boolean;
+    time?: string | number;
+    sdp?: string;
+    candidate?: RTCIceCandidate;
+    label?: string;
+    request?: Record<string, string[]> | string[];
+    rtcConfiguration?: RTCConfiguration;
 }
 
 export class ServerConnection {
@@ -27,14 +54,14 @@ export class ServerConnection {
   constructor();
 
   close(): void;
-  error(e: any): void;
-  send(m: Record<string, any>): void;
+  error(e: unknown): void;
+  send(m: Message): void;
   connect(url: string): void;
   join(
     group: string,
     username: string,
     credentials: string | { type: string; password?: string; token?: string; authServer?: string; location?: string },
-    data?: Record<string, any>,
+    data?: Record<string, unknown>,
   ): Promise<void>;
   leave(group: string): void;
   request(what: Record<string, string[]>): void;
@@ -42,7 +69,7 @@ export class ServerConnection {
   getRTCConfiguration(): RTCConfiguration;
   newUpStream(localId?: string): Stream;
   chat(kind: string, dest: string, value: string): void;
-  userAction(kind: string, dest: string, value?: any): void;
+  userAction(kind: string, dest: string, value?: unknown): void;
   userMessage(kind: string, dest: string, value?: unknown, noecho?: boolean): void;
 
   // Callbacks
@@ -56,8 +83,8 @@ export class ServerConnection {
     kind: string,
     group: string,
     permissions: string[],
-    status: Record<string, any>,
-    data: Record<string, any>,
+    status: Record<string, unknown>,
+    data: Record<string, unknown>,
     error: string | null,
     message: string | null,
   ) => void) | null;
