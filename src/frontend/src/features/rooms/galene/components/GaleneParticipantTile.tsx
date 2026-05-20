@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useContext } from 'react'
+import { useEffect, useRef, useContext } from 'react'
 import { css } from '@/styled-system/css'
 import { GaleneTrack, GaleneContext } from '../GaleneContext'
 import { RiCloseCircleLine, RiMicOffLine } from '@remixicon/react'
