@@ -125,14 +125,25 @@ export function GaleneParticipantTile({ track }: GaleneParticipantTileProps) {
           </button>
         )}
       </div>
-
-      <button onClick={toggleStream} aria-label={hidden? 'Afficher la vidéo' : 'Masquer la vidéo'}>
-        {hidden?
-          <RiEyeLine size={14} />
-          :
-          <RiEyeOffLine size={14} />
-        }
-      </button>
+      {!isLocal &&  (
+        <button 
+          onClick={toggleStream} 
+          aria-label={hidden? 'Afficher la vidéo' : 'Masquer la vidéo'}
+          className={css({
+            bg: 'primaryDark.100',
+            color: 'white',
+            _hover: {
+              bg: 'primaryDark.200',
+            },
+          })}
+        >
+          {hidden?
+            <RiEyeLine size={18} />
+            :
+            <RiEyeOffLine size={18} />
+          }
+        </button>
+      )}      
     </div>
   )
 }
