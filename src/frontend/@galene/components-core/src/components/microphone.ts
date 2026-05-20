@@ -1,4 +1,4 @@
-import type { ServerConnection, Stream } from "../protocol";
+import type { ServerConnection, Stream } from "../../../protocol";
 
 function audioStream(conn: ServerConnection): Stream | null{
     for (const id in conn.up) {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { showCamera, hideCamera } from "../../../components-core/src/components/camera";
-import type { ServerConnection } from "../../../components-core/src/protocol";
+import type { ServerConnection } from "../../../protocol";
 
 const STYLE_PATH = 'src/frontend/@galene/components-styles/';
 

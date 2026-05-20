@@ -1,5 +1,5 @@
 import { shareScreen } from "../../../components-core/src/components/screenShare";
-import { ServerConnection } from "../../../components-core/src/protocol";
+import { ServerConnection } from "../../../protocol";
 
 const ICON_PATH = 'src/frontend/@galene/components-styles/';
 

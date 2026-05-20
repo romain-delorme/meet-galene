@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { enableMicrophone, muteMicrophone } from "../../../components-core/src/components/microphone";
-import type { ServerConnection } from "../../../components-core/src/protocol";
+import type { ServerConnection } from "../../../protocol";
 
 const STYLE_PATH = 'src/frontend/@galene/components-styles/';
 const openMicIconPath = STYLE_PATH + 'assets/icons/mic-icon.svg';

@@ -1,4 +1,4 @@
-import type { ServerConnection, Stream } from "../protocol";
+import type { ServerConnection, Stream } from "../../../protocol";
 import { makeVideoElement } from "./camera";
 
 export function screenShareStream(conn: ServerConnection): Stream | null {
