@@ -10,7 +10,6 @@ import {
 
 export function ParticipantsList() {
   const { participants, isAudioEnabled, isVideoEnabled } = useContext(GaleneContext)
-  console.log('participants : ', participants);
 
   return (
     <div
