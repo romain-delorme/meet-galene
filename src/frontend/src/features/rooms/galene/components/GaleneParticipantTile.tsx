@@ -36,6 +36,7 @@ export function GaleneParticipantTile({ track }: GaleneParticipantTileProps) {
       t.stop();
       track.stream.removeTrack(t);
     });
+    track.source = 'closed';
     console.log("video tracks of closed stream: ", track.stream.getVideoTracks());
   };
 

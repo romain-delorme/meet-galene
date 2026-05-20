@@ -5,12 +5,12 @@ export interface GaleneTrack {
   id: string;
   participantId: string;
   stream: MediaStream;
-  source: 'camera' | 'screen_share' | 'microphone';
+  source: 'camera' | 'screen_share' | 'microphone' | 'closed';
   publication: {
     isSubscribed: boolean;
     trackSid: string;
     kind: 'video' | 'audio';
-    source: 'camera' | 'screen_share' | 'microphone';
+    source: 'camera' | 'screen_share' | 'microphone' | 'closed';
   };
   participant: GaleneParticipant;
 }
