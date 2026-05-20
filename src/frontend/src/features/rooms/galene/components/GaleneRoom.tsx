@@ -534,13 +534,20 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
     setState((prev) => ({ ...prev, tracks: [...prev.tracks, localTrack] }));
   }
 
-  function stopScreenShare(track: GaleneTrack){
-    track.stream.getTracks().forEach((t: MediaStreamTrack) => {
-      t.stop();
-      track.stream.removeTrack(t);
-    });
+  function stopScreenShare(conn: ServerConnection, track: GaleneTrack){
+    let s: Stream | null = null;
+    for(const id in conn.up){
+      if(conn.up[id].stream === track.stream) s = conn.up[id];
+    }
+    console.log("Closing stream ", s);
+    s?.close();
+  
+    // track.stream.getTracks().forEach((t: MediaStreamTrack) => {
+    //   t.stop();
+    //   track.stream.removeTrack(t);
+    // });
 
-    setState((prev: GaleneContextState) => ({ ...prev, tracks: [...prev.tracks.filter((t: GaleneTrack) => t !== track)] }))
+    // setState((prev: GaleneContextState) => ({ ...prev, tracks: [...prev.tracks.filter((t: GaleneTrack) => t !== track)] }))
   }
 
   return (

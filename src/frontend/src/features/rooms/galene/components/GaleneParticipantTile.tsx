@@ -123,8 +123,8 @@ export function GaleneParticipantTile({ track }: GaleneParticipantTileProps) {
           </span>
         )}
 
-        {track.source === 'screen_share' && (
-          <button onClick={() => stopScreenShare(track)}>
+        {track.source === 'screen_share' && isLocal && (
+          <button onClick={() => stopScreenShare(track)} aria-label='Arrêter le partage'>
             <RiCloseCircleLine size={14} />
           </button>
         )}
