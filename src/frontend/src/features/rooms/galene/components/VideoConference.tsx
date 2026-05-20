@@ -5,6 +5,7 @@ import { GaleneParticipantTile } from './GaleneParticipantTile'
 import { GaleneAudioRenderer } from './GaleneAudioRenderer'
 import { GaleneControlBar } from './GaleneControlBar'
 import { SidePanel } from './SidePanel'
+import { SettingsDialogProvider } from '@/features/settings/components/SettingsDialogProvider'
 
 /**
  * Galène-native VideoConference component.
@@ -55,45 +56,45 @@ export function VideoConference() {
           overflow: 'hidden',
         })}
       >
-      {/* Status indicator while connecting */}
-      {status !== 'joined' && (
+        {/* Status indicator while connecting */}
+        {status !== 'joined' && (
+          <div
+            className={css({
+              position: 'absolute',
+              inset: '0',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 10,
+              color: 'white',
+              fontSize: '16',
+            })}
+          >
+            {status === 'connecting' && 'Connexion en cours...'}
+            {status === 'disconnected' && 'Déconnecté'}
+            {status === 'error' && 'Erreur de connexion'}
+          </div>
+        )}
+
+        {/* Video grid */}
         <div
           className={css({
-            position: 'absolute',
-            inset: '0',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 10,
-            color: 'white',
-            fontSize: '16',
+            display: 'grid',
+            gap: '0.5',
+            padding: '0.5',
+            width: '100%',
+            height: 'calc(100% - 80px)', // Leave space for control bar
+            alignContent: 'center',
           })}
+          style={{
+            gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+            gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
+          }}
         >
-          {status === 'connecting' && 'Connexion en cours...'}
-          {status === 'disconnected' && 'Déconnecté'}
-          {status === 'error' && 'Erreur de connexion'}
+          {videoTracks.map((track) => (
+            <GaleneParticipantTile key={track.id} track={track} />
+          ))}
         </div>
-      )}
-
-      {/* Video grid */}
-      <div
-        className={css({
-          display: 'grid',
-          gap: '0.5',
-          padding: '0.5',
-          width: '100%',
-          height: 'calc(100% - 80px)', // Leave space for control bar
-          alignContent: 'center',
-        })}
-        style={{
-          gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
-          gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
-        }}
-      >
-        {videoTracks.map((track) => (
-          <GaleneParticipantTile key={track.id} track={track} />
-        ))}
-      </div>
 
         {/* Remote audio playback */}
         <GaleneAudioRenderer tracks={tracks} />
@@ -104,6 +105,9 @@ export function VideoConference() {
 
       {/* Side panel (chat / participants) */}
       <SidePanel />
+      <SettingsDialogProvider />
+
+
     </div>
   )
 }

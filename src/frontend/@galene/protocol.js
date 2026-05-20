@@ -304,7 +304,9 @@ ServerConnection.prototype.send = function (m) {
         // send on a closed socket doesn't throw
         throw (new Error('Connection is not open'));
     }
-    console.log('sending message:', m);
+    if (!['ping', 'pong', 'ice'].includes(m.type)) {
+        console.log('sending message:', m);
+    }
     return this.socket.send(JSON.stringify(m));
 };
 
@@ -331,7 +333,6 @@ ServerConnection.prototype.connect = function (url) {
         }
         if (sc.version && d >= 15000) {
             sc.send({ type: 'ping' });
-            console.log('send ping');
         }
     }, 10000);
 
@@ -390,7 +391,9 @@ ServerConnection.prototype.connect = function (url) {
             return;
         }
         sc.lastServerMessage = new Date().valueOf();
-        console.log('received message:', m);
+        if (!['ping', 'pong', 'ice'].includes(m.type)) {
+            console.log('Receiving message:', m);
+        }
         switch (m.type) {
             case 'handshake': {
                 if ((m.version instanceof Array) && m.version.includes('2')) {
@@ -517,7 +520,6 @@ ServerConnection.prototype.connect = function (url) {
                 sc.send({
                     type: 'pong',
                 });
-                console.log('pong send');
                 break;
             case 'pong':
                 /* nothing */

@@ -27,6 +27,8 @@ import { SettingsDialogExtendedKey } from '@/features/settings/type'
 import { useIsAdminOrOwner } from '@/features/rooms/galene/hooks/useIsAdminOrOwner'
 import { AccessibilityTab } from './tabs/AccessibilityTab'
 
+
+console.log('SettingsDialogExtended');
 const tabsStyle = css({
   maxHeight: '40.625rem', // fixme size copied from meet settings modal
   width: '50rem', // fixme size copied from meet settings modal
