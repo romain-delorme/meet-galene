@@ -91,7 +91,7 @@ export const VideoTab = ({ id }: VideoTabProps) => {
           )}
         >
           {isCamEnabled ? (
-            // eslint-disable-next-line jsx-a11y/media-has-caption
+             
             <video
               ref={videoRef}
               autoPlay

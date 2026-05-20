@@ -30,6 +30,9 @@ export async function enableMicrophone(conn: ServerConnection): Promise<void> {
     s.label = 'microphone';
     s.setStream(ms);
     const v = makeAudioElement(s.localId);
+    if (s.stream == null) {
+        
+    }
     s.onclose = function () {
         s.stream.getTracks().forEach((t: MediaStreamTrack) => t.stop());
         v.srcObject = null;

@@ -438,7 +438,7 @@ export const Join = ({
                         transform: 'scale(1.02)',
                       })}
                     >
-                      {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+                      { }
                       <video
                         ref={videoEl}
                         width="1280"
