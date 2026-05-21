@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useRoomContext } from '@livekit/components-react'
 import { RoomEvent } from 'livekit-client'
-import { useRoomData } from '@/features/rooms/livekit/hooks/useRoomData'
 import { useIsAdminOrOwner } from '@/features/rooms/galene/hooks/useIsAdminOrOwner'
 import { useEnterRoom } from '../api/enterRoom'
 import {
@@ -10,15 +9,16 @@ import {
 } from '../api/listWaitingParticipants'
 import { decodeNotificationDataReceived } from '@/features/notifications/utils'
 import { NotificationType } from '@/features/notifications/NotificationType'
+import { GaleneContext } from '../galene/GaleneContext'
 
 export const POLL_INTERVAL_MS = 1000
 
 export const useWaitingParticipants = () => {
+  console.log('In useWaitingParticipants');
   const [listEnabled, setListEnabled] = useState(true)
 
-  const roomData = useRoomData()
-  const roomId = roomData?.id || '' // FIXME - bad practice
-
+  const { connection } = useContext(GaleneContext)
+  const roomId = connection?.group || '';
   const room = useRoomContext()
   const isAdminOrOwner = useIsAdminOrOwner()
 

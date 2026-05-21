@@ -72,7 +72,7 @@ export const Join = ({
     let cancelled = false
     navigator.mediaDevices
       .getUserMedia({
-        video: videoDeviceId ? { deviceId: { exact: videoDeviceId } } : true,
+        video: videoDeviceId ? { deviceId: videoDeviceId } : true,
       })
       .then((stream) => {
         if (cancelled) {
@@ -96,7 +96,7 @@ export const Join = ({
     let cancelled = false
     navigator.mediaDevices
       .getUserMedia({
-        audio: audioDeviceId ? { deviceId: { exact: audioDeviceId } } : true,
+        audio: audioDeviceId ? { deviceId: audioDeviceId } : true,
       })
       .then((stream) => {
         if (cancelled) {

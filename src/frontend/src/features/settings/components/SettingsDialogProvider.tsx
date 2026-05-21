@@ -4,7 +4,6 @@ import { settingsStore } from '@/stores/settings'
 
 export const SettingsDialogProvider = () => {
   const { areSettingsOpen, defaultSelectedTab } = useSnapshot(settingsStore)
-  console.log("SettingsDialogProvider", areSettingsOpen, defaultSelectedTab);
   return (
     <SettingsDialogExtended
       isOpen={areSettingsOpen}
