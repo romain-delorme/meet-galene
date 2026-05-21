@@ -1,15 +1,16 @@
 import { fetchApi } from '@/api/fetchApi'
-import { useRoomData } from '@/features/rooms/livekit/hooks/useRoomData'
+import { useRoomData } from '../hooks/useRoomData'
 
 export const useRaiseHand = () => {
   const data = useRoomData()
+  console.log('data : ', data);
 
   const raiseHand = async (raised: boolean) => {
     if (!data?.id) {
       throw new Error('Room id is not available')
     }
 
-    const token = data?.livekit?.token
+    const token = data?.galene?.token
 
     if (!token) {
       throw new Error('LiveKit token is not available')
