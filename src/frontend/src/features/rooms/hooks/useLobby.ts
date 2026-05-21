@@ -19,7 +19,6 @@ export const useLobby = ({
   username: string
   onAccepted: (e: ApiRequestEntry) => void
 }) => {
-  console.log('je suis dans le lobby');
   const [status, setStatus] = useState(ApiLobbyStatus.IDLE)
   const waitingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 

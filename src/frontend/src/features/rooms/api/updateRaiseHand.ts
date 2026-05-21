@@ -3,6 +3,7 @@ import { useRoomData } from '@/features/rooms/galene/hooks/useRoomData'
 
 export const useRaiseHand = () => {
   const data = useRoomData()
+  console.log('data : ', data);
 
   const raiseHand = async (raised: boolean) => {
     if (!data?.id) {
