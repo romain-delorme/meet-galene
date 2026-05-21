@@ -1,5 +1,5 @@
 import { fetchApi } from '@/api/fetchApi'
-import { useRoomData } from '@/features/rooms/livekit/hooks/useRoomData'
+import { useRoomData } from '@/features/rooms/galene/hooks/useRoomData'
 
 export const useRaiseHand = () => {
   const data = useRoomData()
@@ -9,7 +9,7 @@ export const useRaiseHand = () => {
       throw new Error('Room id is not available')
     }
 
-    const token = data?.livekit?.token
+    const token = data?.galene?.token
 
     if (!token) {
       throw new Error('LiveKit token is not available')

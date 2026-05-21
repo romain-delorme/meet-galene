@@ -1,6 +1,6 @@
 import { Participant, Track } from 'livekit-client'
 import { fetchApi } from '@/api/fetchApi'
-import { useRoomData } from '@/features/rooms/livekit/hooks/useRoomData'
+import { useRoomData } from '@/features/rooms/galene/hooks/useRoomData'
 import Source = Track.Source
 
 export const useParticipantPermissions = () => {

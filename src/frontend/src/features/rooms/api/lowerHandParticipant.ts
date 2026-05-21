@@ -1,6 +1,6 @@
 import { Participant } from 'livekit-client'
 import { fetchApi } from '@/api/fetchApi.ts'
-import { useRoomData } from '@/features/rooms/livekit/hooks/useRoomData'
+import { useRoomData } from '@/features/rooms/galene/hooks/useRoomData'
 
 export const useLowerHandParticipant = () => {
   const data = useRoomData()

@@ -4,7 +4,7 @@ import type {
   GridLayoutInfo,
 } from '@livekit/components-core'
 import * as React from 'react'
-import { useSize } from '@/features/rooms/livekit/hooks/useResizeObserver'
+import { useSize } from '@/features/rooms/galene/hooks/useResizeObserver'
 
 /**
  * The `useGridLayout` hook tries to select the best layout to fit all tiles.
