@@ -67,7 +67,7 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
     newScreenShare: async () => { },
     stopScreenShare: () => { },
     error: null,
-    renameParticipant: async () => {}
+    renameParticipant: async () => { }
   });
 
   // Track the last status so onclose can decide whether to fire onDisconnected.
@@ -292,8 +292,11 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
           setState((prev) => ({ ...prev, status: 'connected' }));
           conn.close();
           break;
-        case 'join':
         case 'change':
+          // Data-only update (rename, hand raise…) — no media restart needed.
+          setState((prev) => ({ ...prev, status: 'joined' }));
+          break;
+        case 'join':
           console.log(
             `Connected as ${conn.username} in group ${conn.group}.`,
           );
@@ -323,6 +326,11 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
     conn.onuser = (id: string, kind: string) => {
       if (disposed) return;
       if (id === conn.id) return; // local user is already tracked as 'local'
+
+      // Tell the newcomer about our raised hand (conn.userdata persists across renders)
+      if (kind === 'add' && conn.userdata.handRaisedAt) {
+        conn.userMessage('raisedHand', id, true);
+      }
       const remoteUser = conn.users?.[id];
       setState((prev) => {
         if (kind === 'delete') {
@@ -344,6 +352,10 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
           }
         }
 
+        const dataHandRaisedAt = typeof remoteUser.data?.handRaisedAt === 'string'
+          ? remoteUser.data.handRaisedAt
+          : undefined;
+
         const participant: GaleneParticipant = {
           id,
           username: remoteUser.username || 'Participant',
@@ -351,6 +363,7 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
           isSpeaking: false,
           hasAudio,
           hasVideo,
+          handRaisedAt: dataHandRaisedAt,
         };
         const exists = prev.participants.some((p) => p.id === id);
         if (kind === 'add' && !exists) {
@@ -366,6 +379,7 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
                   username: participant.username,
                   hasAudio: participant.hasAudio,
                   hasVideo: participant.hasVideo,
+                  handRaisedAt: dataHandRaisedAt ?? p.handRaisedAt,
                 }
                 : p,
             ),
@@ -374,7 +388,7 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
         return prev;
       });
     };
-    
+
     conn.ondownstream = (s: Stream) => {
       console.log('🎥 Nouveau flux distant', s.id, s.label, s.source);
       const participantId: string = s.source || s.id;
@@ -564,8 +578,19 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
 
   function toggleHand() {
     const next = !isHandRaised;
+    const conn = state.connection;
+    if (!conn) return;
     setIsHandRaised(next);
-    state.connection?.userMessage('raisedHand', '', next);
+    // Broadcast to current participants
+    conn.userMessage('raisedHand', '', next);
+    // Store in conn.userdata so onuser can read it when a late joiner arrives
+    conn.userdata.handRaisedAt = next ? new Date().toISOString() : '';
+    setState((prev) => ({
+      ...prev,
+      participants: prev.participants.map((p) =>
+        p.isLocal ? { ...p, handRaisedAt: next ? new Date().toISOString() : '' } : p
+      ),
+    }));
   }
 
   async function newScreenShare(): Promise<void> {
@@ -633,15 +658,15 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
     }))
   }
 
-  function stopScreenShare(track: GaleneTrack){
+  function stopScreenShare(track: GaleneTrack) {
     const conn: ServerConnection | null = state.connection;
     let s: Stream | null = null;
-    for(const id in conn?.up){
-      if(conn.up[id].stream === track.stream) s = conn.up[id];
+    for (const id in conn?.up) {
+      if (conn.up[id].stream === track.stream) s = conn.up[id];
     }
     console.log("Closing stream ", s);
     s?.close();
-  
+
     // track.stream.getTracks().forEach((t: MediaStreamTrack) => {
     //   t.stop();
     //   track.stream.removeTrack(t);

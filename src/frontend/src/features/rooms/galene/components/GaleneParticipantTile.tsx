@@ -1,7 +1,7 @@
 import { useEffect, useRef, useContext, useState } from 'react'
 import { css } from '@/styled-system/css'
 import { GaleneTrack, GaleneContext } from '../GaleneContext'
-import { RiCloseCircleLine, RiEyeLine, RiEyeOffLine, RiMicOffLine } from '@remixicon/react'
+import { RiCloseCircleLine, RiEyeLine, RiEyeOffLine, RiHand, RiMicOffLine } from '@remixicon/react'
 
 interface GaleneParticipantTileProps {
   track: GaleneTrack
@@ -14,7 +14,9 @@ interface GaleneParticipantTileProps {
 export function GaleneParticipantTile({ track }: GaleneParticipantTileProps) {
   const [ hidden, setHidden ] = useState(false);
   const [ hover, setHover ] = useState(false);
-  const { isAudioEnabled, isVideoEnabled, stopScreenShare } = useContext(GaleneContext)
+  const { isAudioEnabled, isVideoEnabled, stopScreenShare, participants } = useContext(GaleneContext)
+  const liveParticipant = participants.find((p) => p.id === track.participantId)
+  const isHandRaised = !!liveParticipant?.handRaisedAt
   const videoRef = useRef<HTMLVideoElement>(null)
 
   const isLocal = track.participant?.isLocal ?? false
@@ -56,6 +58,32 @@ export function GaleneParticipantTile({ track }: GaleneParticipantTileProps) {
         height: '100%',
       })}
     >
+      {isHandRaised && (
+        <div
+          className={css({
+            position: 'absolute',
+            top: '0',
+            left: '0',
+            padding: '0.375 0.5',
+            zIndex: 1,
+          })}
+        >
+          <span
+            className={css({
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              bg: 'rgba(0,0,0,0.5)',
+              borderRadius: '4',
+              padding: '0.25',
+              color: 'yellow.400',
+            })}
+          >
+            <RiHand size={16} />
+          </span>
+        </div>
+      )}
+
       {/* eslint-disable jsx-a11y/media-has-caption */}
       {showVideo && track.stream ? (
         <video

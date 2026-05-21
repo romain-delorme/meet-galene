@@ -2,6 +2,7 @@ import { useContext } from 'react'
 import { css } from '@/styled-system/css'
 import { GaleneContext } from '../../../GaleneContext'
 import {
+  RiHand,
   RiMicLine,
   RiMicOffLine,
   RiVideoOnLine,
@@ -120,6 +121,10 @@ export function ParticipantsList() {
                   <RiVideoOnLine size={16} className={css({ color: 'primary.500' })} />
                 ) : (
                   <RiVideoOffLine size={16} className={css({ color: 'error.400' })} />
+                )}
+
+                {p.handRaisedAt && (
+                  <RiHand size={16} className={css({ color: 'yellow.400' })} />
                 )}
               </div>
             </div>
