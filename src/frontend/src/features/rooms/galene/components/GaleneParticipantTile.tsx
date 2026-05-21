@@ -13,6 +13,7 @@ interface GaleneParticipantTileProps {
  */
 export function GaleneParticipantTile({ track }: GaleneParticipantTileProps) {
   const [ hidden, setHidden ] = useState(false);
+  const [ hover, setHover ] = useState(false);
   const { isAudioEnabled, isVideoEnabled, stopScreenShare } = useContext(GaleneContext)
   const videoRef = useRef<HTMLVideoElement>(null)
 
@@ -40,6 +41,8 @@ export function GaleneParticipantTile({ track }: GaleneParticipantTileProps) {
 
   return (
     <div
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
       className={css({
         position: 'relative',
         overflow: 'hidden',
@@ -88,6 +91,44 @@ export function GaleneParticipantTile({ track }: GaleneParticipantTileProps) {
         </div>
       )}
 
+      <div>
+        {track.source === 'screen_share' && isLocal && hover && (
+          <button 
+            onClick={() => stopScreenShare(track)} 
+            aria-label='Arrêter le partage'
+            className={css({
+              bg: 'error.400',
+              color: 'white',
+              _hover: {
+                bg: 'error.300',
+              },
+            })}
+          >
+            <RiCloseCircleLine size={14} />
+          </button>
+        )}
+
+        {!isLocal && hover && (
+          <button 
+            onClick={toggleStream} 
+            aria-label={hidden? 'Afficher la vidéo' : 'Masquer la vidéo'}
+            className={css({
+              bg: 'primaryDark.100',
+              color: 'white',
+              _hover: {
+                bg: 'primaryDark.200',
+              },
+            })}
+          >
+            {hidden?
+              <RiEyeLine size={18} />
+              :
+              <RiEyeOffLine size={18} />
+            }
+          </button>
+        )}   
+      </div>
+
       {/* Name overlay */}
       <div
         className={css({
@@ -118,44 +159,7 @@ export function GaleneParticipantTile({ track }: GaleneParticipantTileProps) {
             <RiMicOffLine size={14} />
           </span>
         )}
-      </div>
-      <span>
-        {track.source === 'screen_share' && isLocal && (
-          <button 
-            onClick={() => stopScreenShare(track)} 
-            aria-label='Arrêter le partage'
-            className={css({
-              bg: 'error.400',
-              color: 'white',
-              _hover: {
-                bg: 'error.300',
-              },
-            })}
-          >
-            <RiCloseCircleLine size={14} />
-          </button>
-        )}
-
-        {!isLocal &&  (
-          <button 
-            onClick={toggleStream} 
-            aria-label={hidden? 'Afficher la vidéo' : 'Masquer la vidéo'}
-            className={css({
-              bg: 'primaryDark.100',
-              color: 'white',
-              _hover: {
-                bg: 'primaryDark.200',
-              },
-            })}
-          >
-            {hidden?
-              <RiEyeLine size={18} />
-              :
-              <RiEyeOffLine size={18} />
-            }
-          </button>
-        )}   
-      </span>   
+      </div>   
     </div>
   )
 }
