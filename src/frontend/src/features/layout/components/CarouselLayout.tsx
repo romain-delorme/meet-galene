@@ -2,7 +2,7 @@ import type { TrackReferenceOrPlaceholder } from '@livekit/components-core'
 import { getScrollBarWidth } from '@livekit/components-core'
 import * as React from 'react'
 import { TrackLoop, useVisualStableUpdate } from '@livekit/components-react'
-import { useSize } from '@/features/rooms/livekit/hooks/useResizeObserver'
+import { useSize } from '@/features/rooms/galene/hooks/useResizeObserver'
 
 const MIN_HEIGHT = 130
 const MIN_WIDTH = 140
