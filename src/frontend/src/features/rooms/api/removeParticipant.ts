@@ -1,5 +1,5 @@
 import { Participant } from 'livekit-client'
-import { useRoomData } from '../livekit/hooks/useRoomData'
+import { useRoomData } from '../galene/hooks/useRoomData'
 import { fetchApi } from '@/api/fetchApi'
 
 export const useRemoveParticipant = () => {

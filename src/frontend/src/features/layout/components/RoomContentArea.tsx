@@ -3,9 +3,9 @@
 import React from 'react'
 import { styled } from '@/styled-system/jsx'
 import { cva } from '@/styled-system/css'
-import { useSubtitles } from '@/features/subtitle/hooks/useSubtitles'
+// import { useSubtitles } from '@/features/subtitle/hooks/useSubtitles'
 import { useSidePanel } from '@/features/rooms/hooks/useSidePanel'
-import { Subtitles } from '@/features/subtitle/component/Subtitles'
+// import { Subtitles } from '@/features/subtitle/component/Subtitles'
 import { MainNotificationToast } from '@/features/notifications/MainNotificationToast'
 import { useReactionsToolbar } from '@/features/reactions/hooks/useReactionsToolbar'
 
@@ -68,7 +68,7 @@ interface RoomContentAreaProps {
 
 export function RoomContentArea({ children }: RoomContentAreaProps) {
   const { isSidePanelOpen } = useSidePanel()
-  const { areSubtitlesOpen } = useSubtitles()
+  const areSubtitlesOpen = false;
   const { isOpen: isReactionToolbarOpen } = useReactionsToolbar()
 
   return (
@@ -79,7 +79,7 @@ export function RoomContentArea({ children }: RoomContentAreaProps) {
       <TrackAreaContainer areSubtitlesOpen={areSubtitlesOpen}>
         {children}
       </TrackAreaContainer>
-      <Subtitles />
+      {/*<Subtitles />*/}
       <MainNotificationToast />
     </RoomViewport>
   )

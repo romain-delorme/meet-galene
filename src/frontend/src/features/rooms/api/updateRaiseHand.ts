@@ -1,5 +1,5 @@
 import { fetchApi } from '@/api/fetchApi'
-import { useRoomData } from '../hooks/useRoomData'
+import { useRoomData } from '@/features/rooms/galene/hooks/useRoomData'
 
 export const useRaiseHand = () => {
   const data = useRoomData()

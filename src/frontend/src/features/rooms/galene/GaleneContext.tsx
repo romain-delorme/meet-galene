@@ -22,6 +22,7 @@ export interface GaleneParticipant {
   isSpeaking: boolean;
   hasAudio?: boolean;
   hasVideo?: boolean;
+  handRaisedAt?: string;
 }
 
 export interface ChatMessage {
@@ -45,8 +46,10 @@ export interface GaleneContextState {
   sendMessage: (message: string, kind?: string, dest?: string) => void;
   isAudioEnabled: boolean;
   isVideoEnabled: boolean;
+  isHandRaised: boolean;
   toggleAudio: () => void;
   toggleVideo: () => void;
+  toggleHand: () => void;
   newScreenShare: () => Promise<void>;
   stopScreenShare: (track: GaleneTrack) => void;
   renameParticipant: (name: string) => Promise<void>;
@@ -62,8 +65,10 @@ export const GaleneContext = createContext<GaleneContextState>({
   sendMessage: () => { },
   isAudioEnabled: false,
   isVideoEnabled: false,
+  isHandRaised: false,
   toggleAudio: () => { },
   toggleVideo: () => { },
+  toggleHand: () => { },
   newScreenShare: async () => { },
   stopScreenShare: () => { },
   renameParticipant: async () => { },

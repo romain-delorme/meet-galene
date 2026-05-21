@@ -12,6 +12,7 @@ import { ControlBarRegion } from '@/features/layout/components/ControlBarRegion'
 import { ReactionsToolbar } from '@/features/reactions/components/toolbar/ReactionsToolbar'
 import { ReactionsToggle } from '@/features/reactions/components/ReactionsToggle'
 import { ToggleDevice } from './controls/ToggleDevice'
+import { HandToggle } from './controls/HandToggle'
 import { Button, ToggleButton } from '@/primitives'
 import { useSidePanel } from '../../hooks/useSidePanel'
 import { useSettingsDialog } from '@/features/settings/hook/useSettingsDialog'
@@ -75,6 +76,7 @@ export function GaleneControlBar() {
           <ToggleDevice kind="audioinput" enabled={isAudioEnabled} toggle={toggleAudio} />
           <ToggleDevice kind="videoinput" enabled={isVideoEnabled} toggle={toggleVideo} />
           <ReactionsToggle />
+          <HandToggle />
           {browserSupportsScreenSharing && (
             <Button
               variant="primaryDark"
