@@ -47,6 +47,7 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
 }) => {
   const [isAudioEnabled, setIsAudioEnabled] = useState(audioEnabled);
   const [isVideoEnabled, setIsVideoEnabled] = useState(videoEnabled);
+  const [isHandRaised, setIsHandRaised] = useState(false);
 
   const { audioDeviceId, videoDeviceId } = useSnapshot(userChoicesStore);
 
@@ -59,8 +60,10 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
     sendMessage: () => { },
     isAudioEnabled: audioEnabled,
     isVideoEnabled: videoEnabled,
+    isHandRaised: false,
     toggleAudio: () => { },
     toggleVideo: () => { },
+    toggleHand: () => { },
     newScreenShare: async () => { },
     stopScreenShare: () => { },
     error: null,
@@ -213,7 +216,7 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
     };
 
     conn.onusermessage = function (
-      _id: string,
+      id: string,
       _dest: string,
       _msgUsername: string,
       _time: Date,
@@ -244,6 +247,17 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
             console.error(`Got unprivileged message of kind ${kind}`);
             return;
           }
+          break;
+        case 'raisedHand':
+          if (id === conn.id) break; // local state is managed by toggleHand
+          setState((prev) => ({
+            ...prev,
+            participants: prev.participants.map((p) =>
+              p.id === id
+                ? { ...p, handRaisedAt: message ? new Date().toISOString() : '' }
+                : p
+            ),
+          }));
           break;
       }
     };
@@ -548,6 +562,12 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
     setIsVideoEnabled(next);
   }
 
+  function toggleHand() {
+    const next = !isHandRaised;
+    setIsHandRaised(next);
+    state.connection?.userMessage('raisedHand', '', next);
+  }
+
   async function newScreenShare(): Promise<void> {
     const conn: ServerConnection | null = state.connection;
     const ms: MediaStream = await navigator.mediaDevices.getDisplayMedia();
@@ -631,7 +651,7 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
   }
 
   return (
-    <GaleneContext.Provider value={{ ...state, isAudioEnabled, isVideoEnabled, toggleAudio, toggleVideo, newScreenShare, stopScreenShare, renameParticipant }}>
+    <GaleneContext.Provider value={{ ...state, isAudioEnabled, isVideoEnabled, isHandRaised, toggleAudio, toggleVideo, toggleHand, newScreenShare, stopScreenShare, renameParticipant }}>
       {children}
     </GaleneContext.Provider>
   );

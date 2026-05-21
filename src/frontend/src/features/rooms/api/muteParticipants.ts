@@ -1,10 +1,10 @@
-import { Participant } from 'livekit-client'
+import { GaleneParticipant } from '../galene/GaleneContext'
 import { useMuteParticipant } from './muteParticipant'
 
 export const useMuteParticipants = () => {
   const { muteParticipant } = useMuteParticipant()
 
-  const muteParticipants = (participants: Array<Participant>) => {
+  const muteParticipants = (participants: Array<GaleneParticipant>) => {
     try {
       const promises = participants.map((participant) =>
         muteParticipant(participant)
