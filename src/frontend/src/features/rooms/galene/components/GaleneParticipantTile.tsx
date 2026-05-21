@@ -91,7 +91,16 @@ export function GaleneParticipantTile({ track }: GaleneParticipantTileProps) {
         </div>
       )}
 
-      <div>
+      <div 
+        className={css({
+          position: 'absolute',
+          top: '0',
+          right: '0',
+          padding: '0.375 0.5',
+          display: 'flex',
+          alignItems: 'center',
+        })}  
+      >
         {track.source === 'screen_share' && isLocal && hover && (
           <button 
             onClick={() => stopScreenShare(track)} 
