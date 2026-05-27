@@ -1,42 +1,30 @@
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { useRoomContext } from '@livekit/components-react'
-import { RoomEvent } from 'livekit-client'
+import { useContext, useEffect, useMemo, useState } from 'react'
 import { useIsAdminOrOwner } from '@/features/rooms/galene/hooks/useIsAdminOrOwner'
 import { useEnterRoom } from '../api/enterRoom'
 import {
   useListWaitingParticipants,
   WaitingParticipant,
 } from '../api/listWaitingParticipants'
-import { decodeNotificationDataReceived } from '@/features/notifications/utils'
 import { NotificationType } from '@/features/notifications/NotificationType'
 import { GaleneContext } from '../galene/GaleneContext'
 
 export const POLL_INTERVAL_MS = 1000
 
 export const useWaitingParticipants = () => {
-  console.log('In useWaitingParticipants');
   const [listEnabled, setListEnabled] = useState(true)
 
-  const { connection } = useContext(GaleneContext)
+  const { connection, subscribeToNotifications } = useContext(GaleneContext)
   const roomId = connection?.group || '';
-  const room = useRoomContext()
   const isAdminOrOwner = useIsAdminOrOwner()
 
-  const handleDataReceived = useCallback((payload: Uint8Array) => {
-    const notification = decodeNotificationDataReceived(payload)
-    if (notification?.type === NotificationType.ParticipantWaiting) {
-      setListEnabled(true)
-    }
-  }, [])
-
   useEffect(() => {
-    if (isAdminOrOwner) {
-      room.on(RoomEvent.DataReceived, handleDataReceived)
-    }
-    return () => {
-      room.off(RoomEvent.DataReceived, handleDataReceived)
-    }
-  }, [isAdminOrOwner, room, handleDataReceived])
+    if (!isAdminOrOwner) return
+    return subscribeToNotifications((payload) => {
+      if (payload.type === NotificationType.ParticipantWaiting) {
+        setListEnabled(true)
+      }
+    })
+  }, [isAdminOrOwner, subscribeToNotifications])
 
   const { data: waitingData, refetch: refetchWaiting } =
     useListWaitingParticipants(roomId, {

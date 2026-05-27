@@ -1,19 +1,25 @@
-import { useEffect, useRef, useContext, useState } from 'react'
+import React, { useEffect, useRef, useContext, useState } from 'react'
 import { css } from '@/styled-system/css'
 import { GaleneTrack, GaleneContext } from '../GaleneContext'
 import { RiCloseCircleLine, RiEyeLine, RiEyeOffLine, RiHand, RiMicOffLine } from '@remixicon/react'
+import { GaleneParticipantTileFocus } from './GaleneParticipantTileFocus'
+import { useTranslation } from 'react-i18next'
 
 interface GaleneParticipantTileProps {
   track: GaleneTrack
+  isPinned?: boolean
+  onPin?: () => void
 }
 
 /**
  * Renders a single participant's video tile.
  * Attaches the MediaStream to a <video> element and shows a name overlay.
  */
-export function GaleneParticipantTile({ track }: GaleneParticipantTileProps) {
+export function GaleneParticipantTile({ track, isPinned = false, onPin }: GaleneParticipantTileProps) {
   const [ hidden, setHidden ] = useState(false);
   const [ hover, setHover ] = useState(false);
+  const [hasKeyboardFocus, setHasKeyboardFocus] = React.useState(false)
+  const { t } = useTranslation('rooms', { keyPrefix: 'participantTileFocus' })
   const { isAudioEnabled, isVideoEnabled, stopScreenShare, participants } = useContext(GaleneContext)
   const liveParticipant = participants.find((p) => p.id === track.participantId)
   const isHandRaised = !!liveParticipant?.handRaisedAt
@@ -43,8 +49,18 @@ export function GaleneParticipantTile({ track }: GaleneParticipantTileProps) {
 
   return (
     <div
+      tabIndex={0}
+      aria-label={t('containerLabel', { name: displayName })}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
+      onFocus={(event) => {
+        const target = event.target as HTMLElement | null
+        setHasKeyboardFocus(!!target?.matches?.(':focus-visible'))
+      }}
+      onBlur={(event) => {
+        const nextTarget = event.relatedTarget as Node | null
+        if (!event.currentTarget.contains(nextTarget)) setHasKeyboardFocus(false)
+      }}
       className={css({
         position: 'relative',
         overflow: 'hidden',
@@ -196,7 +212,15 @@ export function GaleneParticipantTile({ track }: GaleneParticipantTileProps) {
             <RiMicOffLine size={14} />
           </span>
         )}
-      </div>   
+      </div>
+
+      {onPin && (
+        <GaleneParticipantTileFocus
+          isPinned={isPinned}
+          onPin={onPin}
+          hasKeyboardFocus={hasKeyboardFocus}
+        />
+      )}
     </div>
   )
 }

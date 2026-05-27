@@ -22,17 +22,17 @@ export default defineConfig(({ mode }) => {
           secure: false
         },
         '/group': {
-          target: 'https://dty-s26-p2-galene.k8s-cloud.centralesupelec.fr',
+          target: 'https://galene.dty-s26-p2-galene.k8s-cloud.centralesupelec.fr',
           changeOrigin: true,
           secure: false
         },
         '/ws': {
-          target: 'wss://dty-s26-p2-galene.k8s-cloud.centralesupelec.fr',
+          target: 'wss://galene.dty-s26-p2-galene.k8s-cloud.centralesupelec.fr',
           ws: true,
           changeOrigin: true,
           secure: false,
           headers: {
-            Origin: 'https://dty-s26-p2-galene.k8s-cloud.centralesupelec.fr'
+            Origin: 'https://galene.dty-s26-p2-galene.k8s-cloud.centralesupelec.fr'
           }
         }
       }

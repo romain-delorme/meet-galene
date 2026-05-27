@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useSnapshot } from 'valtio';
 import { GaleneContext, GaleneContextState, GaleneParticipant, GaleneTrack, ChatMessage } from '../GaleneContext';
+import type { NotificationPayload } from '../../../notifications/NotificationPayload';
+import type { NotificationType } from '../../../notifications/NotificationType';
 import { ServerConnection } from '../galene-protocol/protocol';
 import type { Stream } from '../galene-protocol/protocol';
 import { userChoicesStore } from '@/stores/userChoices';
@@ -67,12 +69,22 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
     newScreenShare: async () => { },
     stopScreenShare: () => { },
     error: null,
-    renameParticipant: async () => { }
+    renameParticipant: async () => { },
+    sendNotification: () => { },
+    subscribeToNotifications: () => () => { },
   });
 
   // Track the last status so onclose can decide whether to fire onDisconnected.
   const statusRef = useRef(state.status);
   statusRef.current = state.status;
+
+  type NotificationHandler = (payload: NotificationPayload, senderId: string) => void;
+  const notificationHandlers = useRef<Set<NotificationHandler>>(new Set());
+
+  const subscribeToNotifications = useCallback((handler: NotificationHandler) => {
+    notificationHandlers.current.add(handler);
+    return () => { notificationHandlers.current.delete(handler); };
+  }, []);
 
   const showCamera = useCallback(async (conn: ServerConnection, video: boolean, audio: boolean) => {
     // Always request both tracks so toggles can flip them without restarting the stream.
@@ -258,6 +270,15 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
                 : p
             ),
           }));
+          break;
+        case 'notification':
+          try {
+            const payload = JSON.parse(message as string) as NotificationPayload;
+            console.log(notificationHandlers.current);
+            notificationHandlers.current.forEach((handler) => handler(payload, id));
+          } catch (e) {
+            console.error('Failed to parse notification payload:', e);
+          }
           break;
       }
     };
@@ -658,6 +679,20 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
     }))
   }
 
+  function sendNotification({ type, destinationIdentities, additionalData = {} }: {
+    type: NotificationType
+    destinationIdentities?: string[]
+    additionalData?: Record<string, unknown>
+  }) {
+    const conn = state.connection;
+    if (!conn) return;
+    const payload = JSON.stringify({ type, ...additionalData });
+    const destinations = destinationIdentities?.length ? destinationIdentities : [''];
+    destinations.forEach((dest) => conn.userMessage('notification', dest, payload));
+  }
+
+
+
   function stopScreenShare(track: GaleneTrack) {
     const conn: ServerConnection | null = state.connection;
     let s: Stream | null = null;
@@ -676,7 +711,7 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
   }
 
   return (
-    <GaleneContext.Provider value={{ ...state, isAudioEnabled, isVideoEnabled, isHandRaised, toggleAudio, toggleVideo, toggleHand, newScreenShare, stopScreenShare, renameParticipant }}>
+    <GaleneContext.Provider value={{ ...state, isAudioEnabled, isVideoEnabled, isHandRaised, toggleAudio, toggleVideo, toggleHand, newScreenShare, stopScreenShare, renameParticipant, sendNotification, subscribeToNotifications }}>
       {children}
     </GaleneContext.Provider>
   );

@@ -1,5 +1,7 @@
 import { createContext } from 'react';
 import type { ServerConnection } from './galene-protocol/protocol';
+import type { NotificationPayload } from '../../notifications/NotificationPayload';
+import type { NotificationType } from '../../notifications/NotificationType';
 
 export interface GaleneTrack {
   id: string;
@@ -53,6 +55,14 @@ export interface GaleneContextState {
   newScreenShare: () => Promise<void>;
   stopScreenShare: (track: GaleneTrack) => void;
   renameParticipant: (name: string) => Promise<void>;
+  sendNotification: (options: {
+    type: NotificationType
+    destinationIdentities?: string[]
+    additionalData?: Record<string, unknown>
+  }) => void;
+  subscribeToNotifications: (
+    handler: (payload: NotificationPayload, senderId: string) => void
+  ) => () => void;
   error: string | null;
 }
 
@@ -72,5 +82,7 @@ export const GaleneContext = createContext<GaleneContextState>({
   newScreenShare: async () => { },
   stopScreenShare: () => { },
   renameParticipant: async () => { },
+  sendNotification: () => { },
+  subscribeToNotifications: () => () => { },
   error: null,
 });

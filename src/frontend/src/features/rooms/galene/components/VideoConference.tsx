@@ -1,25 +1,24 @@
-import { useContext } from 'react'
-import { css } from '@/styled-system/css'
+import { useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { GaleneContext } from '../GaleneContext'
 import { GaleneParticipantTile } from './GaleneParticipantTile'
 import { GaleneAudioRenderer } from './GaleneAudioRenderer'
 import { GaleneControlBar } from './GaleneControlBar'
 import { SidePanel } from './SidePanel'
 import { SettingsDialogProvider } from '@/features/settings/components/SettingsDialogProvider'
+import { RoomContentArea } from '@/features/layout/components/RoomContentArea'
+import { useScreenReaderAnnounce } from '@/hooks/useScreenReaderAnnounce'
+import { useTranslation } from 'react-i18next'
 
-/**
- * Galène-native VideoConference component.
- * Replaces the LiveKit VideoConference prefab.
- *
- * Renders:
- * - A responsive video grid with all participant tiles
- * - Hidden audio elements for remote audio playback
- * - A control bar (mic, camera, leave)
- */
 export function VideoConference() {
-  const { tracks, status } = useContext(GaleneContext)
+  const { tracks, participants } = useContext(GaleneContext)
+  const announce = useScreenReaderAnnounce()
+  const { t } = useTranslation('rooms', { keyPrefix: 'pinAnnouncements' })
+  const { t: tRooms } = useTranslation('rooms')
 
-  // Only show video tracks (streams that have at least one video track, or are camera sources)
+  const [pinnedTrackId, setPinnedTrackId] = useState<string | null>(null)
+  const lastAutoFocusedScreenShareId = useRef<string | null>(null)
+  const lastPinnedParticipantIdRef = useRef<string | null>(null)
+
   const videoTracks = tracks.filter(
     (t) =>
       t.source === 'camera' ||
@@ -27,85 +26,139 @@ export function VideoConference() {
       t.stream?.getVideoTracks().length > 0
   )
 
-  // Compute grid columns based on participant count
+  const screenShareTracks = videoTracks.filter((t) => t.source === 'screen_share')
+
+  // Auto-pin screen shares (mirrors the original logic)
+  /* eslint-disable react-hooks/exhaustive-deps */
+  useEffect(() => {
+    if (
+      screenShareTracks.length > 0 &&
+      lastAutoFocusedScreenShareId.current === null
+    ) {
+      setPinnedTrackId(screenShareTracks[0].id)
+      lastAutoFocusedScreenShareId.current = screenShareTracks[0].id
+    } else if (
+      lastAutoFocusedScreenShareId.current !== null &&
+      !screenShareTracks.some((t) => t.id === lastAutoFocusedScreenShareId.current)
+    ) {
+      setPinnedTrackId(null)
+      lastAutoFocusedScreenShareId.current = null
+    }
+  }, [screenShareTracks.map((t) => t.id).join()])
+  /* eslint-enable react-hooks/exhaustive-deps */
+
+  const focusTrack = pinnedTrackId ? videoTracks.find((t) => t.id === pinnedTrackId) ?? null : null
+  const carouselTracks = videoTracks.filter((t) => t.id !== pinnedTrackId)
+
+  const togglePin = useCallback(
+    (trackId: string) => {
+      setPinnedTrackId((prev) => {
+        const next = prev === trackId ? null : trackId
+        const track = videoTracks.find((t) => t.id === trackId)
+        const participantId = track?.participantId ?? null
+        const participant = participants.find((p) => p.id === participantId)
+        const isLocal = participant?.isLocal ?? false
+        const name = participant?.username ?? tRooms('participants.unknown')
+
+        if (!next) {
+          const lastId = lastPinnedParticipantIdRef.current
+          if (lastId) {
+            const lastP = participants.find((p) => p.id === lastId)
+            announce(
+              lastP?.isLocal ? t('self.unpin') : t('unpin', { name: lastP?.username ?? name })
+            )
+          }
+          lastPinnedParticipantIdRef.current = null
+        } else {
+          lastPinnedParticipantIdRef.current = participantId
+          announce(isLocal ? t('self.pin') : t('pin', { name }))
+        }
+        return next
+      })
+    },
+    [videoTracks, participants, announce, t, tRooms]
+  )
+
+  // Compute grid columns for the unpinned layout
   const count = videoTracks.length
   let columns = 1
   if (count === 2) columns = 2
   else if (count >= 3 && count <= 4) columns = 2
   else if (count >= 5 && count <= 9) columns = 3
   else if (count >= 10) columns = 4
-
   const rows = Math.ceil(count / columns) || 1
 
   return (
-    <div
-      className={css({
-        display: 'flex',
-        width: '100%',
-        height: '100%',
-        overflow: 'hidden',
-        bg: 'primaryDark.50',
-      })}
-    >
-      {/* Main conference area */}
-      <div
-        className={css({
-          position: 'relative',
-          flex: 1,
-          height: '100%',
-          overflow: 'hidden',
-        })}
-      >
-        {/* Status indicator while connecting */}
-        {status !== 'joined' && (
-          <div
-            className={css({
-              position: 'absolute',
-              inset: '0',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 10,
-              color: 'white',
-              fontSize: '16',
-            })}
-          >
-            {status === 'connecting' && 'Connexion en cours...'}
-            {status === 'disconnected' && 'Déconnecté'}
-            {status === 'error' && 'Erreur de connexion'}
+    <div className="lk-video-conference" style={{ overflowX: 'hidden' }}>
+      <RoomContentArea>
+        {!focusTrack ? (
+          <div className="lk-grid-layout-wrapper" style={{ height: 'auto' }}>
+            <div
+              className="lk-grid-layout"
+              style={{
+                display: 'grid',
+                gap: '0.5rem',
+                padding: '0.5rem',
+                width: '100%',
+                height: '100%',
+                gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+                gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
+              }}
+            >
+              {videoTracks.map((track) => (
+                <GaleneParticipantTile
+                  key={track.id}
+                  track={track}
+                  isPinned={false}
+                  onPin={() => togglePin(track.id)}
+                />
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="lk-focus-layout-wrapper" style={{ height: 'auto' }}>
+            <div
+              className="lk-focus-layout"
+              style={{ display: 'flex', height: '100%', gap: '0.5rem', padding: '0.5rem' }}
+            >
+              <aside
+                className="lk-carousel"
+                data-lk-orientation="vertical"
+                style={{
+                  width: '200px',
+                  flexShrink: 0,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.5rem',
+                  overflowY: 'auto',
+                }}
+              >
+                {carouselTracks.map((track) => (
+                  <div key={track.id} style={{ flex: '0 0 120px' }}>
+                    <GaleneParticipantTile
+                      track={track}
+                      isPinned={false}
+                      onPin={() => togglePin(track.id)}
+                    />
+                  </div>
+                ))}
+              </aside>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <GaleneParticipantTile
+                  track={focusTrack}
+                  isPinned={true}
+                  onPin={() => togglePin(focusTrack.id)}
+                />
+              </div>
+            </div>
           </div>
         )}
+      </RoomContentArea>
 
-        {/* Video grid */}
-        <div
-          className={css({
-            display: 'grid',
-            gap: '0.5',
-            padding: '0.5',
-            width: '100%',
-            height: 'calc(100% - 80px)', // Leave space for control bar
-            alignContent: 'center',
-          })}
-          style={{
-            gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
-            gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
-          }}
-        >
-          {videoTracks.map((track) => (
-            <GaleneParticipantTile key={track.id} track={track} />
-          ))}
-        </div>
-
-        {/* Remote audio playback */}
-        <GaleneAudioRenderer tracks={tracks} />
-
-        {/* Controls */}
-        <GaleneControlBar />
-        <SettingsDialogProvider />
-      </div>
-
-      {/* Side panel (chat / participants) */}
+      <GaleneAudioRenderer tracks={tracks} />
+      <GaleneControlBar />
       <SidePanel />
+      <SettingsDialogProvider />
     </div>
   )
 }

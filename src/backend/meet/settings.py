@@ -617,7 +617,7 @@ class Base(Configuration):
 
     # Video conference configuration
     GALENE_CONFIGURATION = {
-        "url": "https://dty-s26-p2-galene.k8s-cloud.centralesupelec.fr",
+        "url": "https://galene.dty-s26-p2-galene.k8s-cloud.centralesupelec.fr",
         "api_admin_login": environ.get("GALENE_ADMIN_LOGIN"),
         "api_admin_password": environ.get("GALENE_ADMIN_PASSWORD"),
         "token key for jwt": environ.get("APPLICATION_JWT_SECRET_KEY"),

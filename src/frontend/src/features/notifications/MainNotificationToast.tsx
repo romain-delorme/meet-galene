@@ -1,93 +1,91 @@
-import { useCallback, useEffect } from 'react'
-import { useRoomContext } from '@livekit/components-react'
-import { Participant, RemoteParticipant, RoomEvent } from 'livekit-client'
-import { ChatMessage, isMobileBrowser } from '@livekit/components-core'
+import { useCallback, useContext, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Div } from '@/primitives'
+import { isMobileBrowser } from '@/utils/browser'
+import { GaleneContext, GaleneParticipant } from '../rooms/galene/GaleneContext'
 import { NotificationType } from './NotificationType'
 import { NotificationDuration } from './NotificationDuration'
-import { decodeNotificationDataReceived } from './utils'
 import { useNotificationSound } from '@/features/notifications/hooks/useSoundNotification'
-import { ToastProvider, toastQueue } from './components/ToastProvider'
-import { WaitingParticipantNotification } from './components/WaitingParticipantNotification'
+import { toastQueue } from './components/ToastProvider'
+import { NotificationProvider } from './components/NotificationProvider'
 import { layoutStore } from '@/stores/layout'
 import { PanelId } from '@/features/rooms/hooks/useSidePanel'
 import { useScreenReaderAnnounce } from '@/hooks/useScreenReaderAnnounce'
 import { Emoji } from '@/features/reactions/types'
 import { useReactions } from '@/features/reactions/hooks/useReactions'
 
+const toToastParticipant = (p: GaleneParticipant) => ({
+  name: p.username,
+  isLocal: p.isLocal,
+})
+
 export const MainNotificationToast = () => {
-  const room = useRoomContext()
+  const { participants, messages, status, subscribeToNotifications } =
+    useContext(GaleneContext)
   const { triggerNotificationSound } = useNotificationSound()
   const { t } = useTranslation('notifications')
   const announce = useScreenReaderAnnounce()
-
   const { appendReaction } = useReactions()
 
-  useEffect(() => {
-    const handleChatMessage = (
-      chatMessage: ChatMessage,
-      participant?: Participant | undefined
-    ) => {
-      if (!participant || participant.isLocal) return
-      triggerNotificationSound(NotificationType.MessageReceived)
-      toastQueue.add(
-        {
-          participant: participant,
-          message: chatMessage.message,
-          type: NotificationType.MessageReceived,
-        },
-        { timeout: NotificationDuration.MESSAGE }
-      )
-      if (layoutStore.activePanelId !== PanelId.CHAT) {
-        announce(
-          t('chatMessageReceived', {
-            name: participant.name || t('defaultName'),
-            message: chatMessage.message,
-          }),
-          'polite'
-        )
-      }
-    }
-    room.on(RoomEvent.ChatMessage, handleChatMessage)
-    return () => {
-      room.off(RoomEvent.ChatMessage, handleChatMessage)
-    }
-  }, [room, triggerNotificationSound, announce, t])
+  // Refs so handlers always read the latest values without being deps
+  const participantsRef = useRef(participants)
+  participantsRef.current = participants
 
+  // --- Chat messages ---
+  const lastMessage = messages[messages.length - 1]
+  useEffect(() => {
+    if (!lastMessage || lastMessage.history || lastMessage.peerId === 'local') return
+    triggerNotificationSound(NotificationType.MessageReceived)
+    toastQueue.add(
+      {
+        participant: { name: lastMessage.nick },
+        message: lastMessage.message,
+        type: NotificationType.MessageReceived,
+      },
+      { timeout: NotificationDuration.MESSAGE }
+    )
+    if (layoutStore.activePanelId !== PanelId.CHAT) {
+      announce(
+        t('chatMessageReceived', {
+          name: lastMessage.nick || t('defaultName'),
+          message: lastMessage.message,
+        }),
+        'polite'
+      )
+    }
+  }, [lastMessage, triggerNotificationSound, announce, t])
+
+  // --- Data notifications ---
   const handleEmoji = useCallback(
-    (emoji: string, participant: Participant) => {
+    (emoji: string, participantName: string) => {
       if (!emoji || !Object.values(Emoji).includes(emoji as Emoji)) return
-      appendReaction(emoji as Emoji, participant)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      appendReaction(emoji as Emoji, { name: participantName, identity: participantName } as any)
     },
     [appendReaction]
   )
+  const handleEmojiRef = useRef(handleEmoji)
+  handleEmojiRef.current = handleEmoji
 
   useEffect(() => {
-    const handleDataReceived = (
-      payload: Uint8Array,
-      participant?: RemoteParticipant
-    ) => {
-      const notification = decodeNotificationDataReceived(payload)
-
-      if (!notification) return
+    return subscribeToNotifications((notification, senderId) => {
+      const sender = participantsRef.current.find((p) => p.id === senderId)
+      const toastParticipant = sender
+        ? { ...toToastParticipant(sender), participantId: sender.id }
+        : undefined
 
       switch (notification.type) {
         case NotificationType.ParticipantMuted:
-          if (participant) {
-            toastQueue.add(
-              {
-                participant,
-                type: NotificationType.ParticipantMuted,
-              },
-              { timeout: NotificationDuration.ALERT }
-            )
-          }
-
+          toastQueue.add(
+            { participant: toastParticipant, type: NotificationType.ParticipantMuted },
+            { timeout: NotificationDuration.ALERT }
+          )
           break
         case NotificationType.ReactionReceived:
-          if (notification.data?.emoji && participant)
-            handleEmoji(notification.data.emoji, participant)
+          if (notification.data?.emoji)
+            handleEmojiRef.current(
+              notification.data.emoji,
+              sender?.username ?? senderId
+            )
           break
         case NotificationType.TranscriptionStarted:
         case NotificationType.TranscriptionStopped:
@@ -96,20 +94,14 @@ export const MainNotificationToast = () => {
         case NotificationType.TranscriptionLimitReached:
         case NotificationType.ScreenRecordingLimitReached:
           toastQueue.add(
-            {
-              participant,
-              type: notification.type,
-            },
+            { participant: toastParticipant, type: notification.type },
             { timeout: NotificationDuration.ALERT }
           )
           break
         case NotificationType.TranscriptionRequested:
         case NotificationType.ScreenRecordingRequested:
           toastQueue.add(
-            {
-              participant,
-              type: notification.type,
-            },
+            { participant: toastParticipant, type: notification.type },
             { timeout: NotificationDuration.RECORDING_REQUESTED }
           )
           break
@@ -117,126 +109,90 @@ export const MainNotificationToast = () => {
           const removedSources = notification?.data?.removedSources
           if (!removedSources?.length) break
           toastQueue.add(
-            {
-              participant,
-              type: notification.type,
-              removedSources: removedSources,
-            },
+            { participant: toastParticipant, type: notification.type, removedSources },
             { timeout: NotificationDuration.ALERT }
           )
           break
         }
-        default:
-          return
       }
-    }
-    room.on(RoomEvent.DataReceived, handleDataReceived)
-    return () => {
-      room.off(RoomEvent.DataReceived, handleDataReceived)
-    }
-  }, [room, handleEmoji])
+    })
+  }, [subscribeToNotifications])
 
+  // --- Participant join / leave ---
+  const prevParticipantIdsRef = useRef<Set<string>>(new Set())
   useEffect(() => {
-    const showJoinNotification = (participant: Participant) => {
-      if (isMobileBrowser()) {
-        return
+    const currentIds = new Set(participants.map((p) => p.id))
+
+    participants.forEach((p) => {
+      if (!p.isLocal && !prevParticipantIdsRef.current.has(p.id)) {
+        if (!isMobileBrowser()) {
+          triggerNotificationSound(NotificationType.ParticipantJoined)
+          toastQueue.add(
+            {
+              ...toToastParticipant(p),
+              participantId: p.id,
+              type: NotificationType.ParticipantJoined,
+            },
+            { timeout: NotificationDuration.PARTICIPANT_JOINED }
+          )
+        }
       }
-      triggerNotificationSound(NotificationType.ParticipantJoined)
-      toastQueue.add(
-        {
-          participant,
-          type: NotificationType.ParticipantJoined,
-        },
-        {
-          timeout: NotificationDuration.PARTICIPANT_JOINED,
-        }
-      )
-    }
-    room.on(RoomEvent.ParticipantConnected, showJoinNotification)
-    return () => {
-      room.off(RoomEvent.ParticipantConnected, showJoinNotification)
-    }
-  }, [room, triggerNotificationSound])
+    })
 
+    prevParticipantIdsRef.current.forEach((id) => {
+      if (!currentIds.has(id)) {
+        toastQueue.visibleToasts.forEach((toast) => {
+          if (toast.content.participantId === id) toastQueue.close(toast.key)
+        })
+      }
+    })
+
+    prevParticipantIdsRef.current = currentIds
+  }, [participants, triggerNotificationSound])
+
+  // --- Hand raise ---
+  const prevHandRaisedRef = useRef<Map<string, string | undefined>>(new Map())
   useEffect(() => {
-    const removeParticipantNotifications = (participant: Participant) => {
-      toastQueue.visibleToasts.forEach((toast) => {
-        if (toast.content.participant === participant) {
-          toastQueue.close(toast.key)
-        }
-      })
-    }
-    room.on(RoomEvent.ParticipantDisconnected, removeParticipantNotifications)
-    return () => {
-      room.off(
-        RoomEvent.ParticipantDisconnected,
-        removeParticipantNotifications
-      )
-    }
-  }, [room])
-
-  useEffect(() => {
-    const handleNotificationReceived = (
-      changedAttributes: Record<string, string>,
-      participant: Participant
-    ) => {
-      if (!participant) return
-      if (isMobileBrowser()) return
-      if (participant.isLocal) return
-
-      if (!('handRaisedAt' in changedAttributes)) return
+    participants.forEach((p) => {
+      if (p.isLocal) return
+      const prev = prevHandRaisedRef.current.get(p.id)
+      if (prev === p.handRaisedAt) return
 
       const existingToast = toastQueue.visibleToasts.find(
         (toast) =>
-          toast.content.participant === participant &&
+          toast.content.participantId === p.id &&
           toast.content.type === NotificationType.HandRaised
       )
 
-      if (existingToast && !changedAttributes?.handRaisedAt) {
+      if (existingToast && !p.handRaisedAt) {
         toastQueue.close(existingToast.key)
-        return
-      }
-
-      if (!existingToast && !!changedAttributes?.handRaisedAt) {
+      } else if (!existingToast && p.handRaisedAt && !isMobileBrowser()) {
         triggerNotificationSound(NotificationType.HandRaised)
         toastQueue.add(
           {
-            participant,
+            ...toToastParticipant(p),
+            participantId: p.id,
             type: NotificationType.HandRaised,
           },
           { timeout: NotificationDuration.HAND_RAISED }
         )
       }
-    }
+    })
+    prevHandRaisedRef.current = new Map(
+      participants.map((p) => [p.id, p.handRaisedAt])
+    )
+  }, [participants, triggerNotificationSound])
 
-    room.on(RoomEvent.ParticipantAttributesChanged, handleNotificationReceived)
-
-    return () => {
-      room.off(
-        RoomEvent.ParticipantAttributesChanged,
-        handleNotificationReceived
-      )
-    }
-  }, [room, triggerNotificationSound])
-
+  // --- Disconnect: close all toasts ---
   useEffect(() => {
-    const closeAllToasts = () => {
+    if (status === 'disconnected') {
       toastQueue.visibleToasts.forEach(({ key }) => toastQueue.close(key))
     }
-    room.on(RoomEvent.Disconnected, closeAllToasts)
-    return () => {
-      room.off(RoomEvent.Disconnected, closeAllToasts)
-    }
-  }, [room])
+  }, [status])
 
   // Without this line, when the component first renders,
   // the 'notifications' namespace might not be loaded yet
   useTranslation(['notifications'])
 
-  return (
-    <Div position="absolute" bottom={0} right={5} zIndex={1000}>
-      <ToastProvider />
-      <WaitingParticipantNotification />
-    </Div>
-  )
+  return <NotificationProvider />
 }
