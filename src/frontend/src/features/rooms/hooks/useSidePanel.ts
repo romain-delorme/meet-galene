@@ -16,6 +16,7 @@ export const useSidePanel = () => {
   const { activePanelId } = useSnapshot(layoutStore)
 
   return {
+    activePanelId,
     isSidePanelOpen: activePanelId !== null,
 
     isChatOpen: activePanelId === PanelId.CHAT,

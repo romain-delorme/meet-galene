@@ -156,7 +156,7 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
     const conn = new ServerConnection();
     let disposed = false;
     const localParticipant: GaleneParticipant = {
-      id: 'local',
+      id: conn.id,
       username,
       isLocal: true,
       isSpeaking: false,

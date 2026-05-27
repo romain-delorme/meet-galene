@@ -27,8 +27,8 @@ export const MainNotificationToast = () => {
   const { appendReaction } = useReactions()
 
   // Refs so handlers always read the latest values without being deps
-  const participantsRef = useRef(participants)
-  participantsRef.current = participants
+  const participantsRef = useRef(participants);
+  participantsRef.current = participants;
 
   // --- Chat messages ---
   const lastMessage = messages[messages.length - 1]
@@ -68,7 +68,7 @@ export const MainNotificationToast = () => {
 
   useEffect(() => {
     return subscribeToNotifications((notification, senderId) => {
-      const sender = participantsRef.current.find((p) => p.id === senderId)
+      const sender = participantsRef.current.find((p) => p.id === senderId);
       const toastParticipant = sender
         ? { ...toToastParticipant(sender), participantId: sender.id }
         : undefined
