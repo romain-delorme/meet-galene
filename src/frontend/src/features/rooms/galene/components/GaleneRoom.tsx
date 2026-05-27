@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useSnapshot } from 'valtio';
 import { GaleneContext, GaleneContextState, GaleneParticipant, GaleneTrack, ChatMessage } from '../GaleneContext';
-import { ServerConnection } from '../../../../../@galene/protocol';
-import type { Stream } from '../../../../../@galene/protocol';
+import { ServerConnection } from '../galene-protocol/protocol';
+import type { Stream } from '../galene-protocol/protocol';
 import { userChoicesStore } from '@/stores/userChoices';
 
 interface GaleneRoomProps {

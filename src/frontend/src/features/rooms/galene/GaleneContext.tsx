@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import type { ServerConnection } from '../../../../@galene/protocol';
+import type { ServerConnection } from './galene-protocol/protocol';
 
 export interface GaleneTrack {
   id: string;

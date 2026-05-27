@@ -48,9 +48,7 @@
     
 
     
-    <!-- <script type="module" src="/src/main.tsx"></script> -->
-    <script src="@galene/protocol.js"></script>
-    <script src="@galene/example.js"></script>
+    <script type="module" src="/src/main.tsx"></script>
 
   </body>
 </html>
