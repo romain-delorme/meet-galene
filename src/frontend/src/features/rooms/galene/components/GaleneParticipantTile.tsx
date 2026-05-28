@@ -16,8 +16,8 @@ interface GaleneParticipantTileProps {
  * Attaches the MediaStream to a <video> element and shows a name overlay.
  */
 export function GaleneParticipantTile({ track, isPinned = false, onPin }: GaleneParticipantTileProps) {
-  const [ hidden, setHidden ] = useState(false);
-  const [ hover, setHover ] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const [hover, setHover] = useState(false);
   const [hasKeyboardFocus, setHasKeyboardFocus] = React.useState(false)
   const { t } = useTranslation('rooms', { keyPrefix: 'participantTileFocus' })
   const { isAudioEnabled, isVideoEnabled, stopScreenShare, participants } = useContext(GaleneContext)
@@ -42,17 +42,18 @@ export function GaleneParticipantTile({ track, isPinned = false, onPin }: Galene
   }, [track.stream, showVideo])
 
   const toggleStream = () => {
-    if(hidden) track.stream.getTracks().forEach((t: MediaStreamTrack) => t.enabled = true) 
+    if (hidden) track.stream.getTracks().forEach((t: MediaStreamTrack) => t.enabled = true)
     else track.stream.getTracks().forEach((t: MediaStreamTrack) => t.enabled = false);
     setHidden(!hidden)
   };
 
+
   return (
     <div
-      tabIndex={0}
       aria-label={t('containerLabel', { name: displayName })}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
+      pointer-events='none'
       onFocus={(event) => {
         const target = event.target as HTMLElement | null
         setHasKeyboardFocus(!!target?.matches?.(':focus-visible'))
@@ -135,7 +136,7 @@ export function GaleneParticipantTile({ track, isPinned = false, onPin }: Galene
         </div>
       )}
 
-      <div 
+      <div
         className={css({
           position: 'absolute',
           top: '0',
@@ -143,11 +144,11 @@ export function GaleneParticipantTile({ track, isPinned = false, onPin }: Galene
           padding: '0.375 0.5',
           display: 'flex',
           alignItems: 'center',
-        })}  
+        })}
       >
-        {track.source === 'screen_share' && isLocal && hover && (
-          <button 
-            onClick={() => stopScreenShare(track)} 
+        {track.source === 'screen_share' && isLocal && (
+          <button
+            onClick={() => { console.log('stopScreenShare', track); /*stopScreenShare(track) */ }}
             aria-label='Arrêter le partage'
             className={css({
               bg: 'error.400',
@@ -161,10 +162,10 @@ export function GaleneParticipantTile({ track, isPinned = false, onPin }: Galene
           </button>
         )}
 
-        {!isLocal && hover && (
-          <button 
-            onClick={toggleStream} 
-            aria-label={hidden? 'Afficher la vidéo' : 'Masquer la vidéo'}
+        {!isLocal && (
+          <button
+            onClick={toggleStream}
+            aria-label={hidden ? 'Afficher la vidéo' : 'Masquer la vidéo'}
             className={css({
               bg: 'primaryDark.100',
               color: 'white',
@@ -173,13 +174,13 @@ export function GaleneParticipantTile({ track, isPinned = false, onPin }: Galene
               },
             })}
           >
-            {hidden?
+            {hidden ?
               <RiEyeLine size={18} />
               :
               <RiEyeOffLine size={18} />
             }
           </button>
-        )}   
+        )}
       </div>
 
       {/* Name overlay */}

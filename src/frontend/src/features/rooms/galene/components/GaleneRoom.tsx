@@ -696,6 +696,7 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
   function stopScreenShare(track: GaleneTrack) {
     const conn: ServerConnection | null = state.connection;
     let s: Stream | null = null;
+    console.log('stopscreenshare');
     for (const id in conn?.up) {
       if (conn.up[id].stream === track.stream) s = conn.up[id];
     }

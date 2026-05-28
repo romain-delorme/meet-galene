@@ -89,7 +89,7 @@ export function VideoConference() {
   const rows = Math.ceil(count / columns) || 1
 
   return (
-    <div className="lk-video-conference" style={{ overflowX: 'hidden' }}>
+    <div className="lk-video-conference" data-lk-theme="visio-light" style={{ overflowX: 'hidden' }}>
       <RoomContentArea>
         {!focusTrack ? (
           <div className="lk-grid-layout-wrapper" style={{ height: 'auto' }}>
@@ -119,7 +119,7 @@ export function VideoConference() {
           <div className="lk-focus-layout-wrapper" style={{ height: 'auto' }}>
             <div
               className="lk-focus-layout"
-              style={{ display: 'flex', height: '100%', gap: '0.5rem', padding: '0.5rem' }}
+              style={{ display: 'flex', height: 'auto', gap: '0.5rem', padding: '0.5rem' }}
             >
               <aside
                 className="lk-carousel"

@@ -43,7 +43,6 @@ export const InviteDialog = (props: Omit<DialogProps, 'title'>) => {
   const { t } = useTranslation('rooms', { keyPrefix: 'shareDialog' })
 
   const roomData = useRoomData()
-  console.log('roomData : ', roomData);
   const roomUrl = getRouteUrl('room', roomData?.slug)
 
   const telephony = useTelephony()
