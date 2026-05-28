@@ -2,8 +2,13 @@ import React, { useEffect, useRef, useContext, useState } from 'react'
 import { css } from '@/styled-system/css'
 import { GaleneTrack, GaleneContext } from '../GaleneContext'
 import { RiCloseCircleLine, RiEyeLine, RiEyeOffLine, RiHand, RiMicOffLine } from '@remixicon/react'
-import { GaleneParticipantTileFocus } from './GaleneParticipantTileFocus'
 import { useTranslation } from 'react-i18next'
+import { Button } from '@/primitives'
+import { HStack } from '@/styled-system/jsx'
+import { RiPushpin2Line, RiUnpinLine } from '@remixicon/react'
+
+
+
 
 interface GaleneParticipantTileProps {
   track: GaleneTrack
@@ -148,7 +153,7 @@ export function GaleneParticipantTile({ track, isPinned = false, onPin }: Galene
       >
         {track.source === 'screen_share' && isLocal && (
           <button
-            onClick={() => { console.log('stopScreenShare', track); /*stopScreenShare(track) */ }}
+            onClick={() => { stopScreenShare(track) }}
             aria-label='Arrêter le partage'
             className={css({
               bg: 'error.400',
@@ -215,12 +220,35 @@ export function GaleneParticipantTile({ track, isPinned = false, onPin }: Galene
         )}
       </div>
 
-      {onPin && (
-        <GaleneParticipantTileFocus
-          isPinned={isPinned}
-          onPin={onPin}
-          hasKeyboardFocus={hasKeyboardFocus}
-        />
+      {hover && (
+        <div
+          className={css({
+            position: 'absolute',
+            backgroundColor: 'primaryDark.50',
+            transition: 'opacity 200ms linear',
+            zIndex: 1,
+            borderRadius: '0.25rem',
+            display: 'flex',
+            _hover: { opacity: '0.95 !important' },
+          })}
+          style={{ opacity: 0.6 }}
+        >
+          <HStack
+            gap={0.5}
+            className={css({ padding: '0.5rem', _hover: { opacity: '1 !important' } })}
+          >
+            <Button
+              size="sm"
+              variant="primaryTextDark"
+              square
+              tooltip={isPinned ? t('pin.disable') : t('pin.enable')}
+              onPress={onPin}
+            >
+              {isPinned ? <RiUnpinLine /> : <RiPushpin2Line />}
+            </Button>
+          </HStack>
+        </div>
+
       )}
     </div>
   )
