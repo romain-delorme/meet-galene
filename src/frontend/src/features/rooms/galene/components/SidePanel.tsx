@@ -1,9 +1,10 @@
 import { layoutStore } from '@/stores/layout'
 import { css } from '@/styled-system/css'
 import { HStack } from '@/styled-system/jsx'
+import { Heading } from 'react-aria-components'
 import { Button, Div } from '@/primitives'
 import { text } from '@/primitives/Text'
-import { RiCloseLine } from '@remixicon/react'
+import { RiArrowLeftLine, RiCloseLine } from '@remixicon/react'
 import { useTranslation } from 'react-i18next'
 import { ReactNode } from 'react'
 import { useSidePanel } from '../../hooks/useSidePanel'
@@ -11,9 +12,119 @@ import { useReactionsToolbar } from '@/features/reactions/hooks/useReactionsTool
 import { Chat } from './controls/Chat/Chat'
 import { ParticipantsList } from './controls/Participants/ParticipantsList'
 
+type StyledSidePanelProps = {
+  title: string
+  ariaLabel: string
+  children: ReactNode
+  onClose: () => void
+  isClosed: boolean
+  closeButtonTooltip: string
+  isSubmenu: boolean
+  onBack: () => void
+  backButtonLabel: string
+  isReactionToolbarOpen?: boolean
+}
+
+const StyledSidePanel = ({
+  title,
+  ariaLabel,
+  children,
+  onClose,
+  isClosed,
+  isReactionToolbarOpen,
+  closeButtonTooltip,
+  isSubmenu = false,
+  onBack,
+  backButtonLabel,
+}: StyledSidePanelProps) => (
+  <aside
+    className={css({
+      borderWidth: '1px',
+      borderStyle: 'solid',
+      borderColor: 'box.border',
+      backgroundColor: 'box.bg',
+      color: 'box.text',
+      borderRadius: 8,
+      flex: 1,
+      position: 'absolute',
+      overflow: 'hidden',
+      display: 'flex',
+      flexDirection: 'column',
+      margin: 'var(--sizes-room-side-panel-margin)',
+      marginLeft: 0,
+      marginBottom: 0,
+      padding: 0,
+      gap: 0,
+      right: 0,
+      top: 0,
+      width: 'var(--sizes-room-side-panel)',
+      transition: '.5s cubic-bezier(.4,0,.2,1) 5ms',
+    })}
+    style={{
+      transform: isClosed
+        ? 'translateX(calc(var(--sizes-room-side-panel) + var(--sizes-room-side-panel-margin)))'
+        : 'none',
+      bottom: isReactionToolbarOpen
+        ? 'calc( var(--sizes-room-control-bar) + var(--sizes-room-reaction-toolbar-height) + calc(var(--lk-grid-gap) / 2))'
+        : 'var(--sizes-room-control-bar)',
+    }}
+    aria-hidden={isClosed}
+    aria-label={ariaLabel}
+  >
+    <HStack alignItems="center">
+      {isSubmenu && (
+        <Button
+          variant="secondaryText"
+          size="sm"
+          square
+          className={css({ marginRight: '0.5rem', marginLeft: '1rem' })}
+          aria-label={backButtonLabel}
+          onPress={onBack}
+        >
+          <RiArrowLeftLine size={20} aria-hidden="true" />
+        </Button>
+      )}
+      <Heading
+        slot="title"
+        level={1}
+        className={text({ variant: 'h2' })}
+        style={{
+          paddingLeft: isSubmenu ? 0 : '1.5rem',
+          paddingTop: '1rem',
+          display: isClosed ? 'none' : 'flex',
+          justifyContent: 'start',
+          alignItems: 'center',
+        }}
+      >
+        {title}
+      </Heading>
+    </HStack>
+    <Div
+      position="absolute"
+      top="5"
+      right="5"
+      style={{
+        display: isClosed ? 'none' : undefined,
+      }}
+    >
+      <Button
+        invisible
+        variant="tertiaryText"
+        size="xs"
+        onPress={onClose}
+        aria-label={closeButtonTooltip}
+        tooltip={closeButtonTooltip}
+      >
+        <RiCloseLine />
+      </Button>
+    </Div>
+    {children}
+  </aside>
+)
+
 type PanelProps = {
   isOpen: boolean
-  children: ReactNode
+  children: React.ReactNode
   keepAlive?: boolean
 }
 
@@ -29,92 +140,41 @@ const Panel = ({ isOpen, keepAlive = false, children }: PanelProps) => (
     {keepAlive || isOpen ? children : null}
   </div>
 )
-
-export function SidePanel() {
-  const { activePanelId, isSidePanelOpen, isChatOpen, isParticipantsOpen } =
-    useSidePanel()
+export const SidePanel = () => {
+  const {
+    activePanelId,
+    isParticipantsOpen,
+    isChatOpen,
+    isSidePanelOpen,
+  } = useSidePanel()
   const { t } = useTranslation('rooms', { keyPrefix: 'sidePanel' })
+  const title = t(`heading.${activePanelId}`)
+
   const { isOpen: isReactionToolbarOpen } = useReactionsToolbar()
 
-  const title = activePanelId ? t(`heading.${activePanelId}`) : ''
-  const isClosed = !isSidePanelOpen
-  const closeButtonTooltip = activePanelId
-    ? t('closeButton', { content: t(`content.${activePanelId}`) })
-    : ''
-
   return (
-    <aside
-      className={css({
-        borderWidth: '1px',
-        borderStyle: 'solid',
-        borderColor: 'primaryDark.100',
-        backgroundColor: 'primaryDark.50',
-        borderRadius: 8,
-        position: 'absolute',
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        margin: 'var(--sizes-room-side-panel-margin)',
-        marginLeft: 0,
-        marginBottom: 0,
-        padding: 0,
-        gap: 0,
-        right: 0,
-        top: 0,
-        width: 'var(--sizes-room-side-panel)',
-        transition: '.5s cubic-bezier(.4,0,.2,1) 5ms',
-      })}
-      style={{
-        transform: isClosed
-          ? 'translateX(calc(var(--sizes-room-side-panel) + var(--sizes-room-side-panel-margin)))'
-          : 'none',
-        bottom: isReactionToolbarOpen
-          ? 'calc(var(--sizes-room-control-bar) + var(--sizes-room-reaction-toolbar-height) + calc(var(--lk-grid-gap) / 2))'
-          : 'var(--sizes-room-control-bar)',
+    <StyledSidePanel
+      title={title}
+      ariaLabel={t('ariaLabel', { title })}
+      onClose={() => {
+        layoutStore.activePanelId = null
+        layoutStore.activeSubPanelId = null
       }}
-      aria-hidden={isClosed}
-      aria-label={title ? t('ariaLabel', { title }) : undefined}
+      closeButtonTooltip={t('closeButton', {
+        content: t(`content.${activePanelId}`),
+      })}
+      isClosed={!isSidePanelOpen}
+      isSubmenu={false}
+      isReactionToolbarOpen={isReactionToolbarOpen}
+      backButtonLabel={t('backToTools')}
+      onBack={() => (layoutStore.activeSubPanelId = null)}
     >
-      <HStack alignItems="center" position="relative">
-        <h1
-          className={text({ variant: 'h2' })}
-          style={{
-            paddingLeft: '1.5rem',
-            paddingTop: '1rem',
-            display: isClosed ? 'none' : 'flex',
-            justifyContent: 'start',
-            alignItems: 'center',
-          }}
-        >
-          {title}
-        </h1>
-        <Div
-          position="absolute"
-          top="5"
-          right="5"
-          style={{ display: isClosed ? 'none' : undefined }}
-        >
-          <Button
-            invisible
-            variant="tertiaryText"
-            size="xs"
-            onPress={() => {
-              layoutStore.activePanelId = null
-            }}
-            aria-label={closeButtonTooltip}
-            tooltip={closeButtonTooltip}
-          >
-            <RiCloseLine />
-          </Button>
-        </Div>
-      </HStack>
-
-      <Panel isOpen={isChatOpen} keepAlive>
-        <Chat />
-      </Panel>
       <Panel isOpen={isParticipantsOpen}>
         <ParticipantsList />
       </Panel>
-    </aside>
+      <Panel isOpen={isChatOpen} keepAlive={true}>
+        <Chat />
+      </Panel>
+    </StyledSidePanel>
   )
 }

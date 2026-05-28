@@ -27,7 +27,7 @@ export function ParticipantsList() {
           padding: '0.75 1',
           borderBottom: '1px solid',
           borderColor: 'primaryDark.100',
-          color: 'white',
+          color: 'black',
           fontWeight: 'semibold',
           fontSize: '14',
           flexShrink: 0,
@@ -73,7 +73,7 @@ export function ParticipantsList() {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: 'white',
+                  color: 'black',
                   fontSize: '13',
                   fontWeight: 'bold',
                   textTransform: 'uppercase',
@@ -86,7 +86,8 @@ export function ParticipantsList() {
               {/* Name */}
               <span
                 className={css({
-                  color: 'white',
+                  color: 'black',
+                  fontWeight: 'bold',
                   fontSize: '13',
                   flex: 1,
                   overflow: 'hidden',

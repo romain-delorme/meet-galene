@@ -67,7 +67,7 @@ export function Chat() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: 'primaryDark.400',
+            color: 'black',
             fontSize: '13',
             textAlign: 'center',
             padding: '1',
@@ -126,7 +126,7 @@ export function Chat() {
               <div className={css({ flex: 1, minWidth: 0 })}>
                 {!grouped && (
                   <div className={css({ display: 'flex', alignItems: 'baseline', gap: '0.5', marginBottom: '0.125' })}>
-                    <span className={css({ color: 'white', fontWeight: 'semibold', fontSize: '14', lineHeight: '1' })}>
+                    <span className={css({ color: 'black', fontWeight: 'semibold', fontSize: '14', lineHeight: '1' })}>
                       {msg.nick}
                     </span>
                     {isPrivate && (
@@ -181,7 +181,7 @@ export function Chat() {
             className={css({
               flex: 1,
               bg: 'transparent',
-              color: 'white',
+              color: 'black',
               border: 'none',
               padding: '0.5 0.75',
               fontSize: '13',
