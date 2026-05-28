@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useContext, useState } from 'react'
 import { css } from '@/styled-system/css'
 import { GaleneTrack, GaleneContext } from '../GaleneContext'
-import { RiCloseCircleLine, RiEyeLine, RiEyeOffLine, RiHand, RiMicOffLine } from '@remixicon/react'
+import { RiCloseCircleLine, RiCloseLargeLine, RiEyeLine, RiEyeOffLine, RiHand, RiMicOffLine } from '@remixicon/react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/primitives'
 import { HStack } from '@/styled-system/jsx'
@@ -33,6 +33,7 @@ export function GaleneParticipantTile({ track, isPinned = false, onPin }: Galene
   const isLocal = track.participant?.isLocal ?? false
   const displayName = track.participant?.username ?? 'Participant'
   const isCamera = track.source === 'camera';
+  const isLocalScreenShare = isLocal && track.source === 'screen_share';
 
   const showVideo = isLocal
     ? isVideoEnabled
@@ -141,53 +142,6 @@ export function GaleneParticipantTile({ track, isPinned = false, onPin }: Galene
         </div>
       )}
 
-      <div
-        className={css({
-          position: 'absolute',
-          top: '0',
-          right: '0',
-          padding: '0.375 0.5',
-          display: 'flex',
-          alignItems: 'center',
-        })}
-      >
-        {track.source === 'screen_share' && isLocal && (
-          <button
-            onClick={() => { stopScreenShare(track) }}
-            aria-label='Arrêter le partage'
-            className={css({
-              bg: 'error.400',
-              color: 'white',
-              _hover: {
-                bg: 'error.300',
-              },
-            })}
-          >
-            <RiCloseCircleLine size={14} />
-          </button>
-        )}
-
-        {!isLocal && (
-          <button
-            onClick={toggleStream}
-            aria-label={hidden ? 'Afficher la vidéo' : 'Masquer la vidéo'}
-            className={css({
-              bg: 'primaryDark.100',
-              color: 'white',
-              _hover: {
-                bg: 'primaryDark.200',
-              },
-            })}
-          >
-            {hidden ?
-              <RiEyeLine size={18} />
-              :
-              <RiEyeOffLine size={18} />
-            }
-          </button>
-        )}
-      </div>
-
       {/* Name overlay */}
       <div
         className={css({
@@ -245,6 +199,15 @@ export function GaleneParticipantTile({ track, isPinned = false, onPin }: Galene
               onPress={onPin}
             >
               {isPinned ? <RiUnpinLine /> : <RiPushpin2Line />}
+            </Button>
+            <Button
+              size="sm"
+              variant="primaryTextDark"
+              square
+              tooltip={isLocalScreenShare? 'Arrêter le partage' : (hidden? 'Afficher la vidéo' : 'Masquer la vidéo')}
+              onPress={isLocalScreenShare? () => stopScreenShare(track) : toggleStream}
+            >
+              {isLocalScreenShare ? <RiCloseLargeLine /> : hidden? <RiEyeLine /> : <RiEyeOffLine />}
             </Button>
           </HStack>
         </div>
