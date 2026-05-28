@@ -59,7 +59,6 @@ export function GaleneParticipantTile({ track, isPinned = false, onPin }: Galene
       aria-label={t('containerLabel', { name: displayName })}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
-      pointer-events='none'
       onFocus={(event) => {
         const target = event.target as HTMLElement | null
         setHasKeyboardFocus(!!target?.matches?.(':focus-visible'))

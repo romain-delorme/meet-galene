@@ -53,20 +53,6 @@ export function Chat() {
 
   return (
     <div className={css({ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' })}>
-      {/* Header */}
-      <div className={css({
-        padding: '0.75 1',
-        borderBottom: '1px solid',
-        borderColor: 'primaryDark.100',
-        color: 'white',
-        fontWeight: 'semibold',
-        fontSize: '14',
-        flexShrink: 0,
-        letterSpacing: '0.01em',
-      })}>
-        Chat
-      </div>
-
       {/* Messages */}
       <div className={css({
         flex: 1,

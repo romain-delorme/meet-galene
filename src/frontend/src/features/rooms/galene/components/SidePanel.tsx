@@ -20,7 +20,7 @@ type PanelProps = {
 const Panel = ({ isOpen, keepAlive = false, children }: PanelProps) => (
   <div
     style={{
-      display: isOpen ? 'flex' : 'none',
+      display: isOpen ? 'inherit' : 'none',
       flexDirection: 'column',
       overflow: 'hidden',
       flexGrow: 1,
@@ -48,7 +48,7 @@ export function SidePanel() {
         borderWidth: '1px',
         borderStyle: 'solid',
         borderColor: 'primaryDark.100',
-        backgroundColor: 'primaryDark.25',
+        backgroundColor: 'primaryDark.50',
         borderRadius: 8,
         position: 'absolute',
         overflow: 'hidden',

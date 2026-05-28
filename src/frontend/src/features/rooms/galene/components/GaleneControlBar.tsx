@@ -59,8 +59,7 @@ export function GaleneControlBar() {
           zIndex: 100,
           width: '100vw',
           display: 'flex',
-          backgroundColor: '#181824',
-          padding: '0.75rem',
+          padding: '0.8rem',
         })}
       >
         <div
