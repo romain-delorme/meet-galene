@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useContext, useState } from 'react'
 import { css } from '@/styled-system/css'
 import { GaleneTrack, GaleneContext } from '../GaleneContext'
-import { RiCloseCircleLine, RiCloseLargeLine, RiEyeLine, RiEyeOffLine, RiHand, RiMicOffLine } from '@remixicon/react'
+import { RiCloseLargeLine, RiEyeLine, RiEyeOffLine, RiHand, RiMicOffLine } from '@remixicon/react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/primitives'
 import { HStack } from '@/styled-system/jsx'
@@ -23,7 +23,7 @@ interface GaleneParticipantTileProps {
 export function GaleneParticipantTile({ track, isPinned = false, onPin }: GaleneParticipantTileProps) {
   const [hidden, setHidden] = useState(false);
   const [hover, setHover] = useState(false);
-  const [hasKeyboardFocus, setHasKeyboardFocus] = React.useState(false)
+  const [_, setHasKeyboardFocus] = React.useState(false)
   const { t } = useTranslation('rooms', { keyPrefix: 'participantTileFocus' })
   const { isAudioEnabled, isVideoEnabled, stopScreenShare, participants } = useContext(GaleneContext)
   const liveParticipant = participants.find((p) => p.id === track.participantId)
