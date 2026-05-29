@@ -129,7 +129,7 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
     };
     const localTrack: GaleneTrack = {
       id: s.localId,
-      participantId: 'local',
+      participantId: conn.id,
       stream: ms,
       source: 'camera',
       publication: {
@@ -139,7 +139,7 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
         source: 'camera',
       },
       participant: {
-        id: 'local',
+        id: conn.id,
         username,
         isLocal: true,
         isSpeaking: false,
@@ -615,11 +615,12 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
   }
 
   async function newScreenShare(): Promise<void> {
-    const conn: ServerConnection | null = state.connection;
+    const conn = state.connection;
+    if (!conn) return;
     const ms: MediaStream = await navigator.mediaDevices.getDisplayMedia();
     ms.getAudioTracks().forEach((t) => { t.enabled = false; });
     ms.getVideoTracks().forEach((t) => { t.enabled = true; });
-    const s: Stream = conn!.newUpStream();
+    const s: Stream = conn.newUpStream();
     s.label = 'screenshare';
     s.setStream(ms);
 
@@ -647,7 +648,7 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
     };
     const localTrack: GaleneTrack = {
       id: s.localId,
-      participantId: 'local',
+      participantId: conn.id,
       stream: ms,
       source: 'screen_share',
       publication: {
@@ -657,7 +658,7 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
         source: 'screen_share',
       },
       participant: {
-        id: 'local',
+        id: conn.id,
         username,
         isLocal: true,
         isSpeaking: false,
@@ -674,7 +675,7 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
     setState((prev) => ({
       ...prev,
       participants: prev.participants.map((p) =>
-        p.id === 'local' ? { ...p, username: name } : p
+        p.isLocal ? { ...p, username: name } : p
       ),
     }))
   }

@@ -8,6 +8,7 @@ import { useSidePanel } from '@/features/rooms/hooks/useSidePanel'
 // import { Subtitles } from '@/features/subtitle/component/Subtitles'
 import { MainNotificationToast } from '@/features/notifications/MainNotificationToast'
 import { useReactionsToolbar } from '@/features/reactions/hooks/useReactionsToolbar'
+import { ReactionPortals } from '@/features/reactions/components/ReactionPortals'
 
 const RoomViewport = styled(
   'div',
@@ -80,6 +81,7 @@ export function RoomContentArea({ children }: RoomContentAreaProps) {
         {children}
       </TrackAreaContainer>
       {/*<Subtitles />*/}
+      <ReactionPortals />
       <MainNotificationToast />
     </RoomViewport>
   )

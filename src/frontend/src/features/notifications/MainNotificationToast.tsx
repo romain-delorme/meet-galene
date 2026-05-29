@@ -81,7 +81,7 @@ export const MainNotificationToast = () => {
           )
           break
         case NotificationType.ReactionReceived:
-          if (notification.data?.emoji)
+          if (notification.data?.emoji && !sender?.isLocal)
             handleEmojiRef.current(
               notification.data.emoji,
               sender?.username ?? senderId
