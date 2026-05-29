@@ -36,7 +36,7 @@ export function GaleneParticipantTile({ track, isPinned = false, onPin }: Galene
   const isLocalScreenShare = isLocal && track.source === 'screen_share';
 
   const showVideo = isLocal
-    ? isVideoEnabled
+    ? isVideoEnabled || track.source === 'screen_share'
     : track.stream && track.stream.getVideoTracks().length > 0
 
   useEffect(() => {
