@@ -10,6 +10,7 @@ import {
 import { GaleneContext } from '../GaleneContext'
 import { ControlBarRegion } from '@/features/layout/components/ControlBarRegion'
 import { ReactionsToolbar } from '@/features/reactions/components/toolbar/ReactionsToolbar'
+import { ReactionsToggle } from '@/features/reactions/components/ReactionsToggle'
 import { AudioDevicesControl } from './controls/AudioDevicesControl'
 import { VideoDeviceControl } from './controls/VideoDeviceControl'
 import { HandToggle } from './controls/HandToggle'
@@ -75,6 +76,7 @@ export function GaleneControlBar() {
         <ControlBarRegion>
           <AudioDevicesControl enabled={isAudioEnabled} toggle={toggleAudio} />
           <VideoDeviceControl enabled={isVideoEnabled} toggle={toggleVideo} />
+          <ReactionsToggle />
           <HandToggle />
           {browserSupportsScreenSharing && (
             <Button
