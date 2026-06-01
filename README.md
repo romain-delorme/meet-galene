@@ -16,7 +16,7 @@
 </p>
 
 <p align="center">
-  <a href="https://livekit.io/">LiveKit</a> - <a href="https://matrix.to/#/#meet-official:matrix.org">Chat with us</a> - <a href="https://github.com/orgs/suitenumerique/projects/3/views/2">Roadmap</a> - <a href="https://github.com/suitenumerique/meet/blob/main/CHANGELOG.md">Changelog</a> - <a href="https://github.com/suitenumerique/meet/issues/new?assignees=&labels=bug&template=Bug_report.md">Bug reports</a> 
+  <a href="https://galene.org/">Galène</a> - <a href="https://matrix.to/#/#meet-official:matrix.org">Chat with us</a> - <a href="https://github.com/orgs/suitenumerique/projects/3/views/2">Roadmap</a> - <a href="https://github.com/suitenumerique/meet/blob/main/CHANGELOG.md">Changelog</a> - <a href="https://github.com/suitenumerique/meet/issues/new?assignees=&labels=bug&template=Bug_report.md">Bug reports</a> 
 </p>
 
 <p align="center">
@@ -27,7 +27,7 @@
 
 ## La Suite Meet: Simple Video Conferencing
 
-Powered by [LiveKit](https://livekit.io/), La Suite Meet offers Zoom-level performance with high-quality video and audio. No installation required—simply join calls directly from your browser. Check out LiveKit's impressive optimizations in their [blog post](https://blog.livekit.io/livekit-one-dot-zero/).
+Powered by [Galène](https://galene.org/), La Suite Meet offers Zoom-level performance with high-quality video and audio. No installation required—simply join calls directly from your browser. 
 ### Features
 - Optimized for stability in large meetings (+100 p.)
 - Support for multiple screen sharing streams
@@ -38,12 +38,6 @@ Powered by [LiveKit](https://livekit.io/), La Suite Meet offers Zoom-level perfo
 - Telephony integration
 - Secure participation with robust authentication and access control
 - Customizable frontend style
-- LiveKit Advances features including :
-  - speaker detection 
-  - simulcast 
-  - end-to-end optimizations 
-  - selective subscription
-  - SVC codecs (VP9, AV1)
 
 
 La Suite Meet is fully self-hostable and released under the MIT License, ensuring complete control and flexibility. It's simple to [get started](https://visio.numerique.gouv.fr/) or [request a demo](mailto:visio@numerique.gouv.fr). 
@@ -68,7 +62,7 @@ On the 25th of January 2026, David Amiel, France’s Minister for Civil Service 
 
 ## Docs
 
-We're currently working on both technical and user documentation for La Suite Meet. In the meantime, many of the essential aspects are already well covered by the [LiveKit documentation](https://docs.livekit.io/home/) and their [self-hosting guide](https://docs.livekit.io/home/self-hosting/deployment/). Stay tuned for more updates!
+We're currently working on both technical and user documentation for La Suite Meet.
 
 ## Self-host
 
@@ -107,14 +101,14 @@ We’re relentlessly focused on building the best open-source video conferencing
 
 Our users come first. We’re committed to making La Suite Meet as accessible and easy to use as proprietary solutions, ensuring it meets the highest standards.
 
-Most of the heavy engineering is handled by the incredible LiveKit team, allowing us to focus on delivering a top-tier product. We follow extreme programming practices, favoring pair programming and quick, iterative releases. Challenge our tech and architecture—simplicity is always our top priority.
+Most of the heavy engineering is handled by the incredible Galène team, allowing us to focus on delivering a top-tier product. We follow extreme programming practices, favoring pair programming and quick, iterative releases. Challenge our tech and architecture—simplicity is always our top priority.
 
 
 ## Open-source
 
 Gov 🇫🇷 supports open source! This project is available under [MIT license](https://github.com/suitenumerique/meet/blob/0cc2a7b7b4f4821e2c4d9d790efa739622bb6601/LICENSE).
 
-All features we develop will always remain open-source, and we are committed to contributing back to the LiveKit community whenever feasible.
+All features we develop will always remain open-source, and we are committed to contributing back to the Galène community whenever feasible.
 To learn more, don't hesitate to [reach out](mailto:visio@numerique.gouv.fr).
 
 ### Help us!
@@ -130,7 +124,7 @@ Come help us make La Suite Meet even better. We're growing fast and [would love 
 
 ## Credits 
 
-We're using the awesome [LiveKit](https://livekit.io/) implementation. We're also thankful to the teams behind [Django Rest Framework](https://www.django-rest-framework.org/), [Vite.js](https://vite.dev/), and [React Aria](https://github.com/adobe/react-spectrum) — Thanks for your amazing work!
+We're using the awesome [Galène](https://galene.org/) implementation. We're also thankful to the teams behind [Django Rest Framework](https://www.django-rest-framework.org/), [Vite.js](https://vite.dev/), and [React Aria](https://github.com/adobe/react-spectrum) — Thanks for your amazing work!
 This project is tested with BrowserStack.
 
 ## License
