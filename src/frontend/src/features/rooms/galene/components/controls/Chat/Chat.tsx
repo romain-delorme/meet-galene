@@ -24,7 +24,7 @@ function formatTime(date: Date): string {
 }
 
 export function Chat() {
-  const { messages, sendMessage } = useContext(GaleneContext)
+  const { connection, messages, sendMessage } = useContext(GaleneContext)
   const [input, setInput] = useState('')
   const bottomRef = useRef<HTMLDivElement>(null)
 
@@ -81,7 +81,7 @@ export function Chat() {
           const prev = messages[i - 1]
           const grouped = prev ? isSameGroup(prev, msg) : false
           const isPrivate = !!msg.dest
-          const isMe = msg.kind === 'me'
+          const isMe = msg.peerId === connection?.id
           const color = avatarColor(msg.nick)
 
           return (
@@ -94,7 +94,7 @@ export function Chat() {
                 paddingBottom: '0.125',
                 paddingLeft: '0.75',
                 paddingRight: '0.75',
-                _hover: { bg: 'primaryDark.75' },
+                _hover: { bg: 'gray.100' },
               })}
             >
               {/* Avatar column — always 32px wide for alignment */}
@@ -127,7 +127,7 @@ export function Chat() {
                 {!grouped && (
                   <div className={css({ display: 'flex', alignItems: 'baseline', gap: '0.5', marginBottom: '0.125' })}>
                     <span className={css({ color: 'black', fontWeight: 'semibold', fontSize: '14', lineHeight: '1' })}>
-                      {msg.nick}
+                      {isMe ? `${msg.nick} (Vous)` : msg.nick}
                     </span>
                     {isPrivate && (
                       <span className={css({ color: 'yellow.300', fontSize: '11' })}>→ {msg.dest}</span>
@@ -142,10 +142,10 @@ export function Chat() {
                   fontSize: '13',
                   lineHeight: '1.45',
                   wordBreak: 'break-word',
-                  color: isPrivate ? 'yellow.200' : isMe ? 'primaryDark.600' : 'primaryDark.900',
+                  color: isPrivate ? 'yellow.200' : 'black',
                   fontStyle: isMe ? 'italic' : 'normal',
                 })}>
-                  {isMe ? `* ${msg.nick} ${msg.message}` : msg.message}
+                  {msg.message}
                 </p>
               </div>
             </div>
@@ -181,7 +181,7 @@ export function Chat() {
             className={css({
               flex: 1,
               bg: 'transparent',
-              color: 'black',
+              color: 'white',
               border: 'none',
               padding: '0.5 0.75',
               fontSize: '13',

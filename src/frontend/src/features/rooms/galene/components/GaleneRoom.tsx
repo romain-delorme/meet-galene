@@ -615,12 +615,12 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
   }
 
   async function newScreenShare(): Promise<void> {
-    const conn = state.connection;
+    const conn: ServerConnection | null = state.connection;
     if (!conn) return;
     const ms: MediaStream = await navigator.mediaDevices.getDisplayMedia();
     ms.getAudioTracks().forEach((t) => { t.enabled = false; });
     ms.getVideoTracks().forEach((t) => { t.enabled = true; });
-    const s: Stream = conn.newUpStream();
+    const s: Stream = conn!.newUpStream();
     s.label = 'screenshare';
     s.setStream(ms);
 

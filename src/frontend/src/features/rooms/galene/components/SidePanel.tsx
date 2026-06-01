@@ -47,6 +47,7 @@ const StyledSidePanel = ({
       borderRadius: 8,
       flex: 1,
       position: 'absolute',
+      zIndex: 101,
       overflow: 'hidden',
       display: 'flex',
       flexDirection: 'column',
