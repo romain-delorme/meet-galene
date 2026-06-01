@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useContext, useState } from 'react'
+import { useEffect, useRef, useContext, useState } from 'react'
 import { css } from '@/styled-system/css'
 import { GaleneTrack, GaleneContext } from '../GaleneContext'
 import { RiCloseLargeLine, RiEyeLine, RiEyeOffLine, RiHand, RiMicOffLine } from '@remixicon/react'
@@ -23,7 +23,7 @@ interface GaleneParticipantTileProps {
 export function GaleneParticipantTile({ track, isPinned = false, onPin }: GaleneParticipantTileProps) {
   const [hidden, setHidden] = useState(false);
   const [hover, setHover] = useState(false);
-  const [_, setHasKeyboardFocus] = React.useState(false)
+  // const [_, setHasKeyboardFocus] = React.useState(false)
   const { t } = useTranslation('rooms', { keyPrefix: 'participantTileFocus' })
   const { isAudioEnabled, isVideoEnabled, stopScreenShare, participants } = useContext(GaleneContext)
   const liveParticipant = participants.find((p) => p.id === track.participantId)
@@ -59,14 +59,14 @@ export function GaleneParticipantTile({ track, isPinned = false, onPin }: Galene
       aria-label={t('containerLabel', { name: displayName })}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
-      onFocus={(event) => {
-        const target = event.target as HTMLElement | null
-        setHasKeyboardFocus(!!target?.matches?.(':focus-visible'))
-      }}
-      onBlur={(event) => {
-        const nextTarget = event.relatedTarget as Node | null
-        if (!event.currentTarget.contains(nextTarget)) setHasKeyboardFocus(false)
-      }}
+      // onFocus={(event) => {
+      //   const target = event.target as HTMLElement | null
+      //   setHasKeyboardFocus(!!target?.matches?.(':focus-visible'))
+      // }}
+      // onBlur={(event) => {
+      //   const nextTarget = event.relatedTarget as Node | null
+      //   if (!event.currentTarget.contains(nextTarget)) setHasKeyboardFocus(false)
+      // }}
       className={css({
         position: 'relative',
         overflow: 'hidden',

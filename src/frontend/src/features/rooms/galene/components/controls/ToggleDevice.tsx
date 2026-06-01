@@ -14,7 +14,7 @@ type ToggleDeviceProps = {
   context?: string
 }
 
-export const ToggleDevice = ({ kind, enabled, toggle }: ToggleDeviceProps) => {
+export const ToggleDevice = ({ kind, enabled, toggle, context }: ToggleDeviceProps) => {
   const { t } = useTranslation('rooms', { keyPrefix: 'join' })
 
   const isAudio = kind === 'audioinput'
@@ -28,9 +28,8 @@ export const ToggleDevice = ({ kind, enabled, toggle }: ToggleDeviceProps) => {
 
   const label = enabled ? t('toggleOff') : t('toggleOn')
 
-  return (
-    <Button
-      variant="whiteCircle"
+  return <Button
+      variant={context == 'room' ? "primaryDark" : "whiteCircle"}
       size="default"
       square
       onPress={() => toggle()}
@@ -40,5 +39,4 @@ export const ToggleDevice = ({ kind, enabled, toggle }: ToggleDeviceProps) => {
     >
       <Icon size={20} />
     </Button>
-  )
 }

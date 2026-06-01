@@ -19,10 +19,11 @@ const KIND_ICON: Record<string, RemixiconComponentType> = {
 type SelectDeviceProps = {
   kind: 'audioinput' | 'audiooutput' | 'videoinput'
   id: string
-  onSubmit: (deviceId: string) => void
+  onSubmit: (deviceId: string) => void,
+  context?: string
 }
 
-export const SelectDevice = ({ kind, id, onSubmit }: SelectDeviceProps) => {
+export const SelectDevice = ({ kind, id, onSubmit, context }: SelectDeviceProps) => {
   const { t } = useTranslation('rooms', { keyPrefix: 'join.device' })
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([])
 
@@ -65,6 +66,7 @@ export const SelectDevice = ({ kind, id, onSubmit }: SelectDeviceProps) => {
       selectedKey={selectedKey}
       onSelectionChange={(key) => onSubmit(String(key))}
       aria-label={t(kind)}
+      variant={context == 'room' ? 'dark' : 'light'}
     />
   )
 }
