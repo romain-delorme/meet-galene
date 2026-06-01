@@ -19,7 +19,7 @@ const toToastParticipant = (p: GaleneParticipant) => ({
 })
 
 export const MainNotificationToast = () => {
-  const { participants, messages, status, subscribeToNotifications } =
+  const { participants, status, subscribeToNotifications } =
     useContext(GaleneContext)
   const { triggerNotificationSound } = useNotificationSound()
   const { t } = useTranslation('notifications')
@@ -29,30 +29,6 @@ export const MainNotificationToast = () => {
   // Refs so handlers always read the latest values without being deps
   const participantsRef = useRef(participants);
   participantsRef.current = participants;
-
-  // --- Chat messages ---
-  const lastMessage = messages[messages.length - 1]
-  useEffect(() => {
-    if (!lastMessage || lastMessage.history || lastMessage.peerId === 'local') return
-    triggerNotificationSound(NotificationType.MessageReceived)
-    toastQueue.add(
-      {
-        participant: { name: lastMessage.nick },
-        message: lastMessage.message,
-        type: NotificationType.MessageReceived,
-      },
-      { timeout: NotificationDuration.MESSAGE }
-    )
-    if (layoutStore.activePanelId !== PanelId.CHAT) {
-      announce(
-        t('chatMessageReceived', {
-          name: lastMessage.nick || t('defaultName'),
-          message: lastMessage.message,
-        }),
-        'polite'
-      )
-    }
-  }, [lastMessage, triggerNotificationSound, announce, t])
 
   // --- Data notifications ---
   const handleEmoji = useCallback(
@@ -74,6 +50,22 @@ export const MainNotificationToast = () => {
         : undefined
 
       switch (notification.type) {
+        case NotificationType.MessageReceived: {
+          const { nick, message } = notification.data ?? {}
+          if (!nick || !message) break
+          triggerNotificationSound(NotificationType.MessageReceived)
+          toastQueue.add(
+            { participant: { name: nick }, message, type: NotificationType.MessageReceived },
+            { timeout: NotificationDuration.MESSAGE }
+          )
+          if (layoutStore.activePanelId !== PanelId.CHAT) {
+            announce(
+              t('chatMessageReceived', { name: nick, message }),
+              'polite'
+            )
+          }
+          break
+        }
         case NotificationType.ParticipantMuted:
           toastQueue.add(
             { participant: toastParticipant, type: NotificationType.ParticipantMuted },

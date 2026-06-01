@@ -225,6 +225,14 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
         message,
       };
       setState((prev) => ({ ...prev, messages: [...prev.messages, chatMsg] }));
+      if (!history && source !== conn.id) {
+        notificationHandlers.current.forEach((handler) =>
+          handler(
+            { type: 'messageReceived' as NotificationType, data: { message, nick: chatUsername } },
+            source,
+          )
+        );
+      }
     };
 
     conn.onusermessage = function (
