@@ -94,7 +94,7 @@ export function Chat() {
                 paddingBottom: '0.125',
                 paddingLeft: '0.75',
                 paddingRight: '0.75',
-                _hover: { bg: 'gray.100' },
+                _hover: { bg: 'gray.200' },
               })}
             >
               {/* Avatar column — always 32px wide for alignment */}

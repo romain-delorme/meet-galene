@@ -60,7 +60,7 @@ export function ParticipantsList() {
                 gap: '0.5',
                 padding: '0.375 0.5',
                 borderRadius: '4',
-                _hover: { bg: 'primaryDark.100' },
+                _hover: { bg: 'gray.200' },
               })}
             >
               {/* Avatar */}
