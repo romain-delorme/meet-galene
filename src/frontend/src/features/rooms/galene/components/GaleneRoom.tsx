@@ -87,8 +87,6 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
   }, []);
 
   const showCamera = useCallback(async (conn: ServerConnection, video: boolean, audio: boolean) => {
-    // Always request both tracks so toggles can flip them without restarting the stream.
-    // Immediately set enabled to match intent so remote peers see/hear only what's wanted.
     const micId = userChoicesStore.audioDeviceId;
     const camId = userChoicesStore.videoDeviceId;
     let ms: MediaStream;
@@ -354,7 +352,7 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
 
     conn.onuser = (id: string, kind: string) => {
       if (disposed) return;
-      if (id === conn.id) return; // local user is already tracked as 'local'
+      if (id === conn.id) return;
 
       // Tell the newcomer about our raised hand (conn.userdata persists across renders)
       if (kind === 'add' && conn.userdata.handRaisedAt) {
