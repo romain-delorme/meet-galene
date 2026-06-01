@@ -96,7 +96,7 @@ export const Join = ({
     let cancelled = false
     navigator.mediaDevices
       .getUserMedia({
-        audio: audioDeviceId ? { deviceId: audioDeviceId } : true,
+        audio: audioDeviceId ? { deviceId: { exact: audioDeviceId } } : true,
       })
       .then((stream) => {
         if (cancelled) {
