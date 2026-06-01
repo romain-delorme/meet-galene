@@ -622,41 +622,7 @@ class Base(Configuration):
         "api_admin_password": environ.get("GALENE_ADMIN_PASSWORD"),
         "token key for jwt": environ.get("APPLICATION_JWT_SECRET_KEY"),
     }
-
-    """
-    LIVEKIT_CONFIGURATION = {
-        "api_key": SecretFileValue(environ_name="LIVEKIT_API_KEY", environ_prefix=None),
-        "api_secret": SecretFileValue(
-            environ_name="LIVEKIT_API_SECRET", environ_prefix=None
-        ),
-        "url": values.Value(environ_name="LIVEKIT_API_URL", environ_prefix=None),
-    }
-    LIVEKIT_FORCE_WSS_PROTOCOL = values.BooleanValue(
-        False, environ_name="LIVEKIT_FORCE_WSS_PROTOCOL", environ_prefix=None
-    )
-    LIVEKIT_DEFAULT_SOURCES = values.ListValue(
-        [
-            "camera",
-            "microphone",
-            "screen_share",
-            "screen_share_audio",
-        ],
-        environ_name="LIVEKIT_DEFAULT_SOURCES",
-        environ_prefix=None,
-    )
-    LIVEKIT_ENABLE_FIREFOX_PROXY_WORKAROUND = values.BooleanValue(
-        environ_name="LIVEKIT_ENABLE_FIREFOX_PROXY_WORKAROUND",
-        environ_prefix=None,
-        default=False,
-    )
-    LIVEKIT_VERIFY_SSL = values.BooleanValue(
-        True, environ_name="LIVEKIT_VERIFY_SSL", environ_prefix=None
-    )
-    # Regex to filter webhook events by room name. Only matching events are processed.
-    LIVEKIT_WEBHOOK_EVENTS_FILTER_REGEX = values.Value(
-        None, environ_name="LIVEKIT_WEBHOOK_EVENTS_FILTER_REGEX", environ_prefix=None
-    )
-    """
+  
     RESOURCE_DEFAULT_ACCESS_LEVEL = values.Value(
         "public", environ_name="RESOURCE_DEFAULT_ACCESS_LEVEL", environ_prefix=None
     )
