@@ -72,7 +72,7 @@ export const Join = ({
     let cancelled = false
     navigator.mediaDevices
       .getUserMedia({
-        video: videoDeviceId ? { deviceId: videoDeviceId } : true,
+        video: videoDeviceId ? { deviceId: { exact: videoDeviceId } } : true,
       })
       .then((stream) => {
         if (cancelled) {
