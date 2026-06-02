@@ -8,7 +8,7 @@ import { SettingsDialogProvider } from '@/features/settings/components/SettingsD
 import { RoomContentArea } from '@/features/layout/components/RoomContentArea'
 import { useScreenReaderAnnounce } from '@/hooks/useScreenReaderAnnounce'
 import { useTranslation } from 'react-i18next'
-import { Button } from 'react-aria-components'
+import { Button } from '@/primitives'
 import { RiArrowLeftSLine, RiArrowRightSLine } from '@remixicon/react'
 
 export function VideoConference() {
@@ -124,13 +124,26 @@ export function VideoConference() {
                 />
               ))}
             </div>
-            <Button onClick={() => setCurrentPage(currentPage-1)} isDisabled={currentPage<2}>
+            <Button 
+              size="sm"
+              variant="primaryTextDark"
+              square
+              tooltip={'page précédente'}
+              onPress={() => setCurrentPage(currentPage-1)}
+              isDisabled={currentPage<2}
+            >
               <RiArrowLeftSLine />
             </Button>
-            <Button onClick={() => setCurrentPage(currentPage+1)} isDisabled={currentPage > videoTracks.length / maxTilesPerPage - 1}>
+            <Button 
+              size="sm"
+              variant="primaryTextDark"
+              square
+              tooltip={'page suivante'}
+              onPress={() => setCurrentPage(currentPage+1)}
+              isDisabled={currentPage > videoTracks.length / maxTilesPerPage - 1}
+            >
               <RiArrowRightSLine />
             </Button>
-
           </div>
         ) : (
           <div className="lk-focus-layout-wrapper" style={{ height: 'auto' }}>
