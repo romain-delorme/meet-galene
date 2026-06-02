@@ -8,6 +8,7 @@ import { SettingsDialogProvider } from '@/features/settings/components/SettingsD
 import { RoomContentArea } from '@/features/layout/components/RoomContentArea'
 import { useScreenReaderAnnounce } from '@/hooks/useScreenReaderAnnounce'
 import { useTranslation } from 'react-i18next'
+import { Button } from 'react-aria-components'
 
 export function VideoConference() {
   const { tracks, participants } = useContext(GaleneContext)
@@ -79,8 +80,16 @@ export function VideoConference() {
     [videoTracks, participants, announce, t, tRooms]
   )
 
+  
+
+  //compute grid layout
+  const maxTilesPerPage: number = 9;
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const visibleTracks = videoTracks.slice((currentPage - 1) * maxTilesPerPage, currentPage * maxTilesPerPage)
+
   // Compute grid columns for the unpinned layout
-  const count = videoTracks.length
+  const count = visibleTracks.length
   let columns = 1
   if (count === 2) columns = 2
   else if (count >= 3 && count <= 4) columns = 2
@@ -105,7 +114,7 @@ export function VideoConference() {
                 gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
               }}
             >
-              {videoTracks.map((track) => (
+              {visibleTracks.map((track) => (
                 <GaleneParticipantTile
                   key={track.id}
                   track={track}
@@ -114,6 +123,9 @@ export function VideoConference() {
                 />
               ))}
             </div>
+            <Button onClick={() => setCurrentPage(currentPage-1)} isDisabled={currentPage<2}></Button>
+            <Button onClick={() => setCurrentPage(currentPage+1)} isDisabled={currentPage > videoTracks.length / maxTilesPerPage - 1}></Button>
+
           </div>
         ) : (
           <div className="lk-focus-layout-wrapper" style={{ height: 'auto' }}>
