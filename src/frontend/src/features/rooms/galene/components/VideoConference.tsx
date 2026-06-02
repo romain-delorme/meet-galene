@@ -9,6 +9,7 @@ import { RoomContentArea } from '@/features/layout/components/RoomContentArea'
 import { useScreenReaderAnnounce } from '@/hooks/useScreenReaderAnnounce'
 import { useTranslation } from 'react-i18next'
 import { Button } from 'react-aria-components'
+import { RiArrowLeftSLine, RiArrowRightSLine } from '@remixicon/react'
 
 export function VideoConference() {
   const { tracks, participants } = useContext(GaleneContext)
@@ -123,8 +124,12 @@ export function VideoConference() {
                 />
               ))}
             </div>
-            <Button onClick={() => setCurrentPage(currentPage-1)} isDisabled={currentPage<2}></Button>
-            <Button onClick={() => setCurrentPage(currentPage+1)} isDisabled={currentPage > videoTracks.length / maxTilesPerPage - 1}></Button>
+            <Button onClick={() => setCurrentPage(currentPage-1)} isDisabled={currentPage<2}>
+              <RiArrowLeftSLine />
+            </Button>
+            <Button onClick={() => setCurrentPage(currentPage+1)} isDisabled={currentPage > videoTracks.length / maxTilesPerPage - 1}>
+              <RiArrowRightSLine />
+            </Button>
 
           </div>
         ) : (
