@@ -213,7 +213,7 @@ export const Home = () => {
                         const slug = generateRoomId()
                         createRoom({ slug, username: user?.full_name || username }).then((data) =>
                           navigateTo('room', data.slug, {
-                            state: { create: true, initialRoomData: data },
+                            state: { create: true },
                           })
                         )
                       }}

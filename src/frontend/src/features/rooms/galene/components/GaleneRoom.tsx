@@ -518,7 +518,7 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
         // Ignore 
       }
     };
-  }, [serverUrl, token, groupName, audioEnabled, onDisconnected, showCamera, username, videoEnabled]);
+  }, [serverUrl, token, groupName, audioEnabled, showCamera, username, videoEnabled]);
 
   // Switch the microphone track on the live WebRTC connection when the user
   // selects a different input device in settings.
