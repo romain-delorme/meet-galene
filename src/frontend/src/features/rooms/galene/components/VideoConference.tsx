@@ -133,7 +133,7 @@ export function VideoConference() {
               >
                 <RiArrowLeftSLine />
               </Button>)}
-              {currentPage <= videoTracks.length / maxTilesPerPage - 1 && 
+              {currentPage <= videoTracks.length / maxTilesPerPage &&
                 (<Button
                   size="sm"
                   variant="primaryTextDark"
@@ -143,9 +143,9 @@ export function VideoConference() {
                 >
                   <RiArrowRightSLine />
                 </Button>
-              )}
+                )}
             </span>
-            
+
           </div>
         ) : (
           <div className="lk-focus-layout-wrapper" style={{ height: 'auto' }}>
