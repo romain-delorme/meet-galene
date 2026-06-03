@@ -20,6 +20,7 @@ import { GaleneRoom } from '../galene/components/GaleneRoom'
 import { useSnapshot } from 'valtio'
 import { userChoicesStore } from '@/stores/userChoices'
 import { VideoConference } from '../galene/components/VideoConference'
+import { isFirefox } from '@/utils/browser'
 
 export const Conference = ({
   roomId,
@@ -40,6 +41,8 @@ export const Conference = ({
   }, [roomId, posthog])
 
   const fetchKey = [keys.room, roomId, userConfig.username]
+
+  const [isConnectionWarmedUp, setIsConnectionWarmedUp] = useState(false)
 
   const {
     mutateAsync: createRoom,
@@ -77,6 +80,42 @@ export const Conference = ({
       roomStore.isAdminOrOwner = false
     }
   }, [data?.is_administrable])
+
+    useEffect(() => {
+    const prepareConnection = async () => {
+      if (!apiConfig || isConnectionWarmedUp) return
+
+      if (isFirefox()) {
+        try {
+          const wssUrl =
+            apiConfig.galene.url
+              .replace('https://', 'wss://')
+              .replace(/\/$/, '') + '/rtc'
+
+          /**
+           * FIREFOX + PROXY WORKAROUND:
+           *
+           * Issue: On Firefox behind proxy configurations, WebSocket signaling fails to establish.
+           * Symptom: Client receives HTTP 200 instead of expected 101 (Switching Protocols).
+           * Root Cause: Certificate/security issue where the initial request is considered unsecure.
+           *
+           * Solution: Pre-establish a WebSocket connection to the signaling server, which fails.
+           * This "primes" the connection, allowing subsequent WebSocket establishments to work correctly.
+           *
+           * Reference: livekit-examples/meet/issues/466
+           */
+          const ws = new WebSocket(wssUrl)
+          // 401 unauthorized response is expected
+          ws.onerror = () => ws.readyState <= 1 && ws.close()
+        } catch (e) {
+          console.debug('Firefox WebSocket workaround failed.', e)
+        }
+      }
+
+      setIsConnectionWarmedUp(true)
+    }
+    prepareConnection()
+  }, [apiConfig, isConnectionWarmedUp])
 
   const [showInviteDialog, setShowInviteDialog] = useState(mode === 'create')
   const isMobile = useIsMobile()
