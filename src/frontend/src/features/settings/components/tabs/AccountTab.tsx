@@ -26,7 +26,9 @@ export const AccountTab = ({ id, onOpenChange }: AccountTabProps) => {
 
   const handleOnSubmit = async () => {
     if (name === connection?.username) {
+      console.log("same name ", name, connection?.username);
       onOpenChange?.(false)
+      return
     }
     try {
       if (room) await renameParticipant(name)
