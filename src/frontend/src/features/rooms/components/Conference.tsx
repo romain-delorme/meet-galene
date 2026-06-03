@@ -90,7 +90,7 @@ export const Conference = ({
           const wssUrl =
             apiConfig.galene.url
               .replace('https://', 'wss://')
-              .replace(/\/$/, '') + '/'
+              .replace(/\/$/, '') + '/ws'
 
           /**
            * FIREFOX + PROXY WORKAROUND:
