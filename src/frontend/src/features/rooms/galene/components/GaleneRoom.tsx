@@ -676,7 +676,7 @@ export const GaleneRoom: React.FC<GaleneRoomProps> = ({
 
   async function renameParticipant(name: string) {
     const conn = state.connection
-    if (!conn?.group) return
+    if (!conn?.group || name === conn.username) return
     await conn.join(conn.group, name, { type: 'token', token })
     setState((prev) => ({
       ...prev,
