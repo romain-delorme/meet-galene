@@ -18,7 +18,6 @@ export const AccountTab = ({ id, onOpenChange }: AccountTabProps) => {
   const { connection, renameParticipant } = useContext(GaleneContext)
   const room = connection?.group
   const { user, isLoggedIn, logout } = useUser()
-
   const [name, setName] = useState(connection?.username ?? '')
   const userDisplay =
     user?.full_name && user?.email
@@ -26,6 +25,9 @@ export const AccountTab = ({ id, onOpenChange }: AccountTabProps) => {
       : user?.email
 
   const handleOnSubmit = async () => {
+    if (name === connection?.username) {
+      onOpenChange?.(false)
+    }
     try {
       if (room) await renameParticipant(name)
       saveUsername(name)
