@@ -123,26 +123,29 @@ export function VideoConference() {
                 />
               ))}
             </div>
-            <Button
-              size="sm"
-              variant="primaryTextDark"
-              square
-              tooltip={'page précédente'}
-              onPress={() => setCurrentPage(currentPage - 1)}
-              isDisabled={currentPage < 2}
-            >
-              <RiArrowLeftSLine />
-            </Button>
-            <Button
-              size="sm"
-              variant="primaryTextDark"
-              square
-              tooltip={'page suivante'}
-              onPress={() => setCurrentPage(currentPage + 1)}
-              isDisabled={currentPage > videoTracks.length / maxTilesPerPage - 1}
-            >
-              <RiArrowRightSLine />
-            </Button>
+            <span>
+              {currentPage > 1 && (<Button
+                size="sm"
+                variant="primaryTextDark"
+                square
+                tooltip={'page précédente'}
+                onPress={() => setCurrentPage(currentPage - 1)}
+              >
+                <RiArrowLeftSLine />
+              </Button>)}
+              {currentPage <= videoTracks.length / maxTilesPerPage - 1 && 
+                (<Button
+                  size="sm"
+                  variant="primaryTextDark"
+                  square
+                  tooltip={'page suivante'}
+                  onPress={() => setCurrentPage(currentPage + 1)}
+                >
+                  <RiArrowRightSLine />
+                </Button>
+              )}
+            </span>
+            
           </div>
         ) : (
           <div className="lk-focus-layout-wrapper" style={{ height: 'auto' }}>
