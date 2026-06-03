@@ -30,7 +30,6 @@ export function VideoConference() {
 
   const screenShareTracks = videoTracks.filter((t) => t.source === 'screen_share')
 
-  // Auto-pin screen shares (mirrors the original logic)
   /* eslint-disable react-hooks/exhaustive-deps */
   useEffect(() => {
     if (
@@ -81,7 +80,7 @@ export function VideoConference() {
     [videoTracks, participants, announce, t, tRooms]
   )
 
-  
+
 
   //compute grid layout
   const maxTilesPerPage: number = 9;
@@ -124,22 +123,22 @@ export function VideoConference() {
                 />
               ))}
             </div>
-            <Button 
+            <Button
               size="sm"
               variant="primaryTextDark"
               square
               tooltip={'page précédente'}
-              onPress={() => setCurrentPage(currentPage-1)}
-              isDisabled={currentPage<2}
+              onPress={() => setCurrentPage(currentPage - 1)}
+              isDisabled={currentPage < 2}
             >
               <RiArrowLeftSLine />
             </Button>
-            <Button 
+            <Button
               size="sm"
               variant="primaryTextDark"
               square
               tooltip={'page suivante'}
-              onPress={() => setCurrentPage(currentPage+1)}
+              onPress={() => setCurrentPage(currentPage + 1)}
               isDisabled={currentPage > videoTracks.length / maxTilesPerPage - 1}
             >
               <RiArrowRightSLine />
